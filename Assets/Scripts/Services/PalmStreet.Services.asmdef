@@ -1,0 +1,7 @@
+{
+    "name": "PalmStreet.Services",
+    "rootNamespace": "PalmStreet.Services",
+    "references": [],
+    "autoReferenced": true,
+    "noEngineReferences": false
+}

@@ -21,11 +21,11 @@ data-model.md. Toutes les durées sont en pas de 1/60 s.
 
 **Purpose**: projet Unity configuré, vide mais qui compile pour iOS et Android.
 
-- [ ] T001 Créer le projet Unity 6000.3.27f1 à la racine du dépôt (Assets/, Packages/, ProjectSettings/) avec le modèle « Universal 2D » (URP + Renderer 2D), en batchmode : `Unity -batchmode -createProject ~/Developer/PalmStreetUnity -quit`, puis ajouter com.unity.render-pipelines.universal, com.unity.test-framework et com.unity.inputsystem dans Packages/manifest.json
-- [ ] T002 Régler ProjectSettings/ProjectSettings.asset : nom « PalmStreet », société « charlit », identifiant com.charlit.palmstreet (iOS et Android), orientation portrait seule, iOS 15.0 minimum, équipe 32AK299L44, Android minSdk 24 / targetSdk 36, IL2CPP + ARM64, nouveau Input System actif
-- [ ] T003 [P] Créer les assemblies Assets/Scripts/Core/PalmStreet.Core.asmdef (noEngineReferences: true), Assets/Scripts/Game/PalmStreet.Game.asmdef (réf. Core, Services), Assets/Scripts/Services/PalmStreet.Services.asmdef et Assets/Tests/EditMode/PalmStreet.Tests.EditMode.asmdef (réf. Core, éditeur seulement, nunit)
-- [ ] T004 [P] Créer la scène Assets/Scenes/Game.unity : caméra orthographique cadrant la zone logique 390 × 620 (unités logiques → mètres à 1/100), Global Light 2D, Volume de post-traitement vide ; l'ajouter seule dans EditorBuildSettings
-- [ ] T005 [P] Ajouter Tools/run-tests.sh qui lance les tests EditMode en batchmode (commande de quickstart.md §1) et affiche le nombre de réussites/échecs depuis le XML
+- [x] T001 Créer le projet Unity 6000.3.27f1 à la racine du dépôt (Assets/, Packages/, ProjectSettings/) avec le modèle « Universal 2D » (URP + Renderer 2D), en batchmode : `Unity -batchmode -createProject ~/Developer/PalmStreetUnity -quit`, puis ajouter com.unity.render-pipelines.universal, com.unity.test-framework et com.unity.inputsystem dans Packages/manifest.json
+- [x] T002 Régler ProjectSettings/ProjectSettings.asset : nom « PalmStreet », société « charlit », identifiant com.charlit.palmstreet (iOS et Android), orientation portrait seule, iOS 15.0 minimum, équipe 32AK299L44, Android minSdk 24 / targetSdk 36, IL2CPP + ARM64, nouveau Input System actif
+- [x] T003 [P] Créer les assemblies Assets/Scripts/Core/PalmStreet.Core.asmdef (noEngineReferences: true), Assets/Scripts/Game/PalmStreet.Game.asmdef (réf. Core, Services), Assets/Scripts/Services/PalmStreet.Services.asmdef et Assets/Tests/EditMode/PalmStreet.Tests.EditMode.asmdef (réf. Core, éditeur seulement, nunit)
+- [x] T004 [P] Créer la scène Assets/Scenes/Game.unity : caméra orthographique cadrant la zone logique 390 × 620 (unités logiques → mètres à 1/100), Global Light 2D, Volume de post-traitement vide ; l'ajouter seule dans EditorBuildSettings
+- [x] T005 [P] Ajouter Tools/run-tests.sh qui lance les tests EditMode en batchmode (commande de quickstart.md §1) et affiche le nombre de réussites/échecs depuis le XML
 
 **Checkpoint**: `Tools/run-tests.sh` tourne (0 test) et le projet s'ouvre sans erreur.
 
@@ -35,11 +35,11 @@ data-model.md. Toutes les durées sont en pas de 1/60 s.
 
 **Purpose**: socle de la simulation dont dépendent toutes les stories.
 
-- [ ] T006 [P] Écrire Assets/Scripts/Core/IRandom.cs (Next01(), Range(min, max)) et SeededRandom (xorshift, graine int) pour des parties rejouables
-- [ ] T007 [P] Écrire Assets/Scripts/Core/GameEvent.cs : les événements de contracts/core-and-services.md §1 (Jumped, TrickDone, GrindStarted, GrindEnded, GrindOut, CoinCollected, ThemeChanged, Milestone, BossStarted, BossHit, BossDefeated, ConeDropped, Crashed) avec leurs données
-- [ ] T008 Écrire Assets/Scripts/Core/GameState.cs avec les champs de data-model.md « GameState » et « Persistance » ; Phase « Ready → Running au toucher START ; Running → Over à la chute »
-- [ ] T009 Écrire Assets/Scripts/Core/Simulation.cs : constructeur (IRandom, best), Start(character), Tap(), DoubleTap(), SetDuck(on), Step(), State, event Events ; Step() vide pour l'instant sauf Score += 1 en Running
-- [ ] T010 [P] Test Assets/Tests/EditMode/SimulationTests.cs : en Ready, Tap() démarre la partie ; 60 Step() en Running donnent Score = 60 ; deux simulations à même graine et mêmes commandes ont le même état après 3 000 pas
+- [x] T006 [P] Écrire Assets/Scripts/Core/IRandom.cs (Next01(), Range(min, max)) et SeededRandom (xorshift, graine int) pour des parties rejouables
+- [x] T007 [P] Écrire Assets/Scripts/Core/GameEvent.cs : les événements de contracts/core-and-services.md §1 (Jumped, TrickDone, GrindStarted, GrindEnded, GrindOut, CoinCollected, ThemeChanged, Milestone, BossStarted, BossHit, BossDefeated, ConeDropped, Crashed) avec leurs données
+- [x] T008 Écrire Assets/Scripts/Core/GameState.cs avec les champs de data-model.md « GameState » et « Persistance » ; Phase « Ready → Running au toucher START ; Running → Over à la chute »
+- [x] T009 Écrire Assets/Scripts/Core/Simulation.cs : constructeur (IRandom, best), Start(character), Tap(), DoubleTap(), SetDuck(on), Step(), State, event Events ; Step() vide pour l'instant sauf Score += 1 en Running
+- [x] T010 [P] Test Assets/Tests/EditMode/SimulationTests.cs : en Ready, Tap() démarre la partie ; 60 Step() en Running donnent Score = 60 ; deux simulations à même graine et mêmes commandes ont le même état après 3 000 pas
 
 **Checkpoint**: Simulation pas à pas testée.
 
@@ -53,21 +53,21 @@ data-model.md. Toutes les durées sont en pas de 1/60 s.
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Test Assets/Tests/EditMode/TerrainTests.cs : départ plat 0–420 ; ordre Flat → Up → Down → Flat ; « Flat 240–500 ; Up et Down 130–240 » ; « Up monte à 45–100 ; Down revient à 0 » ; multiplicateur ≤ 1,55 en descente et ≥ 0,78 en montée (FR-005)
-- [ ] T012 [P] [US1] Test Assets/Tests/EditMode/SkaterTests.cs : Tap au sol → VY = −9,6 ; gravité 0,5 ; atterrit sur le sol en suivant le relief ; pas de saut accroupi ; « debout 58, accroupi 34 » (FR-006)
-- [ ] T013 [P] [US1] Test Assets/Tests/EditMode/SpawnerTests.cs : un seul élément à la fois ; sous 2 000 que des petits plots 15×24 ; ensuite plots/rails 2 pour 1 ; pas de rail si pas assez de plat (marge 50) ; pas d'obstacle à moins de 90 du début d'une descente ; premier obstacle = grand rail 210×28 puis tous les 5 000 (FR-007, FR-008)
-- [ ] T014 [P] [US1] Test Assets/Tests/EditMode/SpeedAndCrashTests.cs : vitesse = min(4,3 ; 1,7 + ⌊Score/100⌋ × 0,045) × terrain ; collision avec un plot → Phase Over, événement Crashed ; Best mis à jour si Score > Best (FR-003, FR-009)
+- [x] T011 [P] [US1] Test Assets/Tests/EditMode/TerrainTests.cs : départ plat 0–420 ; ordre Flat → Up → Down → Flat ; « Flat 240–500 ; Up et Down 130–240 » ; « Up monte à 45–100 ; Down revient à 0 » ; multiplicateur ≤ 1,55 en descente et ≥ 0,78 en montée (FR-005)
+- [x] T012 [P] [US1] Test Assets/Tests/EditMode/SkaterTests.cs : Tap au sol → VY = −9,6 ; gravité 0,5 ; atterrit sur le sol en suivant le relief ; pas de saut accroupi ; « debout 58, accroupi 34 » (FR-006)
+- [x] T013 [P] [US1] Test Assets/Tests/EditMode/SpawnerTests.cs : un seul élément à la fois ; sous 2 000 que des petits plots 15×24 ; ensuite plots/rails 2 pour 1 ; pas de rail si pas assez de plat (marge 50) ; pas d'obstacle à moins de 90 du début d'une descente ; premier obstacle = grand rail 210×28 puis tous les 5 000 (FR-007, FR-008)
+- [x] T014 [P] [US1] Test Assets/Tests/EditMode/SpeedAndCrashTests.cs : vitesse = min(4,3 ; 1,7 + ⌊Score/100⌋ × 0,045) × terrain ; collision avec un plot → Phase Over, événement Crashed ; Best mis à jour si Score > Best (FR-003, FR-009)
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Implémenter Assets/Scripts/Core/Terrain.cs (port de resetTerrain, pushNextTerrainSegment, ensureTerrainAhead, terrainInfoAt, terrainSpeedMultiplier, groundYAt)
-- [ ] T016 [P] [US1] Implémenter Assets/Scripts/Core/Skater.cs (port de jump, setDuck, gravité/atterrissage de update, boîte de collision x + 9, largeur − 18, haut + 12)
-- [ ] T017 [US1] Implémenter Assets/Scripts/Core/Spawner.cs pour les plots et le grand rail (port de spawnObstacle, isFlatEnoughForRail, tooEarlyInDescent, spawnPointWorldX, calcul de NextSpawnIn) — dépend de T015
-- [ ] T018 [US1] Brancher Terrain, Skater, Spawner, vitesse, défilement, collisions et fin de partie dans Assets/Scripts/Core/Simulation.cs ; faire passer T011–T014
-- [ ] T019 [P] [US1] Écrire Assets/Scripts/Game/GameRunner.cs : accumulateur 1/60 s (max 5 pas par image), interpolation de l'affichage, chargement/sauvegarde de best dans PlayerPrefs
-- [ ] T020 [P] [US1] Écrire Assets/Scripts/Game/TouchInput.cs selon contracts §3 : tap, double tap < 0,32 s en l'air, maintien > 0,22 s = accroupi, clavier dans l'éditeur
-- [ ] T021 [US1] Écrire Assets/Scripts/Game/WorldView.cs en formes provisoires (sol en LineRenderer suivant le relief, plots et rails en sprites unis, skateur en rectangle), avec pools d'objets
-- [ ] T022 [US1] Écrire l'UI provisoire en UI Toolkit dans Assets/Scripts/Game/Ui/ : accueil (4 skateurs, START, TOP 10 désactivé), HUD SCORE/BEST, écran WIPEOUT ! avec score et rejouer ; respecter les zones sûres
+- [x] T015 [P] [US1] Implémenter Assets/Scripts/Core/Terrain.cs (port de resetTerrain, pushNextTerrainSegment, ensureTerrainAhead, terrainInfoAt, terrainSpeedMultiplier, groundYAt)
+- [x] T016 [P] [US1] Implémenter Assets/Scripts/Core/Skater.cs (port de jump, setDuck, gravité/atterrissage de update, boîte de collision x + 9, largeur − 18, haut + 12)
+- [x] T017 [US1] Implémenter Assets/Scripts/Core/Spawner.cs pour les plots et le grand rail (port de spawnObstacle, isFlatEnoughForRail, tooEarlyInDescent, spawnPointWorldX, calcul de NextSpawnIn) — dépend de T015
+- [x] T018 [US1] Brancher Terrain, Skater, Spawner, vitesse, défilement, collisions et fin de partie dans Assets/Scripts/Core/Simulation.cs ; faire passer T011–T014
+- [x] T019 [P] [US1] Écrire Assets/Scripts/Game/GameRunner.cs : accumulateur 1/60 s (max 5 pas par image), affichage limité à 60 images/s (interpolation reportée : inutile à 60 Hz), chargement/sauvegarde de best dans PlayerPrefs
+- [x] T020 [P] [US1] Écrire Assets/Scripts/Game/TouchInput.cs selon contracts §3 : tap, double tap < 0,32 s en l'air, maintien > 0,22 s = accroupi, clavier dans l'éditeur
+- [x] T021 [US1] Écrire Assets/Scripts/Game/WorldView.cs en formes provisoires (sol en LineRenderer suivant le relief, plots et rails en sprites unis, skateur en rectangle), avec pools d'objets
+- [x] T022 [US1] Écrire l'UI provisoire (uGUI construit en code, UI Toolkit gardé pour la refonte T046) dans Assets/Scripts/Game/Ui/ : accueil (4 skateurs, START, TOP 10 désactivé), HUD SCORE/BEST, écran WIPEOUT ! avec score et rejouer ; respecter les zones sûres
 - [ ] T023 [US1] Vérifier US1 dans l'éditeur puis sur l'iPhone (build iOS de développement) selon quickstart.md §2–3
 
 **Checkpoint**: MVP jouable de bout en bout sur iPhone.
@@ -82,15 +82,15 @@ data-model.md. Toutes les durées sont en pas de 1/60 s.
 
 ### Tests for User Story 2
 
-- [ ] T024 [P] [US2] Test Assets/Tests/EditMode/TrickTests.cs : DoubleTap en l'air → FLIP 30, SHOVE-IT 35, 360° 45, 360° INVERSÉ 45 dans cet ordre, × combo ; une seule figure par saut ; rien au sol (FR-010)
-- [ ] T025 [P] [US2] Test Assets/Tests/EditMode/GrindTests.cs : pieds sur le dessus du rail en descente (−10/+16) → grind ; +2 par pas ; sortie +20 × combo ; Tap pendant le grind → +15 et VY = −9,6 × 0,85 (FR-011, FR-012)
-- [ ] T026 [P] [US2] Test Assets/Tests/EditMode/CoinAndComboTests.cs : rangées de 3 à 5 espacées de 26 aux hauteurs 20/60/95 ; 10 × combo ; toujours en montée et début de descente, sinon 38 % ; combo +1 par figure ou grind, retour à 1 après 130 pas (FR-013, FR-014)
+- [x] T024 [P] [US2] Test Assets/Tests/EditMode/TrickTests.cs : DoubleTap en l'air → FLIP 30, SHOVE-IT 35, 360° 45, 360° INVERSÉ 45 dans cet ordre, × combo ; une seule figure par saut ; rien au sol (FR-010)
+- [x] T025 [P] [US2] Test Assets/Tests/EditMode/GrindTests.cs : pieds sur le dessus du rail en descente (−10/+16) → grind ; +2 par pas ; sortie +20 × combo ; Tap pendant le grind → +15 et VY = −9,6 × 0,85 (FR-011, FR-012)
+- [x] T026 [P] [US2] Test Assets/Tests/EditMode/CoinAndComboTests.cs : rangées de 3 à 5 espacées de 26 aux hauteurs 20/60/95 ; 10 × combo ; toujours en montée et début de descente, sinon 38 % ; combo +1 par figure ou grind, retour à 1 après 130 pas (FR-013, FR-014)
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Implémenter figures et combo dans Assets/Scripts/Core/Scoring.cs et Skater.cs (port de doTrick, bumpCombo, timer de combo)
-- [ ] T028 [US2] Implémenter le grind et les rails dans Skater.cs et Spawner.cs (port du bloc « fallingOntoTop » et de la sortie de grind)
-- [ ] T029 [US2] Implémenter les éclairs dans Spawner.cs (port de spawnCoinRow et du choix pièces/obstacle) et leur ramassage dans Simulation.cs ; faire passer T024–T026
+- [x] T027 [US2] Implémenter figures et combo dans Assets/Scripts/Core/Scoring.cs et Skater.cs (port de doTrick, bumpCombo, timer de combo)
+- [x] T028 [US2] Implémenter le grind et les rails dans Skater.cs et Spawner.cs (port du bloc « fallingOntoTop » et de la sortie de grind)
+- [x] T029 [US2] Implémenter les éclairs dans Spawner.cs (port de spawnCoinRow et du choix pièces/obstacle) et leur ramassage dans Simulation.cs ; faire passer T024–T026
 - [ ] T030 [US2] Afficher dans WorldView.cs et l'UI : rails, éclairs, COMBO xN, textes flottants (« +30 FLIP ! », « +20 GRIND! », « +15 OUT! »)
 
 **Checkpoint**: US1 et US2 marchent ensemble.

@@ -1,0 +1,15 @@
+{
+    "name": "PalmStreet.Game",
+    "rootNamespace": "PalmStreet.Game",
+    "references": [
+        "PalmStreet.Core",
+        "PalmStreet.Services",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime"
+    ],
+    "autoReferenced": true,
+    "noEngineReferences": false
+}

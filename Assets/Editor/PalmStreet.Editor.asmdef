@@ -1,0 +1,6 @@
+{
+    "name": "PalmStreet.Editor",
+    "rootNamespace": "PalmStreet.EditorTools",
+    "references": [],
+    "includePlatforms": ["Editor"]
+}
