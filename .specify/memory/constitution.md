@@ -5,7 +5,7 @@ Sync Impact Report
   IV. Logique de jeu testable, V. Prêt pour les stores
 - Sections ajoutées : Contraintes techniques, Façon de travailler, Governance
 - Sections retirées : aucune
-- TODO : TODO(BUNDLE_ID) — garder com.charlit.palmstreet (remplace l'app WebView actuelle) ou un nouvel identifiant
+- 2.0.1 : pas fixe de 1/60 s précisé (principe II) ; identifiant com.charlit.palmstreet décidé
 -->
 # PalmStreet Unity Constitution
 
@@ -25,7 +25,8 @@ Pourquoi : le jeu existe et plaît ; le but est de le porter, pas d'en inventer 
 - Format portrait, plein écran, zones sûres (encoche, barre d'accueil) respectées.
 - Commandes tactiles d'abord (tap = ollie, double tap = figure) ; clavier en option pour tester.
 - 60 images/s stables sur un iPhone 12 et un Android milieu de gamme de 2021.
-- Physique et vitesses indépendantes du nombre d'images par seconde (pas de temps fixe).
+- Physique et vitesses indépendantes du nombre d'images par seconde : simulation à pas fixe
+  de 1/60 s, l'affichage interpole.
 
 Pourquoi : iOS et Android sont les seules cibles.
 
@@ -58,7 +59,7 @@ Pourquoi : la publication est le but, et les refus de review coûtent des semain
 
 - Moteur : Unity 6000.3 LTS (Unity 6.3), C#, rendu 2D (URP 2D).
 - Cibles : iOS 15 et plus (iPhone, iPad en portrait), Android minSdk 24, targetSdk 36.
-- Équipe Apple : 32AK299L44. Identifiant : TODO(BUNDLE_ID).
+- Équipe Apple : 32AK299L44. Identifiant : com.charlit.palmstreet (iOS et Android).
 - Le projet Unity vit à la racine de ce dépôt (Assets/, Packages/, ProjectSettings/).
 
 ## Façon de travailler
@@ -74,4 +75,4 @@ avec /speckit-constitution, explique sa raison et change la version (MAJOR : pri
 ou redéfini, MINOR : principe ou section ajouté, PATCH : formulation). Chaque plan vérifie
 qu'il respecte ces principes ; un écart est justifié dans le plan.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30
+**Version**: 2.0.1 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30
