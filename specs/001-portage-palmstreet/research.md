@@ -88,6 +88,23 @@ l'éditeur et sans connexion, une implémentation locale répond « indisponible
 - **Rationale**: interface déclarative, s'adapte aux zones sûres et aux tailles d'écran.
 - **Alternatives considered**: uGUI (plus de réglages manuels pour un résultat équivalent).
 
+## Révision du 2026-10-30 : jeu refait d'après la spec seule
+
+Le jeu a été refait de zéro à partir du texte de la spec (commit a646645). Décisions qui changent :
+
+| Section | Avant | Maintenant |
+|---|---|---|
+| 1. Rendu | Lumières 2D, bloom, vignette | Formes en couleurs de sommets sous une lumière globale blanche, halos en disques dégradés, pas de post-traitement |
+| 2. Simulation | Valeurs du jeu web telles quelles, affichage interpolé | Valeurs de la spec ; un pas par image à 60 images/s, sans interpolation (à ajouter si les écrans 120 Hz saccadent) |
+| 3. Logique | Port des fonctions du jeu web en plusieurs classes | Tuning.cs, Ground.cs, Run.cs, Boss.cs écrits d'après la spec |
+| 4. Graphismes | SVG dessinés d'après les sprites du jeu web | Tout dessiné par le code (Paint.cs) ; skateurs en pièces avec jambes en cinématique inverse ; dessins sur mesure possibles plus tard (Art/cahier-des-charges-skateurs.md) |
+| 5. Game Center | Plugin Apple.GameKit | API Social d'Unity (Social.ReportScore, ShowLeaderboardUI), sans plugin |
+| 6. Play Games | Plugin officiel | Inchangé, pas encore fait (tâche T037) |
+| 7. Son | WAV générés depuis l'AudioContext du jeu web | AudioClip synthétisés au lancement, musique originale à 132 bpm |
+| 9. Écrans | UI Toolkit, police OFL | uGUI construit en code, polices du système (Avenir Next Condensed, Futura, Roboto…) |
+
+Les sections 8 (identifiant com.charlit.palmstreet) et les choix de plateforme restent valables.
+
 ## Sources
 
 - Dépréciation de l'API Social : https://discussions.unity.com/t/deprecation-of-social-api/1542110

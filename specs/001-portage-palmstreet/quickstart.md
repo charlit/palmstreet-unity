@@ -2,36 +2,44 @@
 
 ## Prérequis
 
-- Unity 6000.3.27f1 avec iOS Build Support et Android Build Support (Unity Hub, compte connecté).
-- Xcode (iPhone « CHARLES » branché) ; un téléphone Android ou l'émulateur « quiz ».
+- Unity 6000.3.27f1 avec iOS Build Support et Android Build Support.
+- Xcode ; l'iPhone « CHARLES » branché ou sur le même Wi-Fi, déverrouillé.
+- Les scripts en batchmode demandent que l'éditeur Unity soit fermé sur ce projet.
 
 ## 1. Règles (sans lancer le jeu)
 
 ```bash
-"/Applications/Unity/Hub/Editor/6000.3.27f1/Unity.app/Contents/MacOS/Unity" \
-  -batchmode -projectPath ~/Developer/PalmStreetUnity -runTests -testPlatform EditMode \
-  -testResults /tmp/palmstreet-tests.xml -quit
+Tools/run-tests.sh
 ```
 
-Attendu : tous les tests passent (barèmes FR-010 à FR-014, terrain FR-005, apparitions FR-007,
-FR-008, boss FR-017 à FR-019, partie rejouée à l'identique avec la même graine).
+Attendu : 23 réussis (une règle de la spec par test, de FR-003 à FR-020).
 
-## 2. Dans l'éditeur
+## 2. Rendu (sans téléphone)
 
-Ouvrir `Assets/Scenes/Game.unity`, Play, jouer au clavier :
+```bash
+Tools/capture.sh /chemin/des/captures
+```
+
+Attendu : accueil, départ, grind sur le grand rail, les 4 figures en gros plan à trois moments, BTZ,
+Arcangues, boss, BOOM, WIPEOUT.
+
+## 3. Dans l'éditeur
+
+Menu PalmStreet › « Jouer dans l'éditeur (format téléphone) », puis au clavier :
 
 | Scénario | Attendu |
 |---|---|
-| START, Espace sur 5 plots | 5 ollies, score qui monte de 60 par seconde |
-| Percuter un plot | WIPEOUT !, planche qui rebondit, BEST mis à jour |
-| Espace puis ← en l'air | FLIP ! +30, COMBO x2 |
-| Retomber sur un rail | grind, étincelles, +20 × combo GRIND! en sortie |
-| Cliquer le soleil à l'accueil | boss immédiat, barre de vie, plots lâchés en vol |
+| START, Espace devant chaque plot | ollies, score qui monte de 60 par seconde |
+| Percuter un plot | WIPEOUT !, le skateur tombe, la planche rebondit, BEST mis à jour |
+| Espace, puis deux fois Espace vite en l'air | FLIP ! +30, COMBO x2 |
+| Retomber sur le grand rail du départ | grind, étincelles, +20 × combo GRIND! en sortie |
+| Cliquer le soleil à l'accueil | boss immédiat, barre de vie, plots violets lâchés en vol |
 
-## 3. Sur téléphone
+## 4. Sur l'iPhone
 
-- iOS : Build Settings › iOS › Build, puis compiler le projet Xcode sur l'iPhone.
-- Android : Build Settings › Android › Build And Run.
+```bash
+Tools/build-ios.sh
+```
 
-Vérifier : 60 images/s pendant le boss (overlay de stats), pause en arrière-plan, son coupé
-gardé au relancement, connexion Game Center / Play Games et score envoyé à la fin d'une partie.
+Vérifier : 60 images/s pendant le boss, pause en arrière-plan, son coupé gardé au relancement, connexion
+Game Center et score dans le TOP 10.

@@ -1,61 +1,37 @@
-# Contracts: logique de jeu et services
+# Contracts: Core et services
 
-## 1. Simulation (PalmStreet.Core → PalmStreet.Game)
+## 1. PalmStreet.Core.Run
 
-La couche Game appelle la simulation ; la simulation ne connaît pas Unity.
-
-```text
-Simulation(IRandom random, int best)
-  Start(Character c)                 // Ready/Over → Running
-  StartAtBoss(Character c)           // raccourci du soleil (FR-020) : score 15 000 + boss
-  Tap()                              // ollie, sortie de grind, ou relance en Ready/Over
-  DoubleTap()                        // figure si en l'air et CanTrick
-  SetDuck(bool on)
-  Step()                             // avance d'un pas de 1/60 s
-  GameState State { get; }           // lecture seule pour l'affichage
-  event Action<GameEvent> Events     // voir ci-dessous
+```csharp
+var run = new Run(seed: 0);          // 0 : graine aléatoire ; autre : partie rejouable (tests)
+run.Start(Rider.Guigui);             // ou Start(Rider.Freestill, bossNow: true) pour le raccourci du soleil
+run.Press();                         // toucher : ollie au sol, OUT! en grind, figure au 2e toucher rapide en l'air
+run.Release();                       // fin du toucher (fin de l'accroupi)
+run.Step();                          // un pas de 1/60 s, seulement en Phase.Playing
+foreach (var e in run.Events) { … }  // Cue, Points, X, Y, Text
+run.Events.Clear();                  // c'est l'affichage qui vide
 ```
 
-Événements (pour son, particules, textes flottants, bandeaux) :
+Garanties : Run ne dépend pas d'UnityEngine ; même graine et mêmes appels donnent la même partie ;
+Press() pendant Phase ≠ Playing ne fait rien.
 
-| Événement | Données |
-|---|---|
-| Jumped | — |
-| TrickDone | kind, points |
-| GrindStarted / GrindEnded | points (fin) ; noseGrind |
-| GrindOut | +15 |
-| CoinCollected | x, y, points |
-| ThemeChanged | theme |
-| Milestone | « FULL SPEED » |
-| BossStarted / BossHit / BossDefeated | hp ; +5 000 |
-| ConeDropped | x |
-| Crashed | score final, nouveau record (bool) |
+## 2. PalmStreet.Services.Leaderboard
 
-Garanties testées : même graine + même suite de commandes → même partie, pas par pas.
-
-## 2. Classement (ILeaderboard)
-
-```text
-ILeaderboard
-  bool IsAvailable { get; }
-  Task SignInAsync()                 // silencieux ; échec = IsAvailable false
-  Task SubmitAsync(long score)       // ignoré si indisponible
-  void ShowNative()                  // écran Game Center / Play Games
+```csharp
+Leaderboard.SignIn();                       // au lancement (iOS : Game Center, silencieux)
+Leaderboard.Report(score);                  // à chaque fin de partie, si connecté
+Leaderboard.Show(message => hud.Toast(message));   // TOP 10 : écran natif, ou raison de l'indisponibilité
 ```
 
-| Plateforme | Implémentation | Identifiant du classement |
-|---|---|---|
-| iOS | Apple.GameKit | `palmstreet.top` |
-| Android | Google Play Games plugin | ID généré par la Play Console (constante `PlayGamesIds.Top`) |
-| Éditeur | LocalLeaderboard | — (toujours indisponible) |
+Id du classement : `palmstreet.top`. Android : indisponible tant que Google Play Games n'est pas branché (T037).
 
-Contexte du score (iOS) : numéro du skateur, comme l'app WebView actuelle.
+## 3. Touchers (Game.cs)
 
-## 3. Entrées (Game)
-
-| Geste | Commande |
+| Geste | Effet |
 |---|---|
-| Toucher (relâché ou non) | Tap() |
-| Deuxième toucher en moins de 0,32 s, en l'air | DoubleTap() à la place de Tap() |
-| Doigt maintenu > 0,22 s au sol | SetDuck(true) jusqu'au relâchement |
-| Clavier (éditeur) | Espace/↑ = Tap, ←/→ = DoubleTap, ↓ = accroupi |
+| Toucher (hors bouton) en partie | `Run.Press()` ; relâcher : `Run.Release()` |
+| Maintien > 0,22 s au sol | accroupi (géré par Run) |
+| Toucher le soleil à l'accueil | `StartRun(boss: true)` (FR-020) |
+| Toucher après WIPEOUT (0,35 s après l'écran) | nouvelle partie avec le même skateur |
+| Toucher en pause | reprise |
+| Clavier (éditeur) | Espace ou ↑ = toucher, Échap = pause |
