@@ -11,7 +11,11 @@
 Cette fonctionnalité s'ajoute à la spec 001 (portage de PalmStreet). Les règles de 001 restent valables
 (saut, grind, éclairs, combo, boss à dents, profil, vêtements), sauf là où cette spec les remplace :
 l'écran d'accueil (FR-002 de 001), les figures disponibles (FR-010 de 001), l'enchaînement des décors et
-des boss (FR-015 à FR-019 et FR-029 de 001).
+des boss (FR-015 à FR-019 et FR-029 de 001), la tenue et ses déblocages (FR-026 et FR-027 de 001).
+
+Révision du 2026-10-31 (demandes du propriétaire) : accueil sans TOP 10 ni grand skateur, petit skateur
+sur la carte, animation de lancement avec la planche « P. ST. », vêtements gagnés en finissant les
+niveaux au lieu des couleurs libres (User Stories 5 et 6, FR-022 à FR-027).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -112,6 +116,48 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
 
 ---
 
+### User Story 5 - Gagner ses vêtements en finissant les niveaux (Priority: P2)
+
+Le profil ne propose plus de couleurs au choix. Le skateur commence avec une tenue simple. Chaque niveau
+réussi pour la première fois offre un vêtement ou une planche (Anglet : une casquette rouge, Biarritz :
+un sweat bleu océan, …). Le joueur les enfile dans le profil.
+
+**Why this priority**: une récompense concrète à chaque niveau, qui donne envie d'avancer.
+
+**Independent Test**: installation neuve : le profil n'a que la tenue de départ et des objets verrouillés ;
+réussir Anglet annonce « NOUVEAU : CASQUETTE ROUGE », qu'on peut ensuite porter.
+
+**Acceptance Scenarios**:
+
+1. **Given** une installation neuve, **When** le joueur ouvre le profil, **Then** il voit la tenue de
+   départ portée et les objets à gagner verrouillés, chacun avec « Niveau n · Ville ».
+2. **Given** le niveau 1 réussi pour la première fois, **When** l'écran de réussite s'affiche, **Then** il
+   annonce la casquette rouge avec son dessin.
+3. **Given** un objet gagné, **When** le joueur le touche dans le profil, **Then** le skateur le porte
+   (aperçu et parties) ; un objet verrouillé ne s'enfile pas et rappelle le niveau qui le donne.
+
+---
+
+### User Story 6 - Animation de lancement (Priority: P3)
+
+À l'ouverture de l'application, une planche de skate fait un flip au ralenti au milieu de l'écran ;
+en tournant, elle montre son dessous où est écrit « P. ST. », puis le titre PALM STREET apparaît et
+l'accueil s'ouvre.
+
+**Why this priority**: l'identité du jeu dès la première seconde.
+
+**Independent Test**: ouvrir l'application : l'animation se joue en moins de 3 secondes, « P. ST. » est
+lisible sous la planche, un toucher la passe.
+
+**Acceptance Scenarios**:
+
+1. **Given** l'application fermée, **When** le joueur l'ouvre, **Then** l'animation de la planche se joue,
+   puis l'accueil s'affiche.
+2. **Given** l'animation en cours, **When** le joueur touche l'écran, **Then** l'accueil s'affiche tout de
+   suite.
+
+---
+
 ### Edge Cases
 
 - Le joueur quitte l'application en plein niveau : au retour, le niveau est à recommencer ; les niveaux
@@ -120,8 +166,10 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
 - Un niveau qui débloque une figure est réussi une deuxième fois : pas de nouvelle annonce.
 - Le dernier niveau (12) est réussi : l'écran annonce la fin de l'aventure et propose le mode infini.
 - Toutes les figures débloquées : aucune annonce de figure supplémentaire.
-- Joueur qui avait déjà une progression de la version précédente (meilleur score, points cumulés,
-  tenue) : ces données sont gardées ; la carte commence au niveau 1 et les figures sont à débloquer.
+- Joueur qui avait déjà une progression de la version précédente : le meilleur score devient le meilleur
+  score infini ; la tenue repart de la tenue de départ (les couleurs libres n'existent plus), la peau et
+  les cheveux choisis sont gardés ; la carte commence au niveau 1 et les figures sont à débloquer.
+- Le joueur porte un objet puis le retire : il retrouve l'objet de départ de cet emplacement.
 - Le joueur ouvre la carte sans connexion : tout fonctionne (seul le classement a besoin du réseau).
 
 ## Requirements *(mandatory)*
@@ -130,7 +178,8 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
 
 **Accueil et carte**
 
-- **FR-001**: L'accueil MUST proposer JOUER (mode histoire), INFINI, PROFIL et TOP 10.
+- **FR-001**: L'accueil MUST proposer le titre, JOUER (mode histoire), INFINI et PROFIL (en haut à
+  droite) ; il n'y a plus de bouton TOP 10 ni de grand skateur sur l'accueil.
 - **FR-002**: JOUER MUST ouvrir une carte de la côte basque avec 12 niveaux reliés par une route, chacun
   nommé par sa ville, dans cet ordre : 1 Anglet, 2 Biarritz, 3 Bidart (boss), 4 Guéthary,
   5 Saint-Jean-de-Luz, 6 Hendaye (boss), 7 Bayonne, 8 Arcangues, 9 Espelette (boss), 10 Ascain,
@@ -138,6 +187,9 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
 - **FR-003**: Chaque niveau sur la carte MUST montrer son état : verrouillé, ouvert, réussi (avec son
   meilleur score) ; les niveaux à boss sont signalés. Le prochain niveau à jouer est mis en avant.
 - **FR-004**: Au départ seul le niveau 1 MUST être ouvert ; réussir un niveau MUST ouvrir le suivant.
+- **FR-022**: La carte MUST montrer un petit skateur (avec la tenue du joueur) posé sur le prochain niveau
+  à jouer ; après une réussite, il roule le long de la route jusqu'au niveau suivant à l'ouverture de la
+  carte.
 
 **Niveaux**
 
@@ -188,22 +240,49 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
   (et non plus avec le score), sans palier ni pause, jusqu'à une vitesse maximale qui reste jouable.
 - **FR-019**: En mode infini, les décors des villes déjà ouvertes en histoire MUST défiler à tour de
   rôle, et un boss MUST revenir régulièrement, choisi parmi ceux déjà rencontrés en histoire.
-- **FR-020**: Le mode infini MUST avoir son propre meilleur score, envoyé au classement TOP 10 ; les
-  figures disponibles sont celles débloquées en histoire.
+- **FR-020**: Le mode infini MUST avoir son propre meilleur score, envoyé au classement ; le bouton
+  TOP 10 se trouve sur l'écran de fin du mode infini (il n'est plus sur l'accueil) ; les figures
+  disponibles sont celles débloquées en histoire.
+
+**Garde-robe gagnée en jouant**
+
+- **FR-023**: Le profil MUST ne plus proposer de palettes de couleurs pour les vêtements et la planche :
+  chaque emplacement (couvre-chef, haut, bas, chaussures, planche) propose seulement les objets possédés.
+- **FR-024**: Le skateur MUST commencer avec une tenue de départ : tête nue, t-shirt blanc, jean bleu,
+  baskets blanches, planche en bois naturel aux roues crème.
+- **FR-025**: Réussir un niveau pour la première fois MUST donner un objet, dans cet ordre :
+  1 Anglet → casquette rouge ; 2 Biarritz → sweat bleu océan ; 3 Bidart → planche rouge « Crabe » ;
+  4 Guéthary → short de surf turquoise ; 5 Saint-Jean-de-Luz → bonnet rayé marine ;
+  6 Hendaye → sweat blanc « Goéland » ; 7 Bayonne → bandeau rouge ; 8 Arcangues → pantalon vert ;
+  9 Espelette → planche « Piment » ; 10 Ascain → baskets jaunes ; 11 Cambo-les-Bains → sweat violet ;
+  12 Biarritz la nuit → planche « Néon » rose et cyan.
+- **FR-026**: L'écran de réussite MUST annoncer l'objet gagné (« NOUVEAU : … ») avec son dessin ; le
+  profil MUST montrer les objets possédés à enfiler et les objets à gagner verrouillés avec
+  « Niveau n · Ville ».
+- **FR-027**: La peau, la coiffure (courts, boucles) et la couleur des cheveux MUST rester au choix libre
+  dans le profil ; les points cumulés ne débloquent plus rien et ne sont plus affichés.
+
+**Lancement**
+
+- **FR-028**: À chaque ouverture de l'application, une animation MUST montrer une planche qui fait un
+  flip au ralenti au centre de l'écran, son dessous marqué « P. ST. » bien lisible pendant la rotation,
+  puis le titre PALM STREET ; elle dure au plus 2,5 secondes et un toucher la passe.
 
 **Sauvegarde**
 
-- **FR-021**: La progression (niveaux réussis, meilleur score par niveau, figures débloquées, meilleur
-  score infini) MUST être gardée sur l'appareil et survivre à la fermeture de l'application.
+- **FR-021**: La progression (niveaux réussis, meilleur score par niveau, figures débloquées, objets
+  gagnés et portés, meilleur score infini) MUST être gardée sur l'appareil et survivre à la fermeture de l'application.
 
 ### Key Entities
 
 - **Niveau** : numéro (1 à 12), ville, décor, longueur du parcours, boss éventuel, figure débloquée
   éventuelle, types d'obstacles autorisés, vitesse de départ et maximale.
 - **Boss** : nom, forme, points de vie, attaques, niveau où il apparaît.
-- **Progression du joueur** : niveaux réussis, meilleur score par niveau, figures débloquées, meilleur
-  score infini, points cumulés (spec 001).
+- **Progression du joueur** : niveaux réussis, meilleur score par niveau, figures débloquées, objets
+  gagnés, tenue portée, meilleur score infini.
 - **Figure** : nom, points (spec 001), niveau qui la débloque.
+- **Objet de garde-robe** : nom, emplacement (couvre-chef, haut, bas, chaussures, planche), apparence,
+  niveau qui le donne (ou « départ »).
 
 ## Success Criteria *(mandatory)*
 
@@ -217,6 +296,8 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
 - **SC-005**: En mode infini, la vitesse après 2 minutes de jeu est au moins 1,5 fois celle du départ.
 - **SC-006**: 100 % des déblocages de figures sont annoncés une seule fois, au bon niveau.
 - **SC-007**: Toute la progression est retrouvée après fermeture et réouverture de l'application.
+- **SC-008**: De l'ouverture de l'application à l'accueil, au plus 3 secondes animation comprise.
+- **SC-009**: 100 % des objets sont donnés au bon niveau, une seule fois, et annoncés.
 
 ## Assumptions
 
@@ -229,6 +310,8 @@ nettement, sans pause ; à la chute, le score est enregistré comme meilleur sco
   Arcangues ; les autres villes reçoivent un décor nouveau.
 - Le mode infini est disponible dès le premier lancement, avec au moins la ville d'Anglet.
 - Pas d'étoiles ni d'objectifs secondaires par niveau dans cette version : réussir = finir le niveau.
-- La tenue et les vêtements à débloquer par points (spec 001) ne changent pas.
-- Le classement TOP 10 porte sur le mode infini seulement.
+- Les vêtements ne se gagnent plus par points (spec 001, FR-027) mais par niveaux (FR-025) ; la peau et
+  les cheveux restent libres parce qu'ils décrivent le joueur, pas sa tenue.
+- Le classement TOP 10 porte sur le mode infini seulement et s'ouvre depuis son écran de fin.
+- L'animation de lancement reste courte et se joue à chaque ouverture (pas seulement la première).
 - La progression est locale à l'appareil (pas de sauvegarde en ligne) ; une désinstallation la perd.

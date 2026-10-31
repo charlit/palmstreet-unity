@@ -60,6 +60,30 @@ Dents : une toutes les 22 pas, 100 de dégâts (001). Victoire : +5 000 points, 
 | Phase | Menu, Playing, Over, **Cleared** (niveau réussi) |
 | Cue | + Finish (ligne d'arrivée), Cleared, NewObstacle (bulle d'aide) |
 
+## Item (garde-robe, FR-023 à FR-027)
+
+| Id | Emplacement | Objet | Donné par |
+|---|---|---|---|
+| start-head | couvre-chef | tête nue | départ |
+| start-top | haut | t-shirt blanc | départ |
+| start-legs | bas | jean bleu | départ |
+| start-shoes | chaussures | baskets blanches | départ |
+| start-deck | planche | bois naturel, roues crème | départ |
+| cap-red | couvre-chef | casquette rouge | niveau 1 Anglet |
+| hoodie-ocean | haut | sweat bleu océan | niveau 2 Biarritz |
+| deck-crab | planche | planche rouge « Crabe » | niveau 3 Bidart |
+| shorts-surf | bas | short de surf turquoise | niveau 4 Guéthary |
+| beanie-stripes | couvre-chef | bonnet rayé marine | niveau 5 Saint-Jean-de-Luz |
+| hoodie-gull | haut | sweat blanc « Goéland » | niveau 6 Hendaye |
+| band-red | couvre-chef | bandeau rouge | niveau 7 Bayonne |
+| pants-green | bas | pantalon vert | niveau 8 Arcangues |
+| deck-pepper | planche | planche « Piment » | niveau 9 Espelette |
+| shoes-yellow | chaussures | baskets jaunes | niveau 10 Ascain |
+| hoodie-purple | haut | sweat violet | niveau 11 Cambo-les-Bains |
+| deck-neon | planche | planche « Néon » rose et cyan | niveau 12 Biarritz la nuit |
+
+Libres (pas des objets) : peau (5), coiffure (courts, boucles), couleur des cheveux (5).
+
 ## Progress (sauvegarde `progress`)
 
 | Champ | Règle |
@@ -68,6 +92,8 @@ Dents : une toutes les 22 pas, 100 de dégâts (001). Victoire : +5 000 points, 
 | Best[12] | meilleur score par niveau |
 | EndlessBest | meilleur score infini (= ancien `best` à la migration) |
 | SeenObstacles | bulles d'aide déjà montrées |
+| Owned | objets gagnés (déduits des niveaux réussis + objets de départ) |
+| Worn | objet porté par emplacement (5 ids) ; peau, coiffure, cheveux à part |
 | IsOpen(n) | n = 1, ou niveau n−1 réussi |
 | Tricks | déduit de Cleared : 1 → FLIP, 3 → SHOVE-IT, 6 → 360°, 9 → 360° INVERSÉ |
-| Clear(n, score) | marque réussi, garde le meilleur, renvoie la figure nouvellement débloquée (ou aucune) |
+| Clear(n, score) | marque réussi, garde le meilleur, renvoie la figure et l'objet nouvellement gagnés (ou aucun) |

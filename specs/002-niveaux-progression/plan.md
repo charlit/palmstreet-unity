@@ -38,7 +38,7 @@ captures PlayMode pour la carte, les nouvelles villes, la ligne d'arrivée et le
 
 **Constraints**: hors ligne ; aucune donnée collectée ; graphismes dessinés par le code (pas d'image importée)
 
-**Scale/Scope**: 12 niveaux, 12 décors (4 existants, 8 nouveaux), 4 boss, 3 nouveaux écrans (carte, réussite, échec), 21 exigences
+**Scale/Scope**: 12 niveaux, 12 décors (4 existants, 8 nouveaux), 4 boss, 3 nouveaux écrans (carte, réussite, échec), 28 exigences
 
 ## Constitution Check
 
@@ -75,7 +75,8 @@ specs/002-niveaux-progression/
 Assets/Scripts/
 ├── Core/
 │   ├── Levels.cs        # NOUVEAU : table des 12 niveaux et réglages du mode infini
-│   ├── Progress.cs      # NOUVEAU : niveaux réussis, meilleurs scores, figures déduites, JSON
+│   ├── Progress.cs      # NOUVEAU : niveaux réussis, meilleurs scores, figures et objets déduits, tenue portée, JSON
+│   ├── Items.cs         # NOUVEAU : objets de garde-robe (départ + 1 par niveau)
 │   ├── Run.cs           # modes Story/Endless, figures connues, ligne d'arrivée, Phase.Cleared,
 │   │                    # vitesse par niveau ou par temps, obstacles permis par niveau, décor par ville
 │   ├── Boss.cs          # BossKind (Crab, Gull, Boar, Purple) : vie et attaques différentes
@@ -83,9 +84,10 @@ Assets/Scripts/
 │   └── Tuning.cs        # valeurs des boss et du mode infini
 ├── Game/
 │   ├── Game.cs          # navigation accueil → carte → niveau → réussite/échec ; infini ; sauvegarde
-│   ├── Hud.cs           # accueil JOUER/INFINI, carte, écrans réussite et échec, bulles d'aide,
-│   │                    # onglet FIGURES du profil
-│   ├── Look.cs          # 12 décors (ThemeLook par ville)
+│   ├── Hud.cs           # accueil JOUER/INFINI sans TOP 10 ni grand skateur, carte avec petit skateur,
+│   │                    # écrans réussite et échec, bulles d'aide, TENUE par objets, onglet FIGURES
+│   ├── Look.cs          # 12 décors (ThemeLook par ville) ; Wardrobe : apparence des objets (couleurs, motifs de planche)
+│   ├── Splash.cs        # NOUVEAU : animation de lancement (planche « P. ST. » qui flippe au ralenti)
 │   ├── Scenery.cs       # plans des 8 nouvelles villes
 │   └── Props.cs         # ligne d'arrivée, crabe, goéland, sanglier, coquillages, barrières
 └── Services/Leaderboard.cs   # inchangé (score du mode infini)
@@ -116,6 +118,10 @@ directement).
   tous les types d'obstacles des niveaux ouverts.
 - **Carte** : ScrollRect vertical, la côte dessinée du nord (Anglet) au sud puis l'intérieur, 12 pastilles
   reliées par une route ; la carte s'ouvre centrée sur le prochain niveau.
+- **Garde-robe** : les objets sont des données de Core (`Items`) ; `Wardrobe.Build` traduit la tenue portée
+  en apparence ; `Unlocks.cs` (vêtements par points, 001) est retiré.
+- **Animation de lancement** : dessinée avec le même moteur de formes (planche et ses faces), avant
+  l'accueil, ≤ 2,5 s, passée au toucher.
 - **Ancienne progression** : `best` devient le meilleur score infini ; `total` et `outfit` restent ;
   le niveau 2 automatique de 001 (FR-029) disparaît, NUIT NÉON devient le niveau 12.
 
