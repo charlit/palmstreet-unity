@@ -84,7 +84,7 @@ Assets/Scripts/
 │   └── Tuning.cs        # valeurs des boss et du mode infini
 ├── Game/
 │   ├── Game.cs          # navigation accueil → carte → niveau → réussite/échec ; infini ; sauvegarde
-│   ├── Hud.cs           # accueil JOUER/INFINI sans TOP 10 ni grand skateur, carte avec petit skateur,
+│   ├── Hud.cs           # accueil JOUER/MODE INFINI sans TOP 10 ni grand skateur, carte avec petit skateur,
 │   │                    # écrans réussite et échec, bulles d'aide, TENUE par objets, onglet FIGURES
 │   ├── Look.cs          # 12 décors (ThemeLook par ville) ; Wardrobe : apparence des objets (couleurs, motifs de planche)
 │   ├── Splash.cs        # NOUVEAU : animation de lancement (planche « P. ST. » qui flippe au ralenti)

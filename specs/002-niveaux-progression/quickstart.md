@@ -36,5 +36,5 @@ Attendu : carte (installation neuve et progression avancée), départ de chaque 
 | Passer l'arrivée | NIVEAU RÉUSSI, « NOUVELLE FIGURE : FLIP » ; NIVEAU SUIVANT lance Biarritz |
 | Chuter à Biarritz | RECOMMENCER relance Biarritz du début ; CARTE : Biarritz toujours ouvert, non réussi |
 | Niveau 3 | le Crabe arrive à la fin ; le battre réussit le niveau, annonce SHOVE-IT |
-| INFINI pendant 2 min | la vitesse monte nettement ; décor d'Anglet (et des villes ouvertes) |
+| MODE INFINI pendant 2 min | la vitesse monte nettement ; décor d'Anglet (et des villes ouvertes) |
 | Fermer et rouvrir l'app | carte et figures retrouvées |

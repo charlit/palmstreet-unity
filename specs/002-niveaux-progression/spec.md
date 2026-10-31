@@ -16,6 +16,8 @@ des boss (FR-015 à FR-019 et FR-029 de 001), la tenue et ses déblocages (FR-02
 Révision du 2026-10-31 (demandes du propriétaire) : accueil sans TOP 10 ni grand skateur, petit skateur
 sur la carte, animation de lancement avec la planche « P. ST. », vêtements gagnés en finissant les
 niveaux au lieu des couleurs libres (User Stories 5 et 6, FR-022 à FR-028).
+Les numéros des exigences restent stables (le code et les tâches y renvoient) : elles sont rangées par
+thème, si bien que FR-022 suit FR-004 et que FR-021 arrive en dernier.
 
 **Écart au jeu web (constitution, principe I)** : le jeu web PalmStreet est une course sans fin, sans
 niveaux, sans carte, sans boss différents, sans figures ni vêtements à débloquer et sans animation de
@@ -102,13 +104,13 @@ nouvelle figure et montre comment la faire.
 
 ### User Story 4 - Mode infini (Priority: P3)
 
-Depuis l'accueil, le joueur lance le mode INFINI : une course sans fin où la vitesse augmente avec le
+Depuis l'accueil, le joueur touche MODE INFINI : une course sans fin où la vitesse augmente avec le
 temps. Les décors des villes déjà ouvertes défilent, les boss reviennent régulièrement, le score part dans
 le classement TOP 10.
 
 **Why this priority**: la rejouabilité et le classement, une fois l'aventure entamée.
 
-**Independent Test**: lancer INFINI et tenir 2 minutes : la vitesse affichée par le défilement augmente
+**Independent Test**: lancer MODE INFINI et tenir 2 minutes : la vitesse affichée par le défilement augmente
 nettement, sans pause ; à la chute, le score est enregistré comme meilleur score infini.
 
 **Acceptance Scenarios**:
@@ -184,7 +186,7 @@ lisible sous la planche, un toucher la passe.
 
 **Accueil et carte**
 
-- **FR-001**: L'accueil MUST proposer le titre, JOUER (mode histoire), INFINI et PROFIL (en haut à
+- **FR-001**: L'accueil MUST proposer le titre, JOUER (mode histoire), MODE INFINI et PROFIL (en haut à
   droite) ; il n'y a plus de bouton TOP 10 ni de grand skateur sur l'accueil.
 - **FR-002**: JOUER MUST ouvrir une carte de la côte basque avec 12 niveaux reliés par une route, chacun
   nommé par sa ville, dans cet ordre : 1 Anglet, 2 Biarritz, 3 Bidart (boss), 4 Guéthary,
@@ -200,10 +202,11 @@ lisible sous la planche, un toucher la passe.
 **Niveaux**
 
 - **FR-005**: Chaque niveau MUST se dérouler dans le décor de sa ville, reconnaissable par au moins un
-  élément propre (monument, paysage ou ambiance), et afficher le nom de la ville au départ.
+  élément propre (monument, paysage ou ambiance, listés dans research.md §6), et afficher le nom de la ville au départ.
 - **FR-006**: Un niveau sans boss MUST se terminer par une ligne d'arrivée visible après un parcours
   d'environ 60 à 90 secondes ; un niveau à boss MUST se terminer par le combat contre le boss.
-- **FR-007**: La difficulté MUST augmenter d'un niveau à l'autre (vitesse, densité d'obstacles) et
+- **FR-007**: La difficulté MUST augmenter d'un niveau à l'autre (vitesse de départ et vitesse maximale plus hautes, nouveaux types
+  d'obstacles) et
   chaque nouveau type d'obstacle MUST apparaître d'abord dans un niveau précis, avec une courte bulle
   d'explication la première fois : rails (niveau 2), grands plots et bosses (niveau 4), mouettes à
   esquiver accroupi (niveau 7), tremplins (niveau 8), trous dans la route (niveau 10).
@@ -225,7 +228,8 @@ lisible sous la planche, un toucher la passe.
   - Espelette : le Sanglier, charge au ras du sol et pose des barrières à sauter (7 000 points de vie).
   - Biarritz la nuit : le grand boss violet de la spec 001, qui s'envole et lâche des plots
     (8 000 points de vie).
-- **FR-012**: Chaque boss battu MUST afficher « BOOM » et rapporter des points, et réussir le niveau.
+- **FR-012**: Chaque boss battu MUST afficher « BOOM » et rapporter des points ; l'écran de réussite
+  qui suit est celui de FR-008.
 
 **Figures à débloquer**
 
@@ -242,7 +246,7 @@ lisible sous la planche, un toucher la passe.
 
 **Mode infini**
 
-- **FR-018**: INFINI MUST lancer une course sans fin dont la vitesse augmente avec le temps de jeu
+- **FR-018**: MODE INFINI MUST lancer une course sans fin dont la vitesse augmente avec le temps de jeu
   (et non plus avec le score), sans palier ni pause, plafonnée à 5,5 (un saut reste assez long pour passer les obstacles).
 - **FR-019**: En mode infini, les décors des villes déjà ouvertes en histoire MUST défiler à tour de
   rôle, et un boss MUST revenir régulièrement, choisi parmi ceux déjà rencontrés en histoire.

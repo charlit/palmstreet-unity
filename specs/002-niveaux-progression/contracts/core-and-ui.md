@@ -31,7 +31,7 @@ la distance parcourue ; en infini, que du temps ; un niveau à boss n'est réuss
 | Écran | Contenu | Boutons |
 |---|---|---|
 | Lancement | planche qui fait un flip au ralenti, dessous « P. ST. », puis titre (≤ 2,5 s) | toucher : passer |
-| Accueil | titre, BEST INFINI (plus de grand skateur ni de TOP 10) | JOUER, INFINI, PROFIL (haut droite) |
+| Accueil | titre, BEST INFINI (plus de grand skateur ni de TOP 10) | JOUER, MODE INFINI, PROFIL (haut droite) |
 | Carte | côte, route, 12 niveaux (verrou / ouvert / réussi + meilleur score / tête de boss), prochain niveau mis en avant, petit skateur posé dessus (roule jusqu'au suivant après une réussite) | un niveau ouvert : le lance ; RETOUR |
 | Départ d'un niveau | bandeau « NIVEAU n · VILLE » ; bulle d'aide si nouvel obstacle | — |
 | En partie | score, combo, RÉGLAGES (001) ; en histoire : barre de progression vers l'arrivée | RÉGLAGES |

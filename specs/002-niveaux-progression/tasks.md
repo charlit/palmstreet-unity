@@ -58,7 +58,7 @@ Valeurs : data-model.md (table des niveaux, boss, infini). Durées en pas de 1/6
 
 - [X] T011 [US1] Dans Assets/Scripts/Core/Run.cs : vitesse en mode Story selon T010 ; ligne d'arrivée (pas d'obstacle ni d'éclair au-delà de `Finish − 300`) ; à `Skater.X ≥ Finish` sans boss → `Cue.Finish`, `Phase.Cleared` ; obstacles filtrés par `Def.Allowed` (sans `Rails` : pas de rails ni grand rail ; sans `BigCones` : petits plots ; sans `Hills` : `Ground.FlatUntil = +∞` ; `Gulls`, `Pads`, `Gaps` remplacent la condition `Level >= 2` de 001) ; `Cue.NewObstacle` avec `Def.NewObstacle` au départ ; pas de boss par score en mode Story
 - [X] T012 [P] [US1] Dans Assets/Scripts/Game/Props.cs : ligne d'arrivée à `Def.Finish` (arche avec bandeau damier et « ARRIVÉE », poteaux, petits drapeaux), visible dès qu'elle entre à l'écran
-- [X] T013 [US1] Dans Assets/Scripts/Game/Hud.cs : accueil avec le titre, JOUER (bouton START actuel renommé), INFINI (bouton secondaire), PROFIL en haut à droite et « BEST INFINI » — retirer le bouton TOP 10 et le grand skateur sur son socle (FR-001) ; nouvel écran `map` : ScrollRect vertical, fond de côte (océan à gauche, terre à droite), route en segments, 12 pastilles en zigzag (numéro, nom de ville, verrou si fermé, coche et meilleur score si réussi, petite tête de boss pour 3, 6, 9, 12), prochain niveau mis en avant et défilement initial centré dessus, bouton RETOUR ; méthode `ShowMap(Progress)` ; petit skateur (RiderView avec la tenue portée, échelle ~0,7, ordre au-dessus du canevas) posé sur la pastille du prochain niveau, qui roule le long de la route depuis le niveau réussi quand la carte s'ouvre après une réussite (FR-022)
+- [X] T013 [US1] Dans Assets/Scripts/Game/Hud.cs : accueil avec le titre, JOUER (bouton START actuel renommé), MODE INFINI (bouton secondaire), PROFIL en haut à droite et « BEST INFINI » — retirer le bouton TOP 10 et le grand skateur sur son socle (FR-001) ; nouvel écran `map` : ScrollRect vertical, fond de côte (océan à gauche, terre à droite), route en segments, 12 pastilles en zigzag (numéro, nom de ville, verrou si fermé, coche et meilleur score si réussi, petite tête de boss pour 3, 6, 9, 12), prochain niveau mis en avant et défilement initial centré dessus, bouton RETOUR ; méthode `ShowMap(Progress)` ; petit skateur (RiderView avec la tenue portée, échelle ~0,7, ordre au-dessus du canevas) posé sur la pastille du prochain niveau, qui roule le long de la route depuis le niveau réussi quand la carte s'ouvre après une réussite (FR-022)
 - [X] T014 [US1] Dans Assets/Scripts/Game/Hud.cs : écran « NIVEAU RÉUSSI » (score, meilleur du niveau, ligne « NOUVELLE FIGURE : … » optionnelle, NIVEAU SUIVANT, CARTE) ; écran d'échec en histoire (WIPEOUT !, score, RECOMMENCER, CARTE) ; en partie histoire, bandeau de départ « NIVEAU n · VILLE », barre de progression fine vers l'arrivée en haut de l'écran, bulle d'aide (texte de `Cue.NewObstacle`, 3 s)
 - [X] T015 [US1] Dans Assets/Scripts/Game/Game.cs : `Progress` chargé depuis PlayerPrefs `progress` (migration : `EndlessBest` = ancien `best`), sauvegardé à chaque réussite ; navigation accueil → JOUER → carte → niveau ; `Phase.Cleared` → `progress.Clear`, écran de réussite ; NIVEAU SUIVANT → `StartLevel(Get(n+1))` ; échec → RECOMMENCER / CARTE ; niveau 12 réussi → écran de fin d'aventure (« TU ES UN VRAI PST ! », MODE INFINI, CARTE) ; points du niveau ajoutés à `total` (FR-010)
 - [X] T016 [US1] Captures dans Assets/Tests/PlayMode/CaptureTests.cs : carte (installation neuve, puis 5 niveaux réussis), départ d'Anglet avec bandeau, ligne d'arrivée, écran NIVEAU RÉUSSI ; vérifier avec `Tools/capture.sh`
@@ -132,7 +132,7 @@ Valeurs : data-model.md (table des niveaux, boss, infini). Durées en pas de 1/6
 
 **Goal**: course sans fin, vitesse liée au temps, villes ouvertes en décor, boss déjà rencontrés, classement.
 
-**Independent Test**: INFINI pendant 2 min : vitesse ≥ 1,5 × départ ; décor des villes ouvertes ; score au TOP 10.
+**Independent Test**: MODE INFINI pendant 2 min : vitesse ≥ 1,5 × départ ; décor des villes ouvertes ; score au TOP 10.
 
 ### Tests for User Story 4
 
@@ -141,7 +141,7 @@ Valeurs : data-model.md (table des niveaux, boss, infini). Durées en pas de 1/6
 ### Implementation for User Story 4
 
 - [X] T031 [US4] Dans Assets/Scripts/Core/Run.cs : mode Endless selon T030 (remplace la vitesse par score et le décor par score de 001 ; le niveau néon automatique de 001 disparaît)
-- [X] T032 [US4] Dans Assets/Scripts/Game/Game.cs : bouton INFINI → `StartEndless(villes ouvertes, boss des niveaux réussis, figures)` ; fin de partie infinie → `EndlessBest`, `Leaderboard.Report`, écran de fin (toucher pour rejouer, TOP 10 qui ouvre `Leaderboard.Show`, ACCUEIL) ; le raccourci du soleil lance le boss en infini
+- [X] T032 [US4] Dans Assets/Scripts/Game/Game.cs : bouton MODE INFINI → `StartEndless(villes ouvertes, boss des niveaux réussis, figures)` ; fin de partie infinie → `EndlessBest`, `Leaderboard.Report`, écran de fin (toucher pour rejouer, TOP 10 qui ouvre `Leaderboard.Show`, ACCUEIL) ; le raccourci du soleil lance le boss en infini
 
 **Checkpoint**: toutes les stories marchent.
 
