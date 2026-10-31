@@ -82,10 +82,9 @@ namespace PalmStreet.Game
             sound.Muted = PlayerPrefs.GetInt("mute", 0) == 1;
             Haptics.Enabled = PlayerPrefs.GetInt("vibrate", 1) == 1;
             preview = RiderView.Create(Wardrobe.Build(progress), transform, 600);   // au-dessus du canevas (500)
-            Leaderboard.SignIn();
             ToMenu();
             splash = Child<Splash>("Lancement");   // FR-028 : la planche P. ST. avant l'accueil
-            splash.Init(cam, () => { });
+            splash.Init(cam, hud.TitleStreet, Leaderboard.SignIn);   // Game Center après l'animation : sa connexion la faisait geler
         }
 
         T Child<T>(string name) where T : Component

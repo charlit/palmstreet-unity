@@ -16,6 +16,9 @@ namespace PalmStreet.Core
         public const float StartFlat = 420, FlatMin = 240, FlatMax = 500;
         public const float RampMin = 130, RampMax = 240, HillMin = 45, HillMax = 100;
         public const float DownhillBoost = 0.55f, UphillDrag = 0.22f;
+        // départ : une rampe à descendre, de 45 % à 155 % de la vitesse, puis retour en douceur à 100 %
+        public const float StartRampTop = 110, StartRampLength = 360, StartRampFrom = 0.45f, StartRampTo = 1.55f;
+        public const float StartRampDecay = 0.004f, StartRunOut = 700;
 
         // FR-006 saut et accroupi
         public const float OllieSpeed = 9.6f, Gravity = 0.5f;

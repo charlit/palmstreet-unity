@@ -8,7 +8,7 @@ namespace PalmStreet.Core
     public struct Segment
     {
         public SlopeKind Kind;
-        public float X0, X1, Top;   // Top : hauteur de la bosse (montée et descente)
+        public float X0, X1, Top;   // Top : hauteur de la bosse (montée et descente) ou du palier de départ
         public float Length => X1 - X0;
     }
 
@@ -31,10 +31,19 @@ namespace PalmStreet.Core
         // la pente la plus raide possible : sert d'échelle aux bonus et freins de vitesse
         static readonly float MaxSlope = Tuning.HillMax * (float)Math.PI / (2 * Tuning.RampMin);
 
-        public Ground(Random rng, float start)
+        public Ground(Random rng, float start, bool startRamp = false)
         {
             this.rng = rng;
-            Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = start - 600, X1 = start + Tuning.StartFlat });
+            if (!startRamp)
+            {
+                Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = start - 600, X1 = start + Tuning.StartFlat });
+                return;
+            }
+            // départ en haut d'une rampe : palier, descente jusqu'au niveau 0, puis le plat de départ habituel
+            float top = Tuning.StartRampTop, len = Tuning.StartRampLength;
+            Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = -600, X1 = 0, Top = top });
+            Segments.Add(new Segment { Kind = SlopeKind.Down, X0 = 0, X1 = len, Top = top });
+            Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = len, X1 = Math.Max(start, len) + Tuning.StartFlat });
         }
 
         public float End => Segments[Segments.Count - 1].X1;
@@ -91,7 +100,7 @@ namespace PalmStreet.Core
         public float Height(float x)
         {
             var s = At(x);
-            if (s.Kind == SlopeKind.Flat) return 0;
+            if (s.Kind == SlopeKind.Flat) return s.Top;   // 0, sauf le palier de la rampe de départ
             if (s.Kind == SlopeKind.Gap) return Abyss;
             float t = Clamp01((x - s.X0) / s.Length);
             float k = (1 - (float)Math.Cos(Math.PI * t)) / 2;

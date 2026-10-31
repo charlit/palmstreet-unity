@@ -35,6 +35,8 @@ namespace PalmStreet.Game
         GameObject menu, game, over, pause, profile;
         Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, toast;
         RectTransform bossBar, bossFill, bannerRt;
+        /// <summary>Le mot STREET du titre de l'accueil (l'animation de lancement grinde dessus).</summary>
+        public Text TitleStreet { get; private set; }
         CanvasGroup toastGroup;
         RectTransform profileStage;
         GameObject overStory, overEndless;
@@ -166,7 +168,7 @@ namespace PalmStreet.Game
             menu = Group("Accueil");
             var t = menu.transform;
             Label(t, "PALM", 62, Cream, new Vector2(0, -80), new Vector2(0.5f, 1));
-            Label(t, "STREET", 62, Orange, new Vector2(0, -132), new Vector2(0.5f, 1));
+            TitleStreet = Label(t, "STREET", 62, Orange, new Vector2(0, -132), new Vector2(0.5f, 1));
             Label(t, "S K A T E   R U N", 15, Pink, new Vector2(0, -172), new Vector2(0.5f, 1));
             menuBest = Label(t, "", 15, Yellow, new Vector2(0, -196), new Vector2(0.5f, 1));
 

@@ -76,6 +76,9 @@ namespace PalmStreet.Core
 
         public Run(int seed = 0) { this.seed = seed; }
 
+        /// <summary>Départ en haut d'une rampe (vrai en jeu) ; les tests de règles partent à plat.</summary>
+        public bool StartRamp = true;
+
         /// <summary>Vitesse en histoire : de la vitesse de départ à la maximale du niveau sur sa distance (spec 002).</summary>
         public static float StorySpeed(LevelDef d, float x) => d.StartSpeed + (d.MaxSpeed - d.StartSpeed) * Math.Min(1, Math.Max(0, x) / d.Finish);
 
@@ -119,15 +122,16 @@ namespace PalmStreet.Core
             bossDone = false;
             rng = new Random(seed != 0 ? seed : Environment.TickCount);
             Skater = new Skater();
-            Ground = new Ground(rng, 300) { Gaps = (allowed & Allow.Gaps) != 0 };   // choix : le départ plat de 420 commence au bord droit de l'écran
+            Ground = new Ground(rng, 300, StartRamp) { Gaps = (allowed & Allow.Gaps) != 0 };   // choix : le départ plat de 420 commence au bord droit de l'écran
             if ((allowed & Allow.Hills) == 0) Ground.FlatUntil = float.PositiveInfinity;   // pas de bosses
             Obstacles.Clear(); Bolts.Clear(); Events.Clear();
             Boss = null;
             Score = 0;
             milestone = 0;
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
-            Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; CurrentSpeed = Speed; speedFactor = 1;
-            nextObstacleX = SpawnAhead;
+            Skater.Y = Ground.Height(0);   // en haut de la rampe de départ, s'il y en a une
+            Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; speedFactor = StartRamp ? Tuning.StartRampFrom : 1; CurrentSpeed = Speed * speedFactor;
+            nextObstacleX = StartRamp ? Math.Max(SpawnAhead, Tuning.StartRampLength + 150) : SpawnAhead;   // rien sur la rampe
             bigRailPending = (allowed & Allow.Rails) != 0;   // FR-008 : le premier obstacle est un grand rail
             pattern = 0; trickIndex = 0; holding = false;
             Phase = Phase.Playing;
@@ -189,7 +193,19 @@ namespace PalmStreet.Core
             if (holding && ++holdSteps >= Tuning.DuckAfter && sk.Grounded) sk.Ducking = true;
 
             Speed = Mode == GameMode.Story ? StorySpeed(Def, sk.X) : EndlessSpeed(StepCount);
-            if (sk.Grounded) speedFactor = Ground.SpeedFactor(sk.X);
+            if (StartRamp && sk.X < Tuning.StartRampLength)
+            {
+                // rampe de départ : la vitesse monte avec la hauteur descendue, même en l'air
+                float down = 1 - Ground.Height(sk.X) / Tuning.StartRampTop;
+                speedFactor = Tuning.StartRampFrom + (Tuning.StartRampTo - Tuning.StartRampFrom) * down;
+            }
+            else if (sk.Grounded)
+            {
+                float target = Ground.SpeedFactor(sk.X);
+                // après la rampe, l'élan retombe peu à peu à la vitesse du niveau au lieu de couper net
+                if (StartRamp && sk.X < Tuning.StartRampLength + Tuning.StartRunOut) target = Math.Max(target, speedFactor - Tuning.StartRampDecay);
+                speedFactor = target;
+            }
             CurrentSpeed = Speed * speedFactor;
             float prevY = sk.Y;
             sk.X += CurrentSpeed;

@@ -15,7 +15,7 @@ namespace PalmStreet.Tests
 
         static Run Story(int n, params int[] tricks)
         {
-            var r = new Run(5);
+            var r = new Run(5) { StartRamp = false };
             r.StartLevel(Levels.Get(n), tricks);
             return r;
         }
@@ -73,6 +73,30 @@ namespace PalmStreet.Tests
             r.Score = 50000;
             Clean(r, 10);
             Assert.AreEqual(Run.StorySpeed(d, r.Skater.X), r.Speed, 1e-3, "le score ne change pas la vitesse");
+        }
+
+        [Test] public void Niveau_RampeDeDepartDonneDeLElanPuisSeStabilise()
+        {
+            var r = new Run(5);
+            r.StartLevel(Levels.Get(1), new int[0]);
+            Assert.AreEqual(Tuning.StartRampTop, r.Skater.Y, 1e-3, "départ en haut de la rampe");
+            Clean(r, 1);
+            float first = r.CurrentSpeed / r.Speed;
+            Assert.That(first, Is.LessThan(0.6f), "on part lentement");
+            float peak = 0, prev = 0;
+            while (r.Skater.X < Tuning.StartRampLength)
+            {
+                Clean(r, 1);
+                Assert.That(r.CurrentSpeed, Is.GreaterThanOrEqualTo(prev - 1e-4f), "la vitesse monte sur toute la rampe");
+                prev = r.CurrentSpeed; peak = System.Math.Max(peak, r.CurrentSpeed / r.Speed);
+            }
+            Assert.That(peak, Is.GreaterThan(1.4f), "en bas de la rampe, on va plus vite que le niveau");
+            Assert.AreEqual(0, r.Ground.Height(r.Skater.X + 1), 1e-3);
+            Clean(r, 20);
+            Assert.That(r.CurrentSpeed / r.Speed, Is.GreaterThan(1.2f), "l'élan ne coupe pas net");
+            while (r.Skater.X < Tuning.StartRampLength + Tuning.StartRunOut) Clean(r, 1);
+            Clean(r, 1);
+            Assert.AreEqual(r.Ground.SpeedFactor(r.Skater.X), r.CurrentSpeed / r.Speed, 1e-3, "puis la vitesse normale du niveau");
         }
 
         [Test] public void Niveau_LigneDArriveeReussitLeNiveau()
@@ -320,7 +344,7 @@ namespace PalmStreet.Tests
 
         static Run Endless(Theme[] cities, BossKind[] bosses, Allow allowed)
         {
-            var r = new Run(9);
+            var r = new Run(9) { StartRamp = false };
             r.StartEndless(cities, bosses, new int[0], allowed);
             return r;
         }

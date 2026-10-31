@@ -9,7 +9,7 @@ namespace PalmStreet.Tests
     {
         static Run NewRun(int score = 0)
         {
-            var r = new Run(42);
+            var r = new Run(42) { StartRamp = false };
             r.Start();
             r.Score = score;
             return r;
@@ -287,7 +287,7 @@ namespace PalmStreet.Tests
 
         [Test] public void Fr018_DentsEtEnvol()
         {
-            var r = new Run(7);
+            var r = new Run(7) { StartRamp = false };
             r.Start(bossNow: true);
             int teeth = 0, drops = 0, hp = 0;
             for (int i = 0; i < Boss.ArriveSteps + 600 + 400; i++)
@@ -307,7 +307,7 @@ namespace PalmStreet.Tests
 
         [Test] public void Fr019_BossBattu()
         {
-            var r = new Run(7);
+            var r = new Run(7) { StartRamp = false };
             r.Start(bossNow: true);
             r.Step();
             r.Boss.Hp = 100;
@@ -325,7 +325,7 @@ namespace PalmStreet.Tests
 
         [Test] public void Fr020_RaccourciDuSoleil()
         {
-            var r = new Run(1);
+            var r = new Run(1) { StartRamp = false };
             r.Start(bossNow: true);
             r.Step();
             Assert.IsNotNull(r.Boss);
@@ -424,7 +424,7 @@ namespace PalmStreet.Tests
         [Test] public void Fr030_NiveauNeonLongtempsSansBloquer()
         {
             // bug corrigé : un obstacle posé juste après un trou retrouvait le même trou et bouclait sans fin
-            var r = new Run(11);
+            var r = new Run(11) { StartRamp = false };
             r.Start();
             r.Allowed = Allow.All; r.StepCount = 18000; r.NextBossScore = int.MaxValue; r.Ground.Gaps = true;
             seen.Clear();

@@ -29,10 +29,12 @@ namespace PalmStreet.Tests
             Directory.CreateDirectory(Dir);
             var run = game.Run;
 
-            // animation de lancement : la planche montre « P. ST. », puis on la passe
+            // animation de lancement : arrivée sur le titre, grind sur STREET, kickflip de sortie, puis on la passe
             while (game.LaunchAnimation.Running && game.LaunchAnimation.Elapsed < 0.55f) yield return null;
-            yield return Shot("00-lancement-flip");
+            yield return Shot("00-lancement-arrivee");
             while (game.LaunchAnimation.Running && game.LaunchAnimation.Elapsed < 1.2f) yield return null;
+            yield return Shot("00-lancement-grind");
+            while (game.LaunchAnimation.Running && game.LaunchAnimation.Elapsed < 2.05f) yield return null;
             yield return Shot("00-lancement-pst");
             game.LaunchAnimation.Skip();
 

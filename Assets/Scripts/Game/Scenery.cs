@@ -27,9 +27,9 @@ namespace PalmStreet.Game
         public Vector3 SunWorld { get; private set; }
         public float SunWorldRadius { get; private set; }
 
-        /// <summary>À l'accueil le soleil monte à côté du titre, où l'on peut le toucher (FR-020).</summary>
+        /// <summary>À l'accueil le soleil monte à gauche du titre, où l'on peut le toucher (FR-020).</summary>
         public bool MenuSun;
-        static readonly Vector2 MenuSunPos = new Vector2(335, 440);
+        public static readonly Vector2 MenuSunPos = new Vector2(60, 440);   // x : distance au bord gauche
 
         public void Init()
         {
@@ -90,8 +90,8 @@ namespace PalmStreet.Game
 
             var sp = Vector2.zero; float sr = 0;
             for (int t = 0; t < ThemeLook.All.Length; t++) { sp += ThemeLook.All[t].SunPos * weight[t]; sr += ThemeLook.All[t].SunRadius * weight[t]; }
-            if (MenuSun) sp = MenuSunPos;
             sp.x += half - 390;   // le soleil garde sa distance au bord droit de l'écran (x relatif au centre de la caméra)
+            if (MenuSun) sp = new Vector2(-half + MenuSunPos.x, MenuSunPos.y);   // à l'accueil, côté gauche, loin du bouton PROFIL
             float pulse = 1 + Mathf.Sin(time * 1.3f) * 0.03f;
             var glow = C(l => l.Glow);
             p.Clear();
