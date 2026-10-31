@@ -28,10 +28,13 @@ namespace PalmStreet.Game
         Fx fx;
         Sound sound;
         Hud hud;
+        Splash splash;
         RiderView rider, preview;   // preview : le skateur de l'accueil et du profil
         Ground menuGround;
-        Outfit outfit;
-        int total;   // points cumulés de toutes les parties (FR-027)
+        Progress progress;   // spec 002 : niveaux, meilleurs scores, figures, tenue
+        int level;           // niveau en cours (1 à 12), 0 en mode infini
+        int mapFrom;         // le petit skateur de la carte part de ce niveau (après une réussite)
+        float mapAnimAt;
         float acc, time, menuX, overAt = -1, overShownAt;
         bool paused, instantScenery = true;
         readonly List<RaycastResult> uiHits = new List<RaycastResult>();
@@ -58,8 +61,7 @@ namespace PalmStreet.Game
             Destroy(probe.gameObject);
 
             Run = new Run { Best = PlayerPrefs.GetInt("best", 0) };
-            outfit = LoadOutfit();
-            total = Mathf.Max(PlayerPrefs.GetInt("total", 0), Run.Best);
+            progress = LoadProgress();
             menuGround = new Ground(new System.Random(1), 0) { FlatUntil = float.PositiveInfinity };
 
             scenery = Child<Scenery>("Décor"); scenery.Init();
@@ -67,12 +69,23 @@ namespace PalmStreet.Game
             fx = Child<Fx>("Particules"); fx.Init();
             sound = Child<Sound>("Son"); sound.Init();
             hud = Child<Hud>("Interface");
-            hud.Init(cam, outfit, () => total, () => StartRun(false), OpenProfile, ToMenu, () => Leaderboard.Show(hud.Toast), ToggleMute, () => !sound.Muted, () => Haptics.Enabled, ToggleVibrate, OutfitChanged, () => OpenGameSettings(true), () => OpenGameSettings(false), ToMenu);
+            hud.Init(cam, new HudActions
+            {
+                Play = OpenMap, Endless = () => StartEndless(false), OpenProfile = OpenProfile, CloseProfile = ToMenu,
+                Top10 = () => Leaderboard.Show(hud.Toast), Mute = ToggleMute, ToggleVibrate = ToggleVibrate, OutfitChanged = OutfitChanged,
+                OpenSettings = () => OpenGameSettings(true), Resume = () => OpenGameSettings(false),
+                Quit = () => { if (level > 0) OpenMap(); else ToMenu(); },
+                Home = ToMenu, Map = OpenMap, Retry = () => StartLevel(level),
+                Next = () => { if (level >= Levels.Count) StartEndless(false); else StartLevel(level + 1); },
+                PickLevel = StartLevel, SoundOn = () => !sound.Muted, VibrateOn = () => Haptics.Enabled, Progress = () => progress,
+            });
             sound.Muted = PlayerPrefs.GetInt("mute", 0) == 1;
             Haptics.Enabled = PlayerPrefs.GetInt("vibrate", 1) == 1;
-            preview = RiderView.Create(Wardrobe.Build(outfit), transform, 600);   // au-dessus du canevas (500)
+            preview = RiderView.Create(Wardrobe.Build(progress), transform, 600);   // au-dessus du canevas (500)
             Leaderboard.SignIn();
             ToMenu();
+            splash = Child<Splash>("Lancement");   // FR-028 : la planche P. ST. avant l'accueil
+            splash.Init(cam, () => { });
         }
 
         T Child<T>(string name) where T : Component
@@ -84,11 +97,48 @@ namespace PalmStreet.Game
 
         // ---------- écrans ----------
 
+        /// <summary>Partie infinie avec tout débloqué (tests de capture).</summary>
         public void StartRun(bool boss)
         {
-            if (rider != null) Destroy(rider.gameObject);
-            rider = RiderView.Create(Wardrobe.Build(outfit), transform, 20);
+            level = 0;
             Run.Start(boss);
+            BeginRun();
+        }
+
+        /// <summary>Mode histoire : un niveau de la carte (spec 002).</summary>
+        public void StartLevel(int n)
+        {
+            level = n;
+            Run.Best = progress.Best[n - 1];
+            var def = Levels.Get(n);
+            Run.StartLevel(def, progress.Tricks);
+            BeginRun();
+            hud.Banner($"NIVEAU {n}", def.City, Hex("#FFE14D"));
+        }
+
+        /// <summary>Mode infini : villes ouvertes, boss déjà battus, obstacles des niveaux ouverts (spec 002, FR-018 à FR-020).</summary>
+        public void StartEndless(bool boss)
+        {
+            level = 0;
+            Run.Best = progress.EndlessBest;
+            var cities = new List<Theme>();
+            var bosses = new List<BossKind>();
+            var allowed = Allow.None;
+            foreach (var d in Levels.All)
+            {
+                if (!progress.IsOpen(d.Number)) continue;
+                cities.Add(d.Theme);
+                allowed |= d.Allowed;
+                if (d.Boss != BossKind.None && progress.IsCleared(d.Number)) bosses.Add(d.Boss);
+            }
+            Run.StartEndless(cities, bosses, progress.Tricks, allowed, boss);
+            BeginRun();
+        }
+
+        void BeginRun()
+        {
+            if (rider != null) Destroy(rider.gameObject);
+            rider = RiderView.Create(Wardrobe.Build(progress), transform, 20);
             hud.ShowGame();
             sound.StartRun();
             paused = false; acc = 0; overAt = -1;
@@ -102,9 +152,57 @@ namespace PalmStreet.Game
             Run.Obstacles.Clear(); Run.Bolts.Clear(); Run.Boss = null; Run.Events.Clear();
             if (rider != null) rider.Show(false);
             sound.StopMusic();
-            hud.ShowMenu(Run.Best);
+            hud.ShowMenu(progress.EndlessBest);
             instantScenery = true;
-            preview.Show(true);
+        }
+
+        public Splash LaunchAnimation => splash;
+
+        /// <summary>Progression du joueur (les tests de capture la remplacent).</summary>
+        public Progress Progress { get => progress; set { progress = value; OutfitChanged(); } }
+
+        public void OpenMap()
+        {
+            ToMenu();
+            hud.ShowMap(progress);
+            mapAnimAt = time;
+        }
+
+        // ---------- progression (spec 002), gardée dans PlayerPrefs `progress` ----------
+
+        Progress LoadProgress()
+        {
+            Progress p = null;
+            try { p = JsonUtility.FromJson<Progress>(PlayerPrefs.GetString("progress", "")); }
+            catch (System.ArgumentException) { }   // valeur abîmée : on repart de zéro
+            if (p == null)
+            {
+                p = new Progress { EndlessBest = PlayerPrefs.GetInt("best", 0) };   // ancien meilleur score = meilleur score infini
+                try
+                {
+                    var old = JsonUtility.FromJson<OldOutfit>(PlayerPrefs.GetString("outfit", ""));
+                    if (old != null) { p.Skin = old.Skin; p.HairColor = old.HairColor; p.HairStyle = old.Head == 2 ? 1 : 0; }
+                }
+                catch (System.ArgumentException) { }
+            }
+            p.Repair();
+            return p;
+        }
+
+        void SaveProgress()
+        {
+            PlayerPrefs.SetString("progress", JsonUtility.ToJson(progress));
+            PlayerPrefs.Save();
+        }
+
+        void LevelCleared()
+        {
+            sound.StopMusic();
+            var def = Levels.Get(level);
+            var (trick, item) = progress.Clear(level, Run.Score);
+            SaveProgress();
+            mapFrom = level;
+            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item);
         }
 
         public void OpenProfile()
@@ -113,21 +211,17 @@ namespace PalmStreet.Game
             hud.ShowProfile();
         }
 
-        // ---------- tenue (FR-026), gardée dans PlayerPrefs `outfit` ----------
-
-        static Outfit LoadOutfit()
-        {
-            try { return JsonUtility.FromJson<Outfit>(PlayerPrefs.GetString("outfit", "")) ?? new Outfit(); }
-            catch (System.ArgumentException) { return new Outfit(); }   // valeur abîmée : tenue par défaut
-        }
+        // ---------- tenue (spec 002, FR-023 à FR-027), gardée dans `progress` ----------
 
         void OutfitChanged()
         {
-            PlayerPrefs.SetString("outfit", JsonUtility.ToJson(outfit));
-            PlayerPrefs.Save();
+            SaveProgress();
             Destroy(preview.gameObject);
-            preview = RiderView.Create(Wardrobe.Build(outfit), transform, 600);
+            preview = RiderView.Create(Wardrobe.Build(progress), transform, 600);
         }
+
+        /// <summary>Ancienne tenue (001) : on n'en garde que la peau et les cheveux.</summary>
+        [System.Serializable] sealed class OldOutfit { public int Head, HairColor, Skin; }
 
         /// <summary>Bouton RÉGLAGES en partie : pause, son et vibrations ; REPRENDRE relance.</summary>
         public void OpenGameSettings(bool open)
@@ -180,7 +274,7 @@ namespace PalmStreet.Game
                 while (acc >= StepTime && Run.Phase == Phase.Playing) { acc -= StepTime; Run.Step(); }
             }
             PlayEvents();
-            if (overAt > 0 && time >= overAt) { overAt = -1; overShownAt = time; hud.ShowOver(Run.Score, Run.Best, Run.NewBest); }
+            if (overAt > 0 && time >= overAt) { overAt = -1; overShownAt = time; hud.ShowOver(Run.Score, Run.Best, Run.NewBest, level > 0); }
             Draw(dt);
         }
 
@@ -201,6 +295,7 @@ namespace PalmStreet.Game
                 if (kb.spaceKey.wasReleasedThisFrame || kb.upArrowKey.wasReleasedThisFrame) up = true;
                 if (kb.escapeKey.wasPressedThisFrame) SetPaused(!paused);
             }
+            if (down && splash.Running) { splash.Skip(); return; }   // un toucher passe l'animation de lancement
             if (down && !key && OverUi(pos)) down = false;   // les boutons gardent leur toucher
             if (down) Press(pos, key);
             if (up) Run.Release();
@@ -223,14 +318,14 @@ namespace PalmStreet.Game
                     if (!hud.MenuVisible) break;   // dans le profil, seuls les boutons comptent
                     if (key) { StartRun(false); break; }
                     var w = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -cam.transform.position.z));
-                    if (Vector2.Distance(w, scenery.SunWorld) < scenery.SunWorldRadius * 1.4f) StartRun(true);
+                    if (Vector2.Distance(w, scenery.SunWorld) < scenery.SunWorldRadius * 1.4f) StartEndless(true);   // raccourci du soleil
                     break;
                 case Phase.Playing:
                     if (paused) SetPaused(false);
                     else Run.Press();
                     break;
                 case Phase.Over:
-                    if (overAt < 0 && time - overShownAt > 0.35f) StartRun(false);
+                    if (level == 0 && overAt < 0 && time - overShownAt > 0.35f) StartEndless(false);   // en histoire : RECOMMENCER ou CARTE
                     break;
             }
         }
@@ -273,14 +368,11 @@ namespace PalmStreet.Game
                         hud.Banner("FULL SPEED", ThemeLook.Of(Run.Theme).Name, yellow);
                         break;
                     case Cue.BossIn:
-                        hud.Banner("BOSS !", "Il arrive… saute ses plots !", Hex("#FF4D8D"));
+                        hud.Banner(BossName(Run.Boss?.Kind ?? BossKind.Purple), BossTip(Run.Boss?.Kind ?? BossKind.Purple), Hex("#FF4D8D"));
                         break;
                     case Cue.BossHit:
                         props.BossHit();
                         fx.Burst(e.X, e.Y, Color.white, 4, 2, 4);
-                        break;
-                    case Cue.Level:
-                        hud.Banner("NIVEAU 2", "NUIT NÉON · trous, mouettes, tremplins", Hex("#35F2FF"));
                         break;
                     case Cue.MegaAir:
                         hud.Float($"+{e.Points} {e.Text}", at, Hex("#35F2FF"));
@@ -295,6 +387,21 @@ namespace PalmStreet.Game
                     case Cue.Crash:
                         Crashed();
                         break;
+                    case Cue.Cleared:
+                        LevelCleared();
+                        break;
+                    case Cue.Finish:
+                        fx.Confetti(e.X + 40, e.Y + 80);
+                        hud.Banner("ARRIVÉE !", Levels.Get(level).City, yellow);
+                        break;
+                    case Cue.NewObstacle:
+                        if (level > 0 && !progress.SeenObstacles.Contains(level))
+                        {
+                            hud.Tip(e.Text);   // bulle d'aide la première fois (FR-007)
+                            progress.SeenObstacles.Add(level);
+                            SaveProgress();
+                        }
+                        break;
                 }
             }
             Run.Events.Clear();
@@ -305,16 +412,19 @@ namespace PalmStreet.Game
             rider.Crash(Run.Skater, Run.CurrentSpeed);
             fx.Burst(Run.Skater.X + 12, Run.Skater.Y + 20, Hex("#FF7A1A"), 16, 4);
             sound.StopMusic();
-            if (Run.NewBest) PlayerPrefs.SetInt("best", Run.Best);
-            int before = Unlocks.CountOpen(total);
-            total = (int)System.Math.Min(int.MaxValue, (long)total + Run.Score);
-            PlayerPrefs.SetInt("total", total);
-            PlayerPrefs.Save();
-            int unlocked = Unlocks.CountOpen(total) - before;
-            if (unlocked > 0) hud.Toast(unlocked == 1 ? "Nouveau vêtement débloqué dans le PROFIL !" : $"{unlocked} vêtements débloqués dans le PROFIL !");
-            Leaderboard.Report(Run.Score);
+            if (level == 0 && Run.NewBest) { progress.EndlessBest = Run.Best; SaveProgress(); }
+            if (level == 0) Leaderboard.Report(Run.Score);   // classement : mode infini seulement
             overAt = time + 0.7f;   // on voit d'abord la planche s'échapper
         }
+
+        static string BossName(BossKind k) => k switch { BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER", _ => "LE GRAND BOSS" };
+        static string BossTip(BossKind k) => k switch
+        {
+            BossKind.Crab => "Saute-le quand il fonce sur toi !",
+            BossKind.Gull => "Accroupis-toi quand il pique !",
+            BossKind.Boar => "Saute ses charges et ses barrières !",
+            _ => "Saute ses plots !",
+        };
 
         Color DustColor() => Color.Lerp(ThemeLook.Of(Run.Theme).GroundTop, Color.white, 0.5f);
 
@@ -334,27 +444,41 @@ namespace PalmStreet.Game
             FitCamera(menu ? menuX : Run.Skater.X);
             var ground = menu ? menuGround : Run.Ground;
             scenery.MenuSun = menu;
-            scenery.Draw(menu ? Theme.Largente : Run.Theme, ground, cam, time, instantScenery);
+            scenery.Draw(menu ? Theme.Anglet : Run.Theme, ground, cam, time, instantScenery);
             instantScenery = false;
 
             if (menu)
             {
-                var feet = hud.PreviewFeet(out float scale);
-                preview.Show(hud.PreviewVisible);   // caché dans PROFIL › RÉGLAGES
-                preview.Idle(feet, time, true, scale);
+                if (hud.MapVisible)
+                {
+                    // FR-022 : petit skateur posé sur le prochain niveau ; après une réussite, il y roule depuis le niveau réussi
+                    int next = progress.NextLevel;
+                    var to = hud.NodeWorld(next, out bool visible, out float scale);
+                    float k = mapFrom > 0 && mapFrom != next ? Mathf.Clamp01((time - mapAnimAt - 0.3f) / 1.4f) : 1;
+                    if (k >= 1) mapFrom = 0;
+                    var from = mapFrom > 0 ? hud.NodeWorld(mapFrom, out _, out _) : to;
+                    preview.Show(visible);
+                    preview.Idle(Vector3.Lerp(from, to, k * k * (3 - 2 * k)), time, k >= 1, scale);
+                }
+                else
+                {
+                    var feet = hud.PreviewFeet(out float scale);
+                    preview.Show(hud.PreviewVisible);   // profil, onglet TENUE
+                    preview.Idle(feet, time, true, scale);
+                }
             }
             else
             {
                 var sk = Run.Skater;
                 rider.Show(true);
-                if (Run.Phase == Phase.Playing)
+                if (Run.Phase == Phase.Playing || Run.Phase == Phase.Cleared)
                 {
                     float slope = sk.Rail != null ? 0 : Run.Ground.Slope(sk.X);
                     rider.Ride(sk, W(sk.X, sk.Y), slope, time, Run.Speed > 0 ? Run.CurrentSpeed / Run.Speed : 1);
-                    if (!paused)
+                    if (!paused && Run.Phase == Phase.Playing)
                     {
                         // NUIT NÉON : feux d'artifice dans le ciel
-                        if (Run.Theme == Theme.Neon && Random.value < dt * 0.9f)
+                        if (ThemeLook.Of(Run.Theme).Decor == Decor.Neon && Random.value < dt * 0.9f)
                             fx.Firework(sk.X + Random.Range(-60f, 280f), Random.Range(300f, 520f));
                         if (sk.Grounded) fx.Dust(sk.X - 12, sk.Y, DustColor(), 0.6f);
                         if (sk.Rail != null) fx.Sparks(sk.X + 14, sk.Y);   // sous le truck avant (nose grind)

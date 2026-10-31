@@ -29,12 +29,83 @@ namespace PalmStreet.Tests
             Directory.CreateDirectory(Dir);
             var run = game.Run;
 
+            // animation de lancement : la planche montre « P. ST. », puis on la passe
+            while (game.LaunchAnimation.Running && game.LaunchAnimation.Elapsed < 0.55f) yield return null;
+            yield return Shot("00-lancement-flip");
+            while (game.LaunchAnimation.Running && game.LaunchAnimation.Elapsed < 1.2f) yield return null;
+            yield return Shot("00-lancement-pst");
+            game.LaunchAnimation.Skip();
+
             for (int i = 0; i < 10; i++) yield return null;
             yield return Shot("1-accueil");
+            // spec 002 : carte neuve, puis après 5 niveaux ; départ, arrivée et réussite d'Anglet
+            var saved = game.Progress;
+            game.Progress = new Progress();
+            game.OpenMap();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("0-carte-neuve");
+            var advanced = new Progress();
+            for (int n = 1; n <= 5; n++) advanced.Clear(n, 1000 * n);
+            game.Progress = advanced;
+            game.OpenMap();
+            for (int i = 0; i < 40; i++) yield return null;
+            yield return Shot("0-carte-avancee");
+            game.Progress = new Progress();
+            game.StartLevel(1);
+            yield return Steps(run, 30, false);
+            yield return Shot("0-anglet-depart");
+            run.Skater.X = Levels.Get(1).Finish - 180;
+            run.Obstacles.Clear(); run.Bolts.Clear();
+            yield return Steps(run, 30, true);
+            yield return Shot("0-anglet-arrivee");
+            for (int i = 0; i < 400 && run.Phase == Phase.Playing; i++) { run.Obstacles.Clear(); run.Step(); }
+            for (int i = 0; i < 5; i++) yield return null;
+            yield return Shot("0-anglet-reussi");
+            // les 12 villes, au départ de leur niveau
+            for (int n = 1; n <= 12; n++)
+            {
+                game.StartLevel(n);
+                yield return Steps(run, 140, true);
+                yield return Shot($"0-ville-{n:00}");
+            }
+
+            // les 4 boss : au sol, puis en pleine attaque
+            foreach (int n in new[] { 3, 6, 9, 12 })
+            {
+                game.StartLevel(n);
+                run.Skater.X = Levels.Get(n).Finish - 2;
+                for (int i = 0; i < 200; i++) { run.Obstacles.RemoveAll(o => !o.Falling); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                yield return Shot($"0-boss-{n}");
+                for (int i = 0; i < 900 && !(run.Boss.State == BossState.Rising && run.Boss.Timer > 25) && !(run.Boss.State == BossState.Air && run.Boss.Drops > 1); i++)
+                {
+                    run.Obstacles.RemoveAll(o => !o.Falling && o.X < run.Skater.X + 40); run.Step(); run.Phase = Phase.Playing;
+                    if (i % 4 == 0) yield return null;
+                }
+                yield return Shot($"0-boss-{n}-attaque");
+            }
+            // profil : tenue de départ, puis après 6 niveaux avec des objets portés
+            game.Progress = new Progress();
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("0-profil-neuf");
+            var six = new Progress();
+            for (int n = 1; n <= 6; n++) six.Clear(n, 1000);
+            six.Wear("cap-red"); six.Wear("hoodie-gull"); six.Wear("shorts-surf"); six.Wear("deck-crab");
+            game.Progress = six;
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("0-profil-six");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
+            yield return null;
+            yield return Shot("0-profil-planches");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(0);
+            game.Progress = saved;
+            game.ToMenu();
+
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("1-profil");
-            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(1);
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(2);
             yield return null;
             yield return Shot("1-reglages");
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(0);

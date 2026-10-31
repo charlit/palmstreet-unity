@@ -7,13 +7,13 @@ pas de 1/60 s.
 
 | N° | Ville (Theme) | Distance d'arrivée | Vitesse départ → max | Obstacles permis | Boss | Figure débloquée |
 |---|---|---|---|---|---|---|
-| 1 | Anglet | 9 000 | 1,7 → 2,4 | petits plots, sol plat | — | FLIP |
-| 2 | Biarritz | 10 000 | 1,9 → 2,7 | + rails, grand rail | — | — |
-| 3 | Bidart | 9 000 | 2,1 → 3,0 | plots, rails | Crabe (4 000) | SHOVE-IT |
-| 4 | Guéthary | 12 000 | 2,4 → 3,3 | + grands plots, bosses | — | — |
-| 5 | Saint-Jean-de-Luz | 13 000 | 2,6 → 3,5 | idem | — | — |
-| 6 | Hendaye | 12 000 | 2,8 → 3,7 | idem | Goéland (6 000) | 360° |
-| 7 | Bayonne | 14 000 | 3,0 → 3,9 | + mouettes | — | — |
+| 1 | Anglet | 10 500 | 2,5 → 3,2 | petits plots, sol plat | — | FLIP |
+| 2 | Biarritz | 10 000 | 2,6 → 3,3 | + rails, grand rail | — | — |
+| 3 | Bidart | 10 500 | 2,7 → 3,4 | plots, rails | Crabe (4 000) | SHOVE-IT |
+| 4 | Guéthary | 12 000 | 2,8 → 3,5 | + grands plots, bosses | — | — |
+| 5 | Saint-Jean-de-Luz | 13 000 | 2,9 → 3,6 | idem | — | — |
+| 6 | Hendaye | 12 000 | 3,0 → 3,7 | idem | Goéland (6 000) | 360° |
+| 7 | Bayonne | 14 000 | 3,1 → 3,9 | + mouettes | — | — |
 | 8 | Arcangues | 15 000 | 3,2 → 4,1 | + tremplins | — | — |
 | 9 | Espelette | 14 000 | 3,4 → 4,3 | idem | Sanglier (7 000) | 360° INVERSÉ |
 | 10 | Ascain | 16 000 | 3,6 → 4,5 | + trous | — | — |
@@ -27,7 +27,7 @@ Champs : `Number`, `City` (nom affiché), `Theme`, `Finish` (distance), `StartSp
 Règles :
 - Vitesse en histoire : `Start + (Max − Start) × min(1, distance parcourue / Finish)`.
 - Les éclairs et les règles de points de 001 restent dans tous les niveaux.
-- Durée à vitesse moyenne : de 59 s (niveau 12) à 75 s (niveau 3) avant le boss éventuel.
+- Durée à vitesse moyenne : de 55 à 67 s avant l'arrivée ou le boss (vitesses relevées le 2026-10-31 : le niveau 1 était trop lent).
 
 ## Endless (mode infini)
 

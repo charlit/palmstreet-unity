@@ -144,10 +144,10 @@ retrouver son score dans le classement.
 **Boucle de jeu**
 
 - **FR-001**: Le jeu MUST se jouer en portrait, plein écran, au toucher seul.
-- **FR-002**: L'écran d'accueil MUST montrer le skateur du joueur avec sa tenue, un grand bouton
+- **FR-002** *(remplacé par la spec 002 — FR-001)*: L'écran d'accueil MUST montrer le skateur du joueur avec sa tenue, un grand bouton
   START, un bouton PROFIL en haut à droite et un bouton TOP 10. (Révision 2026-10-30 : le choix entre 4 skateurs est remplacé
   par un skateur unique qu'on habille dans le profil, FR-026.)
-- **FR-003**: Le skateur MUST rouler seul ; la vitesse démarre à 1,7 et gagne 0,045 tous les
+- **FR-003** *(remplacé par la spec 002 — FR-007 et FR-018)*: Le skateur MUST rouler seul ; la vitesse démarre à 1,7 et gagne 0,045 tous les
   100 points de score, jusqu'à 4,3 (unités logiques par image à 60 images/s).
 - **FR-004**: Le score MUST gagner 1 point par image de jeu (60 par seconde).
 - **FR-005**: Le sol MUST alterner plat (240 à 500 de long), montée (130 à 240, hauteur 45 à 100)
@@ -165,7 +165,7 @@ retrouver son score dans le classement.
 
 **Points**
 
-- **FR-010**: Une figure MUST se faire par un toucher en l'air (le premier toucher fait sauter, le deuxième fait la figure), une seule
+- **FR-010** *(remplacé par la spec 002 — FR-013 à FR-016)*: Une figure MUST se faire par un toucher en l'air (le premier toucher fait sauter, le deuxième fait la figure), une seule
   par saut ; les figures tournent dans l'ordre FLIP (30), SHOVE-IT (35), 360° (45),
   360° INVERSÉ (45), multipliés par le combo.
 - **FR-011**: Retomber sur le dessus d'un rail MUST lancer un grind : +2 points par image, puis
@@ -179,17 +179,17 @@ retrouver son score dans le classement.
 
 **Décors et boss**
 
-- **FR-015**: Le décor MUST suivre un cycle de 20 000 points : Largenté (0–5 000), BTZ
+- **FR-015** *(remplacé par la spec 002 — FR-005 et FR-019)*: Le décor MUST suivre un cycle de 20 000 points : Largenté (0–5 000), BTZ
   (5 000–10 000), Arcangues (10 000–20 000), avec leurs couleurs de ciel, soleil et silhouettes
   du jeu web, en défilement parallaxe.
-- **FR-016**: Le bandeau « FULL SPEED » MUST s'afficher tous les 5 000 points.
-- **FR-017**: À 15 000 points, puis 15 000 points après chaque boss battu, le boss MUST arriver :
+- **FR-016** *(remplacé par la spec 002 — FR-019 : mode infini seulement)*: Le bandeau « FULL SPEED » MUST s'afficher tous les 5 000 points.
+- **FR-017** *(remplacé par la spec 002 — FR-011 et FR-019)*: À 15 000 points, puis 15 000 points après chaque boss battu, le boss MUST arriver :
   sol plat, plus d'obstacles normaux, 8 000 points de vie, barre de vie affichée.
 - **FR-018**: Pendant le boss, le skateur MUST tirer automatiquement une dent toutes les 0,37 s
   (100 de dégâts) ; toutes les 10 s le boss s'envole, lâche 4 plots à sauter, puis redescend.
-- **FR-019**: Le boss battu MUST donner +5 000 points, « BOOM », « TU ES UN VRAI PST ! », puis un
+- **FR-019** *(remplacé par la spec 002 — FR-012 ; le plat de nose grind reste en infini)*: Le boss battu MUST donner +5 000 points, « BOOM », « TU ES UN VRAI PST ! », puis un
   plat de 2 500 avec une barre de nose grind 15 fois plus longue qu'un rail, avant la reprise.
-- **FR-020**: Toucher le soleil sur l'écran d'accueil MUST lancer directement le boss avec
+- **FR-020** *(remplacé par la spec 002 — le raccourci lance le mode infini)*: Toucher le soleil sur l'écran d'accueil MUST lancer directement le boss avec
   le skateur du joueur (raccourci caché du jeu web).
 
 **Son, sauvegarde, classement**
@@ -209,17 +209,17 @@ retrouver son score dans le classement.
   particules (poussière, étincelles de grind, éclairs), écrans d'accueil et de fin refaits.
 - **FR-025**: Le skateur MUST être dessiné et animé dans le nouveau style, avec sa tenue
   du profil dans toutes les poses.
-- **FR-026**: L'écran PROFIL MUST avoir deux onglets, TENUE et RÉGLAGES. TENUE MUST permettre de changer la tenue du skateur, avec un aperçu animé
+- **FR-026** *(remplacé par la spec 002 — FR-023 et FR-026)*: L'écran PROFIL MUST avoir deux onglets, TENUE et RÉGLAGES. TENUE MUST permettre de changer la tenue du skateur, avec un aperçu animé
   qui suit chaque changement : coiffure (casquette, bonnet, boucles, bandeau) et sa couleur, couleur
   des cheveux, peau, couleur du sweat et de son détail, coupe (pantalon ou short) et couleur du bas,
   chaussures, couleur du plateau et des roues de la planche. La tenue est gardée sur l'appareil.
   L'écran de fin propose d'y aller (« CHANGER MA TENUE »).
-- **FR-027**: Les vêtements MUST se débloquer avec les points cumulés (somme des scores de toutes
+- **FR-027** *(remplacé par la spec 002 — FR-025 et FR-027)*: Les vêtements MUST se débloquer avec les points cumulés (somme des scores de toutes
   les parties, gardée sur l'appareil) : une tenue de départ est libre, puis des couleurs (de 500 à
   20 000 points), le bonnet (3 000), le short (6 000) et le bandeau (10 000). Le profil affiche les
   points cumulés et le prix des éléments verrouillés ; toucher un élément verrouillé dit à combien
   il se débloque ; l'écran de fin annonce les nouveautés débloquées. Peau et cheveux restent libres.
-- **FR-029**: Le premier boss battu MUST ouvrir le niveau 2 « NUIT NÉON » jusqu'à la fin de la partie :
+- **FR-029** *(remplacé par la spec 002 — FR-002 : NUIT NÉON devient le niveau 12)*: Le premier boss battu MUST ouvrir le niveau 2 « NUIT NÉON » jusqu'à la fin de la partie :
   décor de nuit (lune, étoiles, grande roue et ville en néon, palmiers et enseignes lumineux, feux
   d'artifice), bandeau « NIVEAU 2 », vitesse maximale portée à 5,0. Les boss suivants continuent tous
   les 15 000 points.

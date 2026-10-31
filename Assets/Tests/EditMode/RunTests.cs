@@ -29,10 +29,10 @@ namespace PalmStreet.Tests
 
         [Test] public void Fr003_VitesseMonteAvecLeScore()
         {
-            Assert.AreEqual(1.7f, Run.SpeedFor(0), 1e-4);
-            Assert.AreEqual(1.745f, Run.SpeedFor(100), 1e-4);
-            Assert.AreEqual(1.745f, Run.SpeedFor(199), 1e-4);
-            Assert.AreEqual(4.3f, Run.SpeedFor(100000), 1e-4);
+            // spec 002 (FR-018) remplace la vitesse par score de 001 : en infini, elle monte avec le temps
+            Assert.AreEqual(1.7f, Run.EndlessSpeed(0), 1e-4);
+            Assert.AreEqual(1.7f + 0.012f * 120, Run.EndlessSpeed(7200), 1e-3);
+            Assert.AreEqual(5.5f, Run.EndlessSpeed(10000000), 1e-4);
         }
 
         [Test] public void Fr004_UnPointParPas()
@@ -262,14 +262,13 @@ namespace PalmStreet.Tests
 
         [Test] public void Fr015_Fr016_DecorsEtFullSpeed()
         {
-            Assert.AreEqual(Theme.Largente, Run.ThemeFor(4999));
-            Assert.AreEqual(Theme.Btz, Run.ThemeFor(5000));
-            Assert.AreEqual(Theme.Arcangues, Run.ThemeFor(10000));
-            Assert.AreEqual(Theme.Arcangues, Run.ThemeFor(19999));
-            Assert.AreEqual(Theme.Largente, Run.ThemeFor(20000));
-            var r = NewRun(4998);
+            // spec 002 (FR-019) : en infini, le décor change toutes les 4 000 points parmi les villes ouvertes
+            var r = NewRun(3998);
             Clear(r, 3);
-            Assert.AreEqual(Theme.Btz, r.Theme);
+            Assert.AreEqual(Theme.Biarritz, r.Theme);
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.Theme));
+            r = NewRun(4998);
+            Clear(r, 3);
             Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.FullSpeed && e.Text == "FULL SPEED"));
         }
 
@@ -330,7 +329,7 @@ namespace PalmStreet.Tests
             r.Start(bossNow: true);
             r.Step();
             Assert.IsNotNull(r.Boss);
-            Assert.AreEqual(Theme.Arcangues, r.Theme);
+            Assert.AreEqual(Theme.Anglet, r.Theme);   // spec 002 : le raccourci part en infini, à score 0
         }
 
         [Test] public void LePlotLacheTombeSurLaPente()
@@ -347,24 +346,13 @@ namespace PalmStreet.Tests
             Assert.AreEqual(r.Ground.Height(x), o.Y, 1e-3);
         }
 
-        [Test] public void Fr027_VetementsDebloquesParLesPoints()
-        {
-            int total = Unlocks.Colors.Length + Unlocks.Heads.Length + Unlocks.Legs.Length;
-            Assert.That(Unlocks.CountOpen(0), Is.GreaterThan(0).And.LessThan(total), "une tenue de départ, le reste à gagner");
-            Assert.AreEqual(total, Unlocks.CountOpen(int.MaxValue));
-            int prev = 0;
-            for (int pts = 0; pts <= 30000; pts += 500) { int n = Unlocks.CountOpen(pts); Assert.That(n, Is.GreaterThanOrEqualTo(prev)); prev = n; }
-            Assert.IsFalse(Unlocks.Open(Unlocks.Heads[1], Unlocks.Heads[1] - 1));
-            Assert.IsTrue(Unlocks.Open(Unlocks.Heads[1], Unlocks.Heads[1]));
-        }
-
         /// <summary>Partie au niveau 2 avec la route d'aujourd'hui : plat jusqu'à x0, trou de x0 à x1, puis plat.</summary>
         static Run NeonWithGap(float x0, float x1)
         {
             var r = NewRun();
             Clear(r, 2);
-            r.Level = 2;
-            r.Score = 16000; r.NextBossScore = int.MaxValue;   // vitesse du niveau 2, pas de boss
+            r.Allowed = Allow.All;
+            r.StepCount = 18000; r.NextBossScore = int.MaxValue;   // vitesse de l'infini après 5 min, pas de boss
             var segs = r.Ground.Segments;
             segs.Clear();
             segs.Add(new Segment { Kind = SlopeKind.Flat, X0 = -1000, X1 = x0 });
@@ -372,21 +360,6 @@ namespace PalmStreet.Tests
             segs.Add(new Segment { Kind = SlopeKind.Flat, X0 = x1, X1 = x1 + 5000 });
             r.Obstacles.Clear(); r.Bolts.Clear();
             return r;
-        }
-
-        [Test] public void Fr029_LeBossBattuOuvreLeNiveauNeon()
-        {
-            var r = new Run(7);
-            r.Start(bossNow: true);
-            r.Step();
-            r.Boss.Hp = 100;
-            var all = new System.Collections.Generic.List<GameEvent>();
-            for (int i = 0; i < 400; i++) { all.AddRange(r.Events); r.Events.Clear(); r.Obstacles.RemoveAll(o => !o.IsRail); r.Step(); r.Phase = Phase.Playing; }
-            Assert.IsTrue(all.Any(e => e.Cue == Cue.Level && e.Text == "NIVEAU 2"));
-            Assert.AreEqual(2, r.Level);
-            Assert.AreEqual(Theme.Neon, r.Theme);
-            Assert.AreEqual(5.0f, Run.SpeedFor(100000, 2), 1e-4);
-            Assert.IsTrue(r.Ground.Gaps);
         }
 
         [Test] public void Fr030_TrousDansLaRoute()
@@ -453,7 +426,7 @@ namespace PalmStreet.Tests
             // bug corrigé : un obstacle posé juste après un trou retrouvait le même trou et bouclait sans fin
             var r = new Run(11);
             r.Start();
-            r.Level = 2; r.Score = 16000; r.NextBossScore = int.MaxValue; r.Ground.Gaps = true;
+            r.Allowed = Allow.All; r.StepCount = 18000; r.NextBossScore = int.MaxValue; r.Ground.Gaps = true;
             seen.Clear();
             for (int i = 0; i < 20000; i++)
             {

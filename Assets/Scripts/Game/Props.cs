@@ -207,8 +207,98 @@ namespace PalmStreet.Game
             bossShadow.gameObject.SetActive(false);
         }
 
+        Transform finish, crab, crabClawL, crabClawR, gullBoss, gullWingB, gullWingF, boar, boarLegs;
+        Mesh shellMesh, barrierMesh;
+        Pool barriers;
+
+        /// <summary>Le Crabe, le Goéland géant et le Sanglier (spec 002, FR-011), tournés vers le skateur (à gauche).</summary>
+        void BuildBeasts()
+        {
+            var red = Hex("#E0452B"); var dark = Hex("#9E2A18"); var white = Hex("#FFFDF5"); var ink = Hex("#1B1028");
+            // crabe : carapace, yeux sur pédoncules, pinces qui claquent, pattes
+            crab = new GameObject("Crabe").transform; crab.SetParent(transform, false);
+            var c = new Paint();
+            for (int i = 0; i < 3; i++) { float x = -14 + i * 12; c.Line(x, -6, x - 8, -18, 3, dark); c.Line(x + 4, -6, x + 12, -18, 3, dark); }
+            c.Line(-8, 10, -12, 22, 2.5f, dark).Line(4, 10, 2, 22, 2.5f, dark)
+             .Ellipse(0, 0, 26, 15, red, 28).Ellipse(0, -6, 22, 8, dark, 24).Glow(-6, 6, 14, new Color(1, 1, 1, 0.25f), new Color(1, 1, 1, 0))
+             .Circle(-12, 23, 5, white, 12).Circle(2, 23, 5, white, 12).Circle(-13.5f, 23, 2.2f, ink, 8).Circle(0.5f, 23, 2.2f, ink, 8)
+             .Make("Carapace", crab, 20);
+            Transform Claw(string name, float y, int order)
+            {
+                var t = new GameObject(name).transform; t.SetParent(crab, false); t.localPosition = W(-20, y);
+                new Paint().Capsule(0, 0, -14, 4, 6, red).Ellipse(-20, 7, 9, 6, red, 16).Poly(white, -26, 6, -18, 9, -26, 11).Make(name, t, order);
+                return t;
+            }
+            crabClawL = Claw("Pince arrière", 2, 19); crabClawR = Claw("Pince avant", -4, 21);
+            crab.gameObject.SetActive(false);
+
+            // goéland géant : corps blanc, tête et bec jaune à gauche, ailes qui battent
+            gullBoss = new GameObject("Goéland géant").transform; gullBoss.SetParent(transform, false);
+            Transform Wing(string name, int order, Color col)
+            {
+                var t = new GameObject(name).transform; t.SetParent(gullBoss, false); t.localPosition = W(4, 6);
+                new Paint().Poly(col, 0, 0, 16, 0, 40, 34, 26, 38).Poly(Hex("#2A2D36"), 26, 38, 40, 34, 46, 44, 32, 46).Make(name, t, order);
+                return t;
+            }
+            gullWingB = Wing("Aile arrière", 19, Hex("#C9CED6"));
+            new Paint().Ellipse(4, 0, 30, 13, white, 28).Poly(Hex("#B9C0CC"), 30, 2, 46, 10, 46, -6)
+                .Circle(-24, 6, 10, white, 18).Poly(Hex("#FFB21A"), -32, 6, -48, 2, -32, 1).Circle(-27, 9, 2, ink, 8)
+                .Line(-30, 12, -22, 14, 1.6f, ink).Make("Corps", gullBoss, 20);
+            gullWingF = Wing("Aile avant", 21, white);
+            gullBoss.gameObject.SetActive(false);
+
+            // sanglier : corps brun, groin, défenses, crête de poils, pattes
+            boar = new GameObject("Sanglier").transform; boar.SetParent(transform, false);
+            var brown = Hex("#6B4226"); var deep = Hex("#3E2414");
+            boarLegs = new GameObject("Pattes").transform; boarLegs.SetParent(boar, false);
+            new Paint().Rect(-18, -26, 7, 14, deep).Rect(-4, -26, 7, 14, deep).Rect(10, -26, 7, 14, deep).Rect(22, -26, 7, 14, deep).Make("Pattes", boarLegs, 19);
+            var bp = new Paint().Ellipse(4, -2, 32, 18, brown, 30).Ellipse(-24, -2, 14, 12, brown, 20).Ellipse(-37, -5, 6, 5, Hex("#A8705A"), 14)
+                .Circle(-39, -4, 1.2f, ink, 6).Circle(-36, -4, 1.2f, ink, 6).Circle(-26, 4, 2.2f, ink, 8)
+                .Poly(deep, -20, 8, -12, 10, -18, 18)
+                .Poly(white, -32, -8, -30, -9, -36, -1).Poly(white, -28, -9, -26, -10, -31, -2);
+            for (int i = 0; i < 8; i++) bp.Poly(deep, -12 + i * 6, 14, -6 + i * 6, 14, -9 + i * 6, 22);
+            bp.Make("Corps", boar, 20);
+            boar.gameObject.SetActive(false);
+
+            // coquillage (petit plot du goéland) et barrière basse (sanglier)
+            shellMesh = new Paint().Dome(0.5f, 0, 0.5f, 1, Hex("#F4C7B0"), 14)
+                .Line(0.5f, 0, 0.5f, 0.95f, 0.06f, Hex("#C98B70")).Line(0.5f, 0, 0.2f, 0.85f, 0.06f, Hex("#C98B70")).Line(0.5f, 0, 0.8f, 0.85f, 0.06f, Hex("#C98B70")).Build();
+            barrierMesh = new Paint().Rect(2, 0, 4, 22, Hex("#2A2D36")).Rect(24, 0, 4, 22, Hex("#2A2D36"))
+                .Rect(0, 11, 30, 9, Color.white).Rect(3, 11, 6, 9, Hex("#E63946")).Rect(15, 11, 6, 9, Hex("#E63946")).Rect(27, 11, 3, 9, Hex("#E63946")).Build();
+            barriers = new Pool(() =>
+            {
+                var mr = Renderer("Barrière", transform, 12);
+                mr.GetComponent<MeshFilter>().sharedMesh = barrierMesh;
+                return mr.transform;
+            });
+        }
+
+        /// <summary>Ligne d'arrivée (spec 002, FR-006) : portique à damier, poteaux et fanions.</summary>
+        void BuildFinish()
+        {
+            var p = new Paint();
+            var pole = Hex("#2A2D36");
+            p.Rect(-46, 0, 6, 120, pole).Rect(40, 0, 6, 120, pole);
+            for (int i = 0; i < 12; i++)
+                for (int j = 0; j < 3; j++)
+                    p.Rect(-46 + i * 7.67f, 100 + j * 7, 7.67f, 7, (i + j) % 2 == 0 ? Color.white : Hex("#1B1028"));
+            for (int i = 0; i < 5; i++)
+            {
+                float x = -40 + i * 20;
+                p.Poly(i % 2 == 0 ? Hex("#FF4D8D") : Hex("#FFE14D"), x, 98, x + 12, 98, x + 6, 86);
+            }
+            p.Rect(-48, -2, 96, 3, Color.white);   // ligne au sol
+            finish = p.Make("Arrivée", transform, 9).transform;
+            finish.gameObject.SetActive(false);
+        }
+
         public void Draw(Run run, float time)
         {
+            if (finish == null) { BuildFinish(); BuildBeasts(); }
+            barriers.Begin();
+            bool showFinish = run.Mode == GameMode.Story && run.Def != null && run.Def.Boss == BossKind.None && run.Phase != Phase.Menu;
+            finish.gameObject.SetActive(showFinish);
+            if (showFinish) finish.position = W(run.Def.Finish, run.Ground.Floor(run.Def.Finish));
             cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin();
             var g = run.Ground;
             foreach (var o in run.Obstacles)
@@ -238,10 +328,16 @@ namespace PalmStreet.Game
                     pt.localScale = new Vector3(1, 1 + (o.Used ? 0 : Mathf.Sin(time * 8) * 0.08f), 1);
                     continue;
                 }
+                if (o.Kind == ObstacleKind.Barrier)
+                {
+                    barriers.Get(o, out _).position = W(o.X, o.Y);
+                    ShadowAt(o, o.X + o.W / 2, o.Y, o.W + 6, 0);
+                    continue;
+                }
                 var c = cones.Get(o, out _);
-                bool dropped = o.Kind == ObstacleKind.DroppedCone;
-                c.GetChild(0).GetComponent<MeshFilter>().sharedMesh = dropped ? bossCone : coneMesh;
-                c.GetChild(1).gameObject.SetActive(dropped);
+                bool dropped = o.Kind == ObstacleKind.DroppedCone, shell = dropped && o.W < 20;
+                c.GetChild(0).GetComponent<MeshFilter>().sharedMesh = shell ? shellMesh : dropped ? bossCone : coneMesh;
+                c.GetChild(1).gameObject.SetActive(dropped && !shell);
                 c.position = W(o.X, o.Y);
                 c.localScale = new Vector3(o.W, o.H, 1);   // le plot est dessiné en 1 × 1
                 c.rotation = Quaternion.Euler(0, 0, o.Falling ? Mathf.Sin(time * 14 + o.X) * 12 : 0);
@@ -262,7 +358,11 @@ namespace PalmStreet.Game
             }
 
             var boss_ = run.Boss;
-            boss.gameObject.SetActive(boss_ != null);
+            var kind = boss_?.Kind ?? BossKind.None;
+            crab.gameObject.SetActive(kind == BossKind.Crab);
+            gullBoss.gameObject.SetActive(kind == BossKind.Gull);
+            boar.gameObject.SetActive(kind == BossKind.Boar);
+            boss.gameObject.SetActive(kind == BossKind.Purple);
             bossShadow.gameObject.SetActive(boss_ != null);
             if (boss_ != null)
             {
@@ -274,7 +374,8 @@ namespace PalmStreet.Game
                 }
                 float enter = boss_.State == BossState.Arriving ? 1 - (float)boss_.Timer / Boss.ArriveSteps : 0;
                 float gy = g.Height(boss_.X), hover = Mathf.Sin(time * 3) * 4;
-                var pos = new Vector2(boss_.X + enter * enter * 320, gy + boss_.Lift + Boss.Size / 2 + 6 + hover);
+                if (kind != BossKind.Purple) hover = kind == BossKind.Gull ? hover * 0.6f : Mathf.Abs(Mathf.Sin(time * 9)) * 2;   // le crabe et le sanglier trottent
+                var pos = new Vector2(boss_.X + enter * enter * 320, gy + boss_.Lift + boss_.Height / 2 + (kind == BossKind.Purple ? 6 : 2) + hover);
                 float scale = 1;
                 if (boss_.State == BossState.Dying)
                 {
@@ -283,20 +384,40 @@ namespace PalmStreet.Game
                     scale = 1 + k * 0.4f;
                     if (k > 0.75f) scale *= (1 - k) * 4;
                 }
-                boss.position = W(pos.x, pos.y);
-                boss.localScale = Vector3.one * scale * (1 + hitPunch * 0.08f);
+                var body = kind == BossKind.Crab ? crab : kind == BossKind.Gull ? gullBoss : kind == BossKind.Boar ? boar : boss;
+                body.position = W(pos.x, pos.y);
+                body.localScale = Vector3.one * scale * (1 + hitPunch * 0.08f);
+                bool attacking = boss_.State == BossState.Rising;
+                if (kind == BossKind.Crab)
+                {
+                    float snap = Mathf.Sin(time * (attacking ? 22 : 7)) * 18;
+                    crabClawL.localRotation = Quaternion.Euler(0, 0, snap);
+                    crabClawR.localRotation = Quaternion.Euler(0, 0, -snap);
+                }
+                if (kind == BossKind.Gull)
+                {
+                    float beat = Mathf.Sin(time * (attacking ? 5 : 12)) * (attacking ? 10 : 35);
+                    gullWingB.localRotation = Quaternion.Euler(0, 0, 10 + beat);
+                    gullWingF.localRotation = Quaternion.Euler(0, 0, beat);
+                    gullBoss.rotation = Quaternion.Euler(0, 0, attacking ? 12 : 0);   // tête en bas quand il pique
+                }
+                if (kind == BossKind.Boar)
+                {
+                    boarLegs.localPosition = W(0, Mathf.Sin(time * (attacking ? 30 : 10)) * 2);
+                    boar.rotation = Quaternion.Euler(0, 0, attacking ? 6 : 0);
+                }
                 hitPunch = Mathf.MoveTowards(hitPunch, 0, Time.deltaTime * 6);
                 float flap = Mathf.Sin(time * (boss_.State == BossState.Ground ? 6 : 16)) * 25;
                 bossWingL.localRotation = Quaternion.Euler(0, 0, -flap);
                 bossWingR.localRotation = Quaternion.Euler(0, 0, flap);
                 var look = new Vector2(run.Skater.X - pos.x, run.Skater.Y + 40 - pos.y).normalized;
                 bossPupil.localPosition = W(-18 + look.x * 5, 12 + look.y * 5);
-                float lift = pos.y - gy - Boss.Size / 2;
+                float lift = pos.y - gy - boss_.Height / 2;
                 bossShadow.position = W(pos.x, gy + 2);
                 bossShadow.localScale = new Vector3(50, 9, 1) * Mathf.Lerp(1, 0.5f, lift / 160) * (1 - enter);
             }
 
-            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End();
+            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End();
         }
 
         float hitPunch;

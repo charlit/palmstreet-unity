@@ -10,15 +10,15 @@ namespace PalmStreet.Game
     /// proches (montagnes, océan et surfeurs ou collines, silhouettes du décor, premier plan) et la route.
     /// Chaque décor a ses plans ; on passe de l'un à l'autre en fondu.
     /// </summary>
-    public sealed class Scenery : MonoBehaviour
+    public sealed partial class Scenery : MonoBehaviour
     {
         public const float Horizon = 130, Tile = 640;
         static readonly float[] Parallax = { 0.06f, 0.2f, 0.36f, 0.62f };
 
         sealed class Layer { public Transform A, B; public Fader Fade; public float Factor; }
 
-        readonly List<Layer>[] layers = { new List<Layer>(), new List<Layer>(), new List<Layer>(), new List<Layer>() };
-        readonly float[] weight = { 1, 0, 0, 0 };
+        readonly List<Layer>[] layers = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(ThemeLook.All, _ => new List<Layer>()));
+        readonly float[] weight = new float[ThemeLook.All.Length];
         readonly Paint p = new Paint();
         Transform cameraFixed;
         Mesh sky, sun, shine, ground;
@@ -44,10 +44,10 @@ namespace PalmStreet.Game
             for (int t = 0; t < ThemeLook.All.Length; t++)
             {
                 var look = ThemeLook.All[t];
-                AddLayer(t, 0, -96, Far((Theme)t, look, rng));
-                AddLayer(t, 1, -94, Back((Theme)t, look, rng));
-                AddLayer(t, 2, -90, Mid((Theme)t, look, rng));
-                AddLayer(t, 3, -86, Near((Theme)t, look, rng));
+                AddLayer(t, 0, -96, Far(look.Decor, look, rng));
+                AddLayer(t, 1, -94, Back(look.Decor, look, rng));
+                AddLayer(t, 2, -90, Mid(look.Decor, look, rng));
+                AddLayer(t, 3, -86, Near(look.Decor, look, rng));
             }
         }
 
@@ -80,7 +80,8 @@ namespace PalmStreet.Game
 
             // ciel et soleil (couleurs mélangées entre décors)
             Color C(System.Func<ThemeLook, Color> f) { var col = Color.clear; for (int t = 0; t < ThemeLook.All.Length; t++) col += f(ThemeLook.All[t]) * weight[t]; return col; }
-            float sea = weight[0] + weight[1] + weight[3];   // Arcangues n'a pas d'océan
+            float sea = 0;
+            for (int t = 0; t < ThemeLook.All.Length; t++) if (ThemeLook.All[t].HasSea) sea += weight[t];
             p.Clear();
             p.Gradient(-half - 2, 330, half * 2 + 4, Mathf.Max(top - 330, 1) + 2, C(l => l.SkyMid), C(l => l.SkyTop));
             p.Gradient(-half - 2, Horizon - 10, half * 2 + 4, 340 - Horizon, C(l => l.SkyLow), C(l => l.SkyMid));
@@ -202,16 +203,18 @@ namespace PalmStreet.Game
             for (float x = 0; x < Tile; x += 8) p.Poly(col, x, -60, x + 8, -60, x + 8, H(x + 8), x, H(x));
         }
 
-        static Paint Far(Theme t, ThemeLook l, System.Random r)
+        static Paint Far(Decor t, ThemeLook l, System.Random r)
         {
+            var city = FarCity(t, l, r);
+            if (city != null) return city;
             var p = new Paint();
             switch (t)
             {
-                case Theme.Largente:
+                case Decor.Largente:
                     Ridge(p, Color.Lerp(l.Far, l.SkyLow, 0.35f), 158, 16, 11);   // caps au loin, sous le soleil
                     Ridge(p, l.Far, 142, 12, 12);
                     break;
-                case Theme.Btz:
+                case Decor.Btz:
                     Ridge(p, Color.Lerp(l.Far, l.SkyLow, 0.4f), 150, 14, 21);
                     // phare sur son rocher
                     p.Dome(470, 140, 60, 40, l.Far);
@@ -221,7 +224,7 @@ namespace PalmStreet.Game
                     p.Glow(470, 255, 26, new Color(1, 0.95f, 0.7f, 0.9f), new Color(1, 0.95f, 0.7f, 0));
                     p.Dome(470, 260, 9, 8, l.Mid);
                     break;
-                case Theme.Neon:
+                case Decor.Neon:
                     // nuit étoilée, grande roue et ville aux toits de néon
                     for (int i = 0; i < 70; i++) p.Circle(R(r, 0, Tile), R(r, 230, 640), R(r, 0.6f, 1.8f), new Color(1, 1, 1, R(r, 0.3f, 0.9f)), 6);
                     NeonWheel(p, 470, 190, 78, Hex("#35F2FF"), Hex("#FF4FD8"));
@@ -246,8 +249,10 @@ namespace PalmStreet.Game
             return p;
         }
 
-        static Paint Back(Theme t, ThemeLook l, System.Random r)
+        static Paint Back(Decor t, ThemeLook l, System.Random r)
         {
+            var city = BackCity(t, l, r);
+            if (city != null) return city;
             var p = new Paint();
             if (!l.HasSea)
             {
@@ -264,7 +269,7 @@ namespace PalmStreet.Game
                 float y = R(r, 10, Horizon - 8), w = R(r, 14, 40) * (0.5f + y / Horizon), x = R(r, 0, Tile - w);
                 p.Capsule(x, y, x + w, y, 1.6f, new Color(l.SeaLight.r, l.SeaLight.g, l.SeaLight.b, 0.35f));
             }
-            if (t == Theme.Neon)
+            if (t == Decor.Neon)
             {
                 // reflets de néon qui ondulent sur l'eau noire
                 for (int i = 0; i < 30; i++)
@@ -276,7 +281,7 @@ namespace PalmStreet.Game
                 return p;
             }
             // surfeurs sur leur vague
-            int surfers = t == Theme.Btz ? 4 : 3;
+            int surfers = t == Decor.Btz ? 4 : 3;
             for (int i = 0; i < surfers; i++)
             {
                 float x = 60 + i * (Tile - 120) / surfers + R(r, -20, 20), y = R(r, 40, 95), s = 0.6f + (Horizon - y) / Horizon * 0.6f;
@@ -345,17 +350,19 @@ namespace PalmStreet.Game
                 }
         }
 
-        static Paint Mid(Theme t, ThemeLook l, System.Random r)
+        static Paint Mid(Decor t, ThemeLook l, System.Random r)
         {
+            var city = MidCity(t, l, r);
+            if (city != null) return city;
             var p = new Paint();
             var lit = new Color(l.SunCore.r, l.SunCore.g, l.SunCore.b, 0.75f);
             switch (t)
             {
-                case Theme.Largente:
+                case Decor.Largente:
                     for (int i = 0; i < 3; i++) House(p, 40 + i * 210 + R(r, -10, 10), R(r, 44, 60), R(r, 26, 40), 18, l.Mid, lit);
                     for (int i = 0; i < 5; i++) Palm(p, 20 + i * 128 + R(r, -12, 12), R(r, 150, 215), R(r, -25, 30), l.Mid, R(r, 0.8f, 1));
                     break;
-                case Theme.Btz:
+                case Decor.Btz:
                     for (int x = 10; x < Tile - 70;)
                     {
                         float w = R(r, 46, 80);
@@ -364,7 +371,7 @@ namespace PalmStreet.Game
                     }
                     Palm(p, 220, 190, 14, l.Mid, 0.9f);
                     break;
-                case Theme.Neon:
+                case Decor.Neon:
                     // palmiers et enseignes de néon
                     for (int i = 0; i < 4; i++)
                     {
@@ -401,18 +408,20 @@ namespace PalmStreet.Game
             return p;
         }
 
-        static Paint Near(Theme t, ThemeLook l, System.Random r)
+        static Paint Near(Decor t, ThemeLook l, System.Random r)
         {
+            var city = NearCity(t, l, r);
+            if (city != null) return city;
             var p = new Paint();
             switch (t)
             {
-                case Theme.Largente:
+                case Decor.Largente:
                     Palm(p, 140, 290, 40, l.Near, 1.35f);
                     for (float x = 0; x < Tile; x += 32) p.Rect(x, -10, 4, 34, l.Near);           // garde-corps de la promenade
                     p.Rect(0, 22, Tile, 4, l.Near);
                     p.Rect(0, 8, Tile, 3, l.Near);
                     break;
-                case Theme.Btz:
+                case Decor.Btz:
                     for (int i = 0; i < 2; i++)
                     {
                         float x = 120 + i * 320;
@@ -423,7 +432,7 @@ namespace PalmStreet.Game
                     }
                     Palm(p, 300, 260, -30, l.Near, 1.25f);
                     break;
-                case Theme.Neon:
+                case Decor.Neon:
                     // réverbères à boules roses, garde-corps lumineux
                     for (int i = 0; i < 3; i++)
                     {

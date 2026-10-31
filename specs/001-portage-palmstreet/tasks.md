@@ -5,6 +5,9 @@ description: "Tâches du portage de PalmStreet sous Unity (iOS et Android), vers
 
 # Tasks: Portage de PalmStreet sur iOS et Android
 
+> La suite (niveaux par ville, boss, mode infini, figures et vêtements à débloquer, animation de lancement)
+> est dans [specs/002-niveaux-progression/tasks.md](../002-niveaux-progression/tasks.md).
+
 **Input**: Design documents from `/specs/001-portage-palmstreet/`
 
 **Prerequisites**: plan.md (révisé), spec.md, data-model.md, contracts/core-and-services.md, quickstart.md

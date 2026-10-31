@@ -48,7 +48,7 @@ namespace PalmStreet.Game
             {
                 Cue.Ollie => ollie, Cue.Land => land, Cue.Trick => trick, Cue.Bolt => bolt, Cue.GrindOut => ollie,
                 Cue.GrindEnd => trick, Cue.Crash => crash, Cue.Boom => boom, Cue.Tooth => tooth, Cue.BossHit => hit,
-                Cue.FullSpeed => banner, Cue.BossIn => banner, Cue.BossFly => trick, Cue.Level => banner, Cue.MegaAir => trick, _ => null,
+                Cue.FullSpeed => banner, Cue.BossIn => banner, Cue.BossFly => trick, Cue.MegaAir => trick, _ => null,
             };
             if (c != null) sfx.PlayOneShot(c, cue == Cue.Tooth ? 0.6f : 1);
         }

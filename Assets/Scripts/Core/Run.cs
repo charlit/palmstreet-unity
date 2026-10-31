@@ -3,10 +3,12 @@ using System.Collections.Generic;
 
 namespace PalmStreet.Core
 {
-    public enum Phase { Menu, Playing, Over }
-    public enum Theme { Largente, Btz, Arcangues, Neon }
-    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad }
-    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, Level, MegaAir }
+    public enum Phase { Menu, Playing, Over, Cleared }
+    public enum GameMode { Story, Endless }
+    /// <summary>Les décors : une ville par niveau, dans l'ordre de la carte (spec 002, FR-002).</summary>
+    public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit }
+    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier }
+    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle }
 
     public sealed class Obstacle
     {
@@ -49,7 +51,13 @@ namespace PalmStreet.Core
         public const float SpawnAhead = 330;   // les obstacles naissent juste après le bord droit de l'écran
 
         public Phase Phase = Phase.Menu;
-        public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore, Level = 1;
+        public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore;
+        public GameMode Mode = GameMode.Endless;
+        public LevelDef Def;                                  // niveau en cours (histoire)
+        public List<int> Tricks = new List<int> { 0, 1, 2, 3 };   // figures connues (spec 002, FR-013)
+        public Allow Allowed = Allow.All;                     // obstacles permis
+        public List<Theme> Cities = new List<Theme> { Theme.Anglet };
+        public List<BossKind> Bosses = new List<BossKind>();
         public bool NewBest;
         public float Speed, CurrentSpeed;
         public Theme Theme;
@@ -63,39 +71,64 @@ namespace PalmStreet.Core
         readonly int seed;
         Random rng;
         float nextObstacleX, speedFactor = 1;
-        bool bigRailPending, holding;
+        bool bigRailPending, holding, bossDone;
         int pattern, trickIndex, holdSteps, milestone;
 
         public Run(int seed = 0) { this.seed = seed; }
 
-        public static float SpeedFor(int score, int level = 1) =>
-            Math.Min(level >= 2 ? Tuning.NeonMaxSpeed : Tuning.MaxSpeed, Tuning.StartSpeed + Tuning.SpeedPer100Points * (score / 100));
+        /// <summary>Vitesse en histoire : de la vitesse de départ à la maximale du niveau sur sa distance (spec 002).</summary>
+        public static float StorySpeed(LevelDef d, float x) => d.StartSpeed + (d.MaxSpeed - d.StartSpeed) * Math.Min(1, Math.Max(0, x) / d.Finish);
 
-        Theme CurrentTheme => Level >= 2 ? Theme.Neon : ThemeFor(Score);
+        /// <summary>Vitesse en infini : monte avec le temps de jeu, pas avec le score (spec 002, FR-018).</summary>
+        public static float EndlessSpeed(int steps) => Math.Min(Tuning.EndlessMax, Tuning.EndlessStart + Tuning.EndlessSlopePerSecond * steps / Tuning.StepsPerSecond);
 
-        public static Theme ThemeFor(int score)
+        Theme CurrentTheme => Mode == GameMode.Story ? Def.Theme : Cities[(Score / Tuning.EndlessThemeEvery) % Cities.Count];
+
+        bool Has(Allow a) => (Allowed & a) != 0;
+
+        /// <summary>Mode histoire : un niveau de la carte, avec les figures connues.</summary>
+        public void StartLevel(LevelDef def, IList<int> tricks)
         {
-            int s = score % Tuning.ThemeCycle;
-            return s < 5000 ? Theme.Largente : s < 10000 ? Theme.Btz : Theme.Arcangues;
+            Begin(GameMode.Story, def.Allowed, tricks);
+            Def = def;
+            Theme = def.Theme;
+            NextBossScore = int.MaxValue;   // le boss d'un niveau vient à son arrivée, pas au score
+            if (def.NewObstacle != null) Add(Cue.NewObstacle, def.NewObstacle);
         }
 
-        /// <summary>Nouvelle partie. bossNow : raccourci du soleil (FR-020), le boss arrive tout de suite.</summary>
-        public void Start(bool bossNow = false)
+        /// <summary>Mode infini : villes ouvertes en décor, boss déjà rencontrés, obstacles des niveaux ouverts.</summary>
+        public void StartEndless(IList<Theme> cities, IList<BossKind> bosses, IList<int> tricks, Allow allowed, bool bossNow = false)
         {
+            Begin(GameMode.Endless, allowed, tricks);
+            Cities = cities.Count > 0 ? new List<Theme>(cities) : new List<Theme> { Theme.Anglet };
+            Bosses = new List<BossKind>(bosses);
+            Theme = CurrentTheme;
+            NextBossScore = bossNow ? 0 : Tuning.BossAt;
+        }
+
+        /// <summary>Partie infinie avec tout débloqué (raccourci du soleil, tests).</summary>
+        public void Start(bool bossNow = false) =>
+            StartEndless(new[] { Theme.Anglet, Theme.Biarritz, Theme.Arcangues }, new[] { BossKind.Purple }, new[] { 0, 1, 2, 3 }, Allow.All & ~Allow.Gaps & ~Allow.Gulls & ~Allow.Pads, bossNow);
+
+        void Begin(GameMode mode, Allow allowed, IList<int> tricks)
+        {
+            Mode = mode;
+            Allowed = allowed;
+            Tricks = new List<int>(tricks);
+            Def = null;
+            bossDone = false;
             rng = new Random(seed != 0 ? seed : Environment.TickCount);
             Skater = new Skater();
-            Ground = new Ground(rng, 300);   // choix : le départ plat de 420 commence au bord droit de l'écran
+            Ground = new Ground(rng, 300) { Gaps = (allowed & Allow.Gaps) != 0 };   // choix : le départ plat de 420 commence au bord droit de l'écran
+            if ((allowed & Allow.Hills) == 0) Ground.FlatUntil = float.PositiveInfinity;   // pas de bosses
             Obstacles.Clear(); Bolts.Clear(); Events.Clear();
             Boss = null;
-            Score = bossNow ? Tuning.BossAt : 0;
-            NextBossScore = Tuning.BossAt;
-            milestone = Score / Tuning.MilestoneEvery;
-            Level = 1;
-            Theme = ThemeFor(Score);
+            Score = 0;
+            milestone = 0;
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
-            Speed = SpeedFor(Score); CurrentSpeed = Speed; speedFactor = 1;
+            Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; CurrentSpeed = Speed; speedFactor = 1;
             nextObstacleX = SpawnAhead;
-            bigRailPending = true;   // FR-008 : le premier obstacle est un grand rail
+            bigRailPending = (allowed & Allow.Rails) != 0;   // FR-008 : le premier obstacle est un grand rail
             pattern = 0; trickIndex = 0; holding = false;
             Phase = Phase.Playing;
         }
@@ -123,7 +156,7 @@ namespace PalmStreet.Core
                 sk.Vy = Tuning.OllieSpeed;
                 Add(Cue.Ollie);
             }
-            else if (sk.TricksLeft > 0 && sk.Trick < 0) Trick();   // FR-010 : un toucher en l'air fait la figure (2 touchers en tout)
+            else if (sk.TricksLeft > 0 && sk.Trick < 0 && Tricks.Count > 0) Trick();   // spec 002 : seulement les figures connues   // FR-010 : un toucher en l'air fait la figure (2 touchers en tout)
         }
 
         public void Release()
@@ -135,7 +168,7 @@ namespace PalmStreet.Core
         void Trick()
         {
             var sk = Skater;
-            int k = trickIndex++ % Tuning.TrickPoints.Length;
+            int k = Tricks[trickIndex++ % Tricks.Count];
             sk.Trick = k; sk.TrickStep = 0; sk.TricksLeft--;
             // pas restants avant de retomber au niveau du sol actuel : y(n) = Y + (Vy - 0,25) n - 0,25 n²
             float b = sk.Vy - Tuning.Gravity / 2, drop = Math.Max(0, sk.Y - Ground.Height(sk.X));
@@ -155,7 +188,7 @@ namespace PalmStreet.Core
             var sk = Skater;
             if (holding && ++holdSteps >= Tuning.DuckAfter && sk.Grounded) sk.Ducking = true;
 
-            Speed = SpeedFor(Score, Level);
+            Speed = Mode == GameMode.Story ? StorySpeed(Def, sk.X) : EndlessSpeed(StepCount);
             if (sk.Grounded) speedFactor = Ground.SpeedFactor(sk.X);
             CurrentSpeed = Speed * speedFactor;
             float prevY = sk.Y;
@@ -169,7 +202,14 @@ namespace PalmStreet.Core
 
             FallingCones();
             UpdateBoss();
-            if (Boss == null && Score >= NextBossScore) StartBoss();
+            if (Phase != Phase.Playing) return;   // boss du niveau battu : niveau réussi
+            if (Mode == GameMode.Story && sk.X >= Def.Finish && !bossDone && Boss == null)
+            {
+                if (Def.Boss == BossKind.None) { Add(Cue.Finish); Clear(); return; }   // ligne d'arrivée
+                StartBoss(Def.Boss);
+            }
+            if (Mode == GameMode.Endless && Boss == null && Score >= NextBossScore)
+                StartBoss(Bosses.Count > 0 ? Bosses[rng.Next(Bosses.Count)] : BossKind.Crab);
             Spawn();
             Collect();
             Collide();
@@ -227,6 +267,12 @@ namespace PalmStreet.Core
             var sk = Skater;
             if (sk.Y < Tuning.FallCrash) { Crash(); return; }   // tombé dans un trou
             float top = sk.Y + sk.Height;
+            if (Boss != null && Boss.State != BossState.Dying && Boss.State != BossState.Arriving)
+            {
+                var (bw, bh) = Boss.Body;
+                float by = Ground.Floor(Boss.X) + Boss.Lift;
+                if (bw > 0 && OverlapsX(Boss.X - bw / 2, Boss.X + bw / 2) && sk.Y < by + bh && top > by) { Crash(); return; }
+            }
             foreach (var o in Obstacles)
             {
                 if (o == sk.Rail) continue;
@@ -247,6 +293,13 @@ namespace PalmStreet.Core
                 if (!o.IsRail) { x0 += o.W * 0.2f; x1 -= o.W * 0.2f; y1 = o.Y + o.H * 0.85f; }   // un plot est pointu
                 if (OverlapsX(x0, x1) && sk.Y < y1 && top > o.Y) { Crash(); return; }
             }
+        }
+
+        void Clear()
+        {
+            Phase = Phase.Cleared;
+            Add(Cue.Cleared);
+            if (Score > Best) { Best = Score; NewBest = true; }
         }
 
         void Crash()
@@ -274,10 +327,10 @@ namespace PalmStreet.Core
         void Milestones()
         {
             int m = Score / Tuning.MilestoneEvery;
-            if (m > milestone)
+            if (Mode == GameMode.Endless && m > milestone)
             {
                 milestone = m;
-                bigRailPending = true;   // FR-008
+                bigRailPending = Has(Allow.Rails);   // FR-008 (s'il y a des rails dans ce mode)
                 Add(Cue.FullSpeed, "FULL SPEED");   // FR-016
             }
             var t = CurrentTheme;
@@ -298,7 +351,8 @@ namespace PalmStreet.Core
         void Spawn()
         {
             if (Boss != null) return;   // FR-017 : plus d'obstacles normaux pendant le boss
-            while (nextObstacleX < Skater.X + SpawnAhead) PlaceObstacle();
+            float limit = Mode == GameMode.Story ? Def.Finish - 300 : float.MaxValue;   // la ligne d'arrivée reste dégagée
+            while (nextObstacleX < Skater.X + SpawnAhead && nextObstacleX < limit) PlaceObstacle();
         }
 
         void PlaceObstacle()
@@ -307,8 +361,8 @@ namespace PalmStreet.Core
             if (Ground.InDescentStart(x, out float after)) x = after;
             // jamais d'obstacle juste avant, sur ou juste après un trou : on le pose bien après
             for (var hole = Ground.GapIn(x - 150, x + 150); hole != null; hole = Ground.GapIn(x - 150, x + 150)) x = hole.Value.X1 + 160;   // plus loin que la marge de 150, sinon on retrouve le même trou
-            if (Level >= 2 && !bigRailPending && PlaceNeon(x)) return;
-            bool rails = Score >= Tuning.RailsAfterScore;
+            if ((Has(Allow.Gulls) || Has(Allow.Pads)) && !bigRailPending && PlaceNeon(x)) return;
+            bool rails = Has(Allow.Rails) && (Mode == GameMode.Story || Score >= Tuning.RailsAfterScore);
             bool wantRail = bigRailPending || (rails && pattern % 3 == 2);
             if (rails) pattern++;
             Obstacle o = null;
@@ -322,7 +376,7 @@ namespace PalmStreet.Core
             }
             if (o == null)
             {
-                bool big = rails && rng.NextDouble() < 0.4;
+                bool big = Has(Allow.BigCones) && rng.NextDouble() < 0.4;
                 o = big ? new Obstacle { Kind = ObstacleKind.BigCone, X = x, W = 30, H = 42 } : new Obstacle { Kind = ObstacleKind.SmallCone, X = x, W = 22, H = 28 };
                 o.Y = Ground.Height(x + o.W / 2);
             }
@@ -346,12 +400,12 @@ namespace PalmStreet.Core
         {
             double r = rng.NextDouble();
             Obstacle o;
-            if (r < 0.28)
+            if (r < 0.28 && Has(Allow.Gulls))
             {
                 float gx = x + 140;   // elle vole vers le skateur : on la fait naître plus loin
                 o = new Obstacle { Kind = ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
             }
-            else if (r < 0.45)
+            else if (r >= 0.28 && r < 0.45 && Has(Allow.Pads))
             {
                 // le tremplin se met juste avant le prochain trou s'il y en a un : saut géant par-dessus
                 var gap = Ground.GapIn(x, x + 400);
@@ -419,9 +473,9 @@ namespace PalmStreet.Core
 
         // ---------- boss (FR-017 à FR-019) ----------
 
-        void StartBoss()
+        void StartBoss(BossKind kind)
         {
-            Boss = new Boss();
+            Boss = new Boss(kind);
             Ground.FlatUntil = float.PositiveInfinity;
             Ground.TrimAfter(Skater.X + SpawnAhead);
             Add(Cue.BossIn, "BOSS !");
@@ -432,8 +486,14 @@ namespace PalmStreet.Core
             var b = Boss;
             if (b == null) return;
             b.Timer++;
-            b.X = Skater.X + Boss.Distance;
-            switch (b.State)
+            b.X = Skater.X + b.Offset;
+            if (b.State == BossState.Dying)
+            {
+                if (b.Timer >= 90) { Boss = null; if (bossDone) Clear(); }
+                return;
+            }
+            if (b.Kind != BossKind.Purple) UpdateBeast(b);
+            else switch (b.State)
             {
                 case BossState.Arriving:
                     if (b.Timer >= Boss.ArriveSteps) b.Next(BossState.Ground);
@@ -455,7 +515,7 @@ namespace PalmStreet.Core
                     if (b.Timer >= Boss.MoveSteps) { b.Lift = 0; b.Next(BossState.Ground); }
                     break;
                 case BossState.Dying:
-                    if (b.Timer >= 90) Boss = null;
+                    if (b.Timer >= 90) { Boss = null; if (bossDone) Clear(); }
                     return;
             }
             if (b.State == BossState.Arriving) return;
@@ -467,7 +527,8 @@ namespace PalmStreet.Core
                 b.Teeth.Add(new Tooth { X = Skater.X + 14, Y = Skater.Y + 40 });
                 Add(Cue.Tooth);
             }
-            float tx = b.X, ty = Ground.Height(b.X) + b.Lift + Boss.Size / 2;
+            if (b.State == BossState.Dying) return;
+            float tx = b.X, ty = Ground.Floor(b.X) + b.Lift + b.Height / 2;
             for (int i = b.Teeth.Count - 1; i >= 0; i--)
             {
                 var t = b.Teeth[i];
@@ -485,6 +546,51 @@ namespace PalmStreet.Core
             }
         }
 
+        /// <summary>Crabe, Goéland, Sanglier (spec 002, FR-011) : attaques au ras du sol ou à hauteur de tête.</summary>
+        void UpdateBeast(Boss b)
+        {
+            bool gull = b.Kind == BossKind.Gull;
+            switch (b.State)
+            {
+                case BossState.Arriving:
+                    if (gull) b.Lift = Boss.FlyHeight;
+                    if (b.Timer >= Boss.ArriveSteps) b.Next(BossState.Ground);
+                    break;
+                case BossState.Ground:
+                    if (gull && (b.Timer == 100 || b.Timer == 160 || b.Timer == 220)) DropThing(b, ObstacleKind.DroppedCone, 18, 16);   // coquillages
+                    if (b.Kind == BossKind.Boar && (b.Timer == 120 || b.Timer == 220)) DropThing(b, ObstacleKind.Barrier, 30, 22);   // barrières
+                    if (b.Timer >= b.AttackEvery) { b.Next(BossState.Rising); Add(Cue.BossFly); }
+                    break;
+                case BossState.Rising:   // l'attaque : il fonce et passe sous (ou sur) le skateur
+                {
+                    float k = Math.Min(1, (float)b.Timer / b.AttackSteps);
+                    b.Offset = Boss.Distance + (Boss.BehindSkater - Boss.Distance) * k;
+                    if (gull) b.Lift = Boss.FlyHeight + (Boss.GullDive - Boss.FlyHeight) * Math.Min(1, k * 1.6f);
+                    if (b.Timer >= b.AttackSteps) b.Next(BossState.Falling);
+                    break;
+                }
+                case BossState.Falling:   // retour devant
+                {
+                    float k = Math.Min(1, (float)b.Timer / Boss.ReturnSteps);
+                    b.Offset = Boss.BehindSkater + (Boss.Distance - Boss.BehindSkater) * k;
+                    if (gull) b.Lift = Boss.GullDive + (Boss.FlyHeight - Boss.GullDive) * k;
+                    else b.Lift = (float)Math.Sin(Math.PI * k) * 140;   // repart devant d'un grand bond par-dessus le skateur
+                    if (b.Timer >= Boss.ReturnSteps) b.Next(BossState.Ground);
+                    break;
+                }
+            }
+            b.X = Skater.X + b.Offset;
+        }
+
+        void DropThing(Boss b, ObstacleKind kind, float w, float h)
+        {
+            var o = new Obstacle { Kind = kind, W = w, H = h, X = b.X - w / 2 };
+            o.Y = Ground.Floor(b.X) + b.Lift;
+            o.Falling = o.Y > Ground.Floor(b.X);
+            Obstacles.Add(o);
+            Add(Cue.ConeDrop, null, b.X, o.Y);
+        }
+
         void DropCone(Boss b)
         {
             b.Drops++;
@@ -500,18 +606,12 @@ namespace PalmStreet.Core
             b.Next(BossState.Dying);
             b.Hp = 0;
             b.Teeth.Clear();
-            AddPoints(Cue.Boom, Tuning.BossBonus, "BOOM", b.X, Ground.Height(b.X) + b.Lift + Boss.Size / 2);
+            AddPoints(Cue.Boom, Tuning.BossBonus, "BOOM", b.X, Ground.Floor(b.X) + b.Lift + b.Height / 2);
+            if (Mode == GameMode.Story) { bossDone = true; return; }   // le niveau est réussi quand l'explosion finit
             // FR-019 : long plat avec une barre de nose grind, puis reprise
             float x = Skater.X;
             Ground.FlatUntil = x + Tuning.AfterBossFlat;
             Obstacles.Add(new Obstacle { Kind = ObstacleKind.NoseRail, X = x + 400, W = Tuning.RailLength * Tuning.NoseRailFactor, H = Tuning.RailHeight });
-            if (Level == 1)
-            {
-                // FR-029 : le premier boss battu ouvre le niveau 2, NUIT NÉON
-                Level = 2;
-                Ground.Gaps = true;
-                Add(Cue.Level, "NIVEAU 2");
-            }
             nextObstacleX = x + Tuning.AfterBossFlat;
             NextBossScore = Score + Tuning.BossAt;
         }

@@ -63,8 +63,9 @@ namespace PalmStreet.Game
             new Paint()
                 .Capsule(0, 2, 2.5f, 18, 15, l.Top)
                 .Rect(-6.5f, 1, 13, 3.5f, dark)
-                .Line(-3, 10, 7.5f, 13, 3, l.Accent)
+                .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent)
                 .Make("Sweat", torso, order + 4, layer);
+            if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 4, layer);   // aile de goéland
             var head = Head(l, order + 6, layer);
             head.SetParent(torso, false);
             head.localPosition = W(3.5f, 28);
@@ -130,8 +131,23 @@ namespace PalmStreet.Game
             gripFace = top.Make("Dessus", board, order + 1, layer).transform;
 
             var bottom = new Paint().Capsule(-25, 0, 25, 0, 14, l.Deck);
-            bottom.Capsule(-20, -3.5f, 20, -3.5f, 2.2f, l.Accent).Capsule(-20, 3.5f, 20, 3.5f, 2.2f, l.Accent);
-            bottom.Circle(0, 0, 4.6f, l.Wheels, 18).Circle(0, 0, 2.6f, l.Deck, 14);
+            var art = Color.Lerp(l.Deck, Color.black, 0.35f);
+            switch (l.Art)   // dessous de la planche gagnée (spec 002, FR-025)
+            {
+                case DeckArt.Wood:
+                    for (int i = 0; i < 4; i++) bottom.Line(-20, -4.5f + i * 3, 20, -4 + i * 3, 0.7f, art);
+                    break;
+                case DeckArt.Crab:
+                    bottom.Ellipse(-6, 0, 7, 4, art, 16).Ellipse(7, 2.5f, 5, 2.2f, art, 12).Ellipse(7, -2.5f, 5, 2.2f, art, 12)
+                          .Poly(Color.white, 10, 2.5f, 13, 3.5f, 10, 4).Poly(Color.white, 10, -2.5f, 13, -3.5f, 10, -4);
+                    break;
+                case DeckArt.Pepper:
+                    for (int i = 0; i < 3; i++) { float x = -12 + i * 12; bottom.Ellipse(x, 0, 5, 2.2f, Hex("#FF3B30"), 12, 0.3f).Capsule(x + 4, 1.5f, x + 6, 2.5f, 1.2f, Hex("#3BB273")); }
+                    break;
+                case DeckArt.Neon:
+                    bottom.Capsule(-20, -3.5f, 20, -3.5f, 1.6f, l.Wheels).Capsule(-20, 3.5f, 20, 3.5f, 1.6f, l.Wheels).Capsule(-14, 0, 14, 0, 1.2f, Color.white);
+                    break;
+            }
             foreach (float cx in new[] { -14f, 14f })
             {
                 bottom.Rect(cx - 1.6f, -7.5f, 3.2f, 15, metal);
@@ -181,29 +197,33 @@ namespace PalmStreet.Game
             p.Rect(-2.2f, -9, 4.4f, 5, l.Skin);                       // cou
             p.Circle(0, 0, 7.5f, l.Skin, 20);
             p.Circle(-5.5f, -0.5f, 2, Color.Lerp(l.Skin, Color.black, 0.15f), 10);   // oreille
-            switch (l.Head)
+            // cheveux (libres), puis couvre-chef gagné (spec 002)
+            if (l.Curly)
+                for (int i = 0; i < 9; i++)
+                {
+                    float a = Mathf.PI * (0.05f + i / 8f * 1.05f);
+                    p.Circle(Mathf.Cos(a) * 7, 1.5f + Mathf.Sin(a) * 6.5f, 3.6f, l.Hair, 10);
+                }
+            else
             {
-                case Headwear.Cap:
-                    p.Ellipse(-1, 2, 5, 4, l.Hair, 10);
-                    p.Dome(0, 1.5f, 8, 7.5f, l.Hat, 14);
-                    p.Capsule(-7, 2.2f, -13, 1.2f, 3, l.Hat);   // visière à l'envers
+                p.Dome(0, 1, 8, 8.2f, l.Hair, 14);
+                p.Ellipse(-5.5f, 1, 3, 4.5f, l.Hair, 10);
+            }
+            switch (l.Hat)
+            {
+                case Hat.Cap:
+                    p.Dome(0, 1.5f, 8, 7.5f, l.HatColor, 14);
+                    p.Capsule(-7, 2.2f, -13, 1.2f, 3, l.HatColor);   // visière à l'envers
                     break;
-                case Headwear.Beanie:
-                    p.Dome(0, 1, 8.2f, 9.5f, l.Hat, 14);
-                    p.Rect(-8.4f, 0, 16.8f, 3.4f, Color.Lerp(l.Hat, Color.white, 0.25f));
-                    p.Circle(0, 11, 3, Color.Lerp(l.Hat, Color.white, 0.4f), 10);
+                case Hat.Beanie:
+                    p.Dome(0, 1, 8.2f, 9.5f, l.HatColor, 14);
+                    if (l.Stripes) { p.Rect(-7.6f, 4.5f, 15.2f, 1.8f, Color.white); p.Rect(-6.2f, 7.5f, 12.4f, 1.6f, Color.white); }
+                    p.Rect(-8.4f, 0, 16.8f, 3.4f, Color.Lerp(l.HatColor, Color.white, 0.25f));
+                    p.Circle(0, 11, 3, Color.white, 10);
                     break;
-                case Headwear.Curls:
-                    for (int i = 0; i < 9; i++)
-                    {
-                        float a = Mathf.PI * (0.05f + i / 8f * 1.05f);
-                        p.Circle(Mathf.Cos(a) * 7, 1.5f + Mathf.Sin(a) * 6.5f, 3.6f, l.Hair, 10);
-                    }
-                    break;
-                default:
-                    p.Dome(0, 1, 8, 8.2f, l.Hair, 14);
-                    p.Rect(-8, 2, 16, 3, l.Hat);
-                    p.Capsule(-8, 3.5f, -12, 0, 2.4f, l.Hat);
+                case Hat.Band:
+                    p.Rect(-8, 2, 16, 3, l.HatColor);
+                    p.Capsule(-8, 3.5f, -12, 0, 2.4f, l.HatColor);
                     break;
             }
             p.Circle(4.2f, 0.5f, 1.2f, Hex("#1B1028"), 8);           // œil

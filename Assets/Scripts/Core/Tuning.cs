@@ -54,6 +54,10 @@ namespace PalmStreet.Core
         public const float PadWidth = 40, PadHeight = 6, PadJump = 13.5f;
         public const int MegaAirPoints = 50;
 
+        // Mode infini (spec 002, FR-018, FR-019)
+        public const float EndlessStart = 1.7f, EndlessSlopePerSecond = 0.012f, EndlessMax = 5.5f;
+        public const int EndlessThemeEvery = 4000;
+
         // Skateur (choix) : position à l'écran et boîte de collision
         public const float SkaterScreenX = 90, SkaterHalfWidth = 12, SkaterHeight = 60, DuckHeight = 40;
     }
