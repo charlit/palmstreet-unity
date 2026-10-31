@@ -10,7 +10,7 @@ namespace PalmStreet.Tests
         static Run NewRun(int score = 0)
         {
             var r = new Run(42);
-            r.Start(Rider.Freestill);
+            r.Start();
             r.Score = score;
             return r;
         }
@@ -153,7 +153,7 @@ namespace PalmStreet.Tests
                 Clear(r, 2);
                 r.Press(); Clear(r, 5);
                 r.Events.Clear();
-                r.Press(); Clear(r, 5); r.Press();
+                r.Press();
                 var t = r.Events.Single(e => e.Cue == Cue.Trick);
                 Assert.AreEqual(expected[k], t.Points);
                 Assert.AreEqual(Tuning.TrickNames[k] + " !", t.Text);
@@ -163,21 +163,22 @@ namespace PalmStreet.Tests
             }
         }
 
-        [Test] public void Fr010_DeuxTouchersAuSolUnSeulOllie()
+        [Test] public void Fr010_UnToucherAuSolFaitSeulementUnOllie()
         {
             var r = NewRun();
             Clear(r, 2);
-            r.Press(); Clear(r, 3); r.Press();
+            r.Press();
             Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick));
             Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
         }
 
-        [Test] public void Fr010_ToucherLentNeFaitPasDeFigure()
+        [Test] public void Fr010_DeuxTouchersFontSautPuisFigure()
         {
             var r = NewRun();
             Clear(r, 2);
-            r.Press(); Clear(r, 3); r.Press(); Clear(r, 20); r.Press();
-            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick));
+            r.Press(); Clear(r, 20); r.Press();   // même tard dans le saut
+            Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
+            Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick));
         }
 
         static Run OnRail(out Obstacle rail)
@@ -288,7 +289,7 @@ namespace PalmStreet.Tests
         [Test] public void Fr018_DentsEtEnvol()
         {
             var r = new Run(7);
-            r.Start(Rider.Freestill, bossNow: true);
+            r.Start(bossNow: true);
             int teeth = 0, drops = 0, hp = 0;
             for (int i = 0; i < Boss.ArriveSteps + 600 + 400; i++)
             {
@@ -308,7 +309,7 @@ namespace PalmStreet.Tests
         [Test] public void Fr019_BossBattu()
         {
             var r = new Run(7);
-            r.Start(Rider.Freestill, bossNow: true);
+            r.Start(bossNow: true);
             r.Step();
             r.Boss.Hp = 100;
             int guard = 0;
@@ -326,7 +327,7 @@ namespace PalmStreet.Tests
         [Test] public void Fr020_RaccourciDuSoleil()
         {
             var r = new Run(1);
-            r.Start(Rider.Keketsk8, bossNow: true);
+            r.Start(bossNow: true);
             r.Step();
             Assert.IsNotNull(r.Boss);
             Assert.AreEqual(Theme.Arcangues, r.Theme);
@@ -344,6 +345,126 @@ namespace PalmStreet.Tests
             for (int i = 0; i < 80; i++) { r.Step(); r.Phase = Phase.Playing; }
             Assert.IsFalse(o.Falling);
             Assert.AreEqual(r.Ground.Height(x), o.Y, 1e-3);
+        }
+
+        [Test] public void Fr027_VetementsDebloquesParLesPoints()
+        {
+            int total = Unlocks.Colors.Length + Unlocks.Heads.Length + Unlocks.Legs.Length;
+            Assert.That(Unlocks.CountOpen(0), Is.GreaterThan(0).And.LessThan(total), "une tenue de départ, le reste à gagner");
+            Assert.AreEqual(total, Unlocks.CountOpen(int.MaxValue));
+            int prev = 0;
+            for (int pts = 0; pts <= 30000; pts += 500) { int n = Unlocks.CountOpen(pts); Assert.That(n, Is.GreaterThanOrEqualTo(prev)); prev = n; }
+            Assert.IsFalse(Unlocks.Open(Unlocks.Heads[1], Unlocks.Heads[1] - 1));
+            Assert.IsTrue(Unlocks.Open(Unlocks.Heads[1], Unlocks.Heads[1]));
+        }
+
+        /// <summary>Partie au niveau 2 avec la route d'aujourd'hui : plat jusqu'à x0, trou de x0 à x1, puis plat.</summary>
+        static Run NeonWithGap(float x0, float x1)
+        {
+            var r = NewRun();
+            Clear(r, 2);
+            r.Level = 2;
+            r.Score = 16000; r.NextBossScore = int.MaxValue;   // vitesse du niveau 2, pas de boss
+            var segs = r.Ground.Segments;
+            segs.Clear();
+            segs.Add(new Segment { Kind = SlopeKind.Flat, X0 = -1000, X1 = x0 });
+            segs.Add(new Segment { Kind = SlopeKind.Gap, X0 = x0, X1 = x1 });
+            segs.Add(new Segment { Kind = SlopeKind.Flat, X0 = x1, X1 = x1 + 5000 });
+            r.Obstacles.Clear(); r.Bolts.Clear();
+            return r;
+        }
+
+        [Test] public void Fr029_LeBossBattuOuvreLeNiveauNeon()
+        {
+            var r = new Run(7);
+            r.Start(bossNow: true);
+            r.Step();
+            r.Boss.Hp = 100;
+            var all = new System.Collections.Generic.List<GameEvent>();
+            for (int i = 0; i < 400; i++) { all.AddRange(r.Events); r.Events.Clear(); r.Obstacles.RemoveAll(o => !o.IsRail); r.Step(); r.Phase = Phase.Playing; }
+            Assert.IsTrue(all.Any(e => e.Cue == Cue.Level && e.Text == "NIVEAU 2"));
+            Assert.AreEqual(2, r.Level);
+            Assert.AreEqual(Theme.Neon, r.Theme);
+            Assert.AreEqual(5.0f, Run.SpeedFor(100000, 2), 1e-4);
+            Assert.IsTrue(r.Ground.Gaps);
+        }
+
+        [Test] public void Fr030_TrousDansLaRoute()
+        {
+            var g = new Ground(new System.Random(5), 300) { Gaps = true };
+            g.EnsureUpTo(40000);
+            var gaps = g.Segments.Where(s => s.Kind == SlopeKind.Gap).ToList();
+            Assert.That(gaps.Count, Is.GreaterThan(5));
+            foreach (var s in gaps) Assert.That(s.Length, Is.InRange(Tuning.GapMin, Tuning.GapMax));
+            Assert.AreEqual(Ground.Abyss, g.Height(gaps[0].X0 + 10));
+            Assert.AreEqual(0, g.Floor(gaps[0].X0 + 10));
+
+            var fall = NeonWithGap(100, 180);   // il roule sans sauter : il tombe dans le trou
+            for (int i = 0; i < 200 && fall.Phase == Phase.Playing; i++) { fall.Bolts.Clear(); fall.Step(); }
+            Assert.AreEqual(Phase.Over, fall.Phase);
+            Assert.That(fall.Skater.X, Is.InRange(100f, 200f));
+
+            var jump = NeonWithGap(100, 180);   // il saute juste avant le bord : il passe
+            while (jump.Skater.X < 100 - 25) { jump.Bolts.Clear(); jump.Step(); }
+            jump.Press(); jump.Release();
+            for (int i = 0; i < 120; i++) { jump.Bolts.Clear(); jump.Obstacles.Clear(); jump.Step(); }
+            Assert.AreEqual(Phase.Playing, jump.Phase);
+            Assert.That(jump.Skater.X, Is.GreaterThan(180f));
+        }
+
+        [Test] public void Fr031_MouetteAHauteurDeTete()
+        {
+            var r = NeonWithGap(5000, 5100);
+            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + 60, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
+            for (int i = 0; i < 40 && r.Phase == Phase.Playing; i++) { r.Bolts.Clear(); r.Step(); }
+            Assert.AreEqual(Phase.Over, r.Phase, "debout, la mouette le touche");
+
+            r = NeonWithGap(5000, 5100);
+            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + 60, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
+            r.Press(); r.Release(); while (!r.Skater.Grounded) r.Step();   // on attend d'être au sol
+            r.Obstacles.Clear();
+            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + 60, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
+            r.Press();   // maintenu : il s'accroupit
+            for (int i = 0; i < 12; i++) r.Step();
+            r.Events.Clear();
+            for (int i = 0; i < 60; i++) { r.Bolts.Clear(); r.Step(); }
+            Assert.IsTrue(r.Skater.Ducking);
+            Assert.AreEqual(Phase.Playing, r.Phase, "accroupi, il passe dessous");
+        }
+
+        [Test] public void Fr032_TremplinMegaAirEtDeuxFigures()
+        {
+            var r = NeonWithGap(5000, 5100);
+            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Pad, X = r.Skater.X + 10, W = Tuning.PadWidth, H = Tuning.PadHeight });
+            r.Events.Clear();
+            for (int i = 0; i < 10 && r.Skater.Grounded; i++) r.Step();
+            var mega = r.Events.Single(e => e.Cue == Cue.MegaAir);
+            Assert.AreEqual(Tuning.MegaAirPoints, mega.Points);
+            r.Press(); r.Release();
+            while (r.Skater.Trick >= 0) r.Step();
+            r.Press(); r.Release();
+            Assert.AreEqual(2, r.Events.Count(e => e.Cue == Cue.Trick), "deux figures pendant un méga air");
+            r.Press(); r.Release();
+            Assert.AreEqual(2, r.Events.Count(e => e.Cue == Cue.Trick));
+        }
+
+        [Test] public void Fr030_NiveauNeonLongtempsSansBloquer()
+        {
+            // bug corrigé : un obstacle posé juste après un trou retrouvait le même trou et bouclait sans fin
+            var r = new Run(11);
+            r.Start();
+            r.Level = 2; r.Score = 16000; r.NextBossScore = int.MaxValue; r.Ground.Gaps = true;
+            seen.Clear();
+            for (int i = 0; i < 20000; i++)
+            {
+                if (r.Skater.Grounded && r.Ground.IsGap(r.Skater.X + 40)) r.Press();
+                InvincibleStep(r);
+                if (r.Skater.Y < 0) { r.Skater.Y = 0; r.Skater.Vy = 0; r.Skater.Grounded = !r.Ground.IsGap(r.Skater.X); }
+            }
+            Assert.That(seen.Count(o => o.Kind == ObstacleKind.Gull), Is.GreaterThan(3));
+            Assert.That(seen.Count(o => o.Kind == ObstacleKind.Pad), Is.GreaterThan(3));
+            foreach (var o in seen.Where(o => o.Kind != ObstacleKind.Gull))
+                Assert.IsNull(r.Ground.GapIn(o.X, o.X + o.W) is Segment h && h.X0 > r.Skater.X - 300 ? (Segment?)h : null, "obstacle posé sur un trou");
         }
     }
 }

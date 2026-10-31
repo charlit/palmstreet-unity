@@ -31,11 +31,30 @@ namespace PalmStreet.Tests
 
             for (int i = 0; i < 10; i++) yield return null;
             yield return Shot("1-accueil");
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("1-profil");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(1);
+            yield return null;
+            yield return Shot("1-reglages");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(0);
+            game.ToMenu();
 
             game.StartRun(false);
             yield return Steps(run, 100, false);
             yield return Shot("2-depart");
+            game.OpenGameSettings(true);
+            yield return Shot("2-reglages-partie");
+            game.OpenGameSettings(false);
             yield return Shot("2-depart-zoom", new Vector2(run.Skater.X, run.Skater.Y + 30));
+
+            // un ollie image par image, cadré au même endroit pour voir monter la planche
+            run.Press(); run.Release();
+            for (int i = 0; i <= 36; i += 6)
+            {
+                yield return Shot($"2-ollie-{i:00}", new Vector2(run.Skater.X, 70));
+                for (int k = 0; k < 6; k++) run.Step();
+            }
 
             // le grand rail arc-en-ciel du départ
             var rail = run.Obstacles.Find(o => o.Kind == ObstacleKind.BigRail);
@@ -47,19 +66,17 @@ namespace PalmStreet.Tests
             yield return Shot("3-grind-zoom", new Vector2(run.Skater.X, run.Skater.Y + 30));
 
             yield return Steps(run, 200, true);
-            for (int k = 0; k < 4; k++)   // les 4 figures, saisies au quart, à la moitié et aux trois quarts
+            for (int k = 0; k < 4; k++)   // les 4 figures, saisies à 5 moments
             {
                 while (!run.Skater.Grounded) { run.Step(); yield return null; }
                 run.Obstacles.Clear(); run.Bolts.Clear();
                 run.Press(); run.Release();
                 yield return Steps(run, 4, false);
                 run.Press(); run.Release();
-                yield return Steps(run, 3, false);
-                run.Press(); run.Release();
                 Assert.AreEqual(k, run.Skater.Trick, "figure attendue");
-                for (int moment = 1; moment <= 3; moment++)
+                for (int moment = 1; moment <= 5; moment++)
                 {
-                    int target = run.Skater.TrickLength * moment / 4;
+                    int target = run.Skater.TrickLength * moment / 6;
                     while (run.Skater.TrickStep < target) { run.Step(); run.Bolts.Clear(); }
                     yield return Shot($"4-figure-{k}-{moment}", new Vector2(run.Skater.X, run.Skater.Y + 30));
                 }
@@ -82,6 +99,21 @@ namespace PalmStreet.Tests
             yield return Steps(run, 12, true);
             yield return Shot("8-boom");
 
+            // niveau 2 : NUIT NÉON, après le plat du nose grind
+            yield return Steps(run, 700, true);
+            run.Obstacles.RemoveAll(o => o.X > run.Skater.X + 20);
+            float gx = run.Skater.X + 150;
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Pad, X = run.Skater.X + 60, W = Tuning.PadWidth, H = Tuning.PadHeight });
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = run.Skater.X + 240, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
+            for (int i = 0; i < 4; i++) yield return null;
+            yield return Shot("8-neon");
+            var hole = run.Ground.GapIn(run.Skater.X, run.Skater.X + 3000);
+            if (hole != null)
+            {
+                while (run.Skater.X < hole.Value.X0 - 120 && run.Phase == Phase.Playing) { run.Obstacles.RemoveAll(o => !o.IsRail); run.Step(); if (run.StepCount % 3 == 0) yield return null; }
+                yield return Shot("8-neon-trou");
+            }
+
             game.StartRun(false);
             yield return Steps(run, 30, true);
             run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.SmallCone, X = run.Skater.X + 20, W = 22, H = 28 });
@@ -97,6 +129,7 @@ namespace PalmStreet.Tests
             {
                 if (invincible) run.Obstacles.RemoveAll(o => !o.IsRail && o.X < run.Skater.X + 40 && o.X + o.W > run.Skater.X - 20 && !o.Falling);
                 if (invincible && run.Skater.Grounded && run.Obstacles.Exists(o => o.IsRail && o.X - run.Skater.X is > 30 and < 70)) run.Press();
+                if (invincible && run.Skater.Grounded && run.Ground.IsGap(run.Skater.X + 45)) run.Press();   // saute les trous
                 run.Step();
                 if (invincible && run.Phase != Phase.Playing) run.Phase = Phase.Playing;
                 if (i % 2 == 0) yield return null;   // l'affichage suit (décor, particules)

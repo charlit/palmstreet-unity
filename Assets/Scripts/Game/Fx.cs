@@ -64,6 +64,18 @@ namespace PalmStreet.Game
             }
         }
 
+        /// <summary>Feu d'artifice : un anneau d'étincelles d'une couleur néon qui retombe.</summary>
+        public void Firework(float x, float y)
+        {
+            var c = Color.HSVToRGB(Random.value, 0.65f, 1);
+            int n = 36;
+            for (int i = 0; i < n; i++)
+            {
+                float a = i * Mathf.PI * 2 / n;
+                Emit(bits, x, y, V(Mathf.Cos(a) * 3.2f, Mathf.Sin(a) * 3.2f), Random.Range(4f, 7f), Color.Lerp(c, Color.white, Random.value * 0.3f));
+            }
+        }
+
         static void Emit(ParticleSystem ps, float x, float y, Vector3 vel, float size, Color c)
         {
             ps.Emit(new ParticleSystem.EmitParams { position = W(x, y), velocity = vel, startSize = size / Ppu, startColor = c, applyShapeToPosition = false }, 1);

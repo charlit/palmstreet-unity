@@ -59,12 +59,12 @@ Toutes les durées sont en pas de 1/60 s.
 
 ### Tests for User Story 2
 
-- [x] T016 [P] [US2] Tests FR-010 (ordre et points des 4 figures × combo, une par saut, rien avec deux touchers au sol, rien si trop lent), FR-011 (grind +2 par pas, GRIND! 20 × combo), FR-012 (OUT! +15, saut à 85 %)
+- [x] T016 [P] [US2] Tests FR-010 (ordre et points des 4 figures × combo, une par saut, un toucher au sol = ollie seul, le toucher suivant en l'air = figure), FR-011 (grind +2 par pas, GRIND! 20 × combo), FR-012 (OUT! +15, saut à 85 %)
 - [x] T017 [P] [US2] Tests FR-013 (10 × combo, rangées hors obstacles, 3 hauteurs), FR-014 (combo remis à 1 après 132 pas)
 
 ### Implementation for User Story 2
 
-- [x] T018 [US2] Figures en double toucher en l'air, durée d'animation ajustée au temps restant avant la retombée
+- [x] T018 [US2] Figures par un toucher en l'air (2 touchers en tout, écart de 2026-10-30 à la spec d'origine), durée d'animation ajustée au temps restant avant la retombée
 - [x] T019 [US2] Grind sur le dessus des rails, sortie en bout de rail ou par OUT!
 - [x] T020 [US2] Éclairs : rangées de 3 à 5, toujours sur montée ou début de descente, sinon 38 % ; ramassage
 - [x] T021 [US2] Affichage : rails (normal, arc-en-ciel, nose grind), éclairs, COMBO xN, textes flottants « +30 FLIP ! », « +20 GRIND! », « +15 OUT! »
@@ -90,11 +90,18 @@ Toutes les durées sont en pas de 1/60 s.
 
 - [x] T027 Paint.cs : formes en maillages à couleurs de sommets (polygones convexes, cercles, capsules, courbes, dégradés, halos) et Fader pour les fondus
 - [x] T028 Scenery.cs et Look.cs : ciel en dégradé, soleil et halo, reflet sur l'océan, 4 plans de parallaxe par décor (Largenté : caps, océan et surfeurs, palmiers, promenade ; BTZ : phare, villas, réverbères ; Arcangues : Pyrénées, collines, église et fronton, arbres), fondu entre décors, route avec trottoir
-- [x] T029 RiderView.cs : 4 skateurs articulés (tenues de Look.cs, planche jaune pour GUIGUI), jambes en cinématique inverse et semelles collées au grip, poussée, accroupi, ollie, grind, chute avec planche qui rebondit
+- [x] T029 RiderView.cs : skateur articulé (tenue construite par Wardrobe.Build), jambes en cinématique inverse et semelles collées au grip, poussée, accroupi, ollie, grind, chute avec planche qui rebondit
 - [x] T030 RiderView.cs : planche redessinée (profil, dessus, dessous) ; FLIP et SHOVE-IT sous les pieds levés, 360° et 360° INVERSÉ en saltos groupés
 - [x] T031 Props.cs et Fx.cs : plots, rails, éclairs, ombres douces ; poussière, étincelles de grind, éclats, confettis
 - [x] T032 Sound.cs : musique 132 bpm (la mineur, fa, do, sol), bruitages saut, retombée, figure, éclair, grind en boucle, chute, boss, BOOM ; bouton SON/MUET gardé dans PlayerPrefs `mute`
 - [ ] T033 [P] Un bruitage différent pour chaque figure (FLIP, SHOVE-IT, 360°, 360° INVERSÉ)
+- [x] T046 [FR-026] Profil : plus de choix entre 4 skateurs ; Outfit et Wardrobe dans Look.cs (coiffures, peaux, cheveux, palette de 14 couleurs), écran PROFIL à onglets (TÊTE, PEAU, HAUT, BAS, PIEDS, PLANCHE) avec aperçu animé, tenue gardée dans PlayerPrefs `outfit`, bouton PROFIL à l'accueil et « CHANGER MA TENUE » à la fin
+- [x] T047 [FR-002] Nouveau bouton START (pilule en relief, icône lecture, respiration), PROFIL en haut à droite, TOP 10 seul en bas
+- [x] T048 [FR-027] Unlocks.cs (prix des couleurs, coiffures, coupes) et son test ; points cumulés dans PlayerPrefs `total` ; pastilles et choix verrouillés avec leur prix dans le profil ; annonce des nouveautés à la fin d'une partie
+- [x] T049 [FR-021, FR-028] Onglet RÉGLAGES du profil (son, vibrations) ; Haptics.cs (Taptic Engine par Assets/Plugins/iOS/PalmHaptics.mm, Vibrator sur Android) ; PlayerPrefs `vibrate` ; bouton SON seulement en partie
+- [x] T050 [FR-026] Profil en deux onglets : TENUE (aperçu, puis TÊTE, PEAU, HAUT, BAS, PIEDS, PLANCHE) et RÉGLAGES (son, vibrations)
+- [x] T051 [US5] Niveau 2 NUIT NÉON (FR-029 à FR-032) : Level, Theme.Neon, vitesse 5,0 ; trous (Ground.Gaps, Abyss, chute et bord), mouettes, tremplins et MÉGA AIR à deux figures ; décor néon (étoiles, grande roue, ville, palmiers, enseignes, réverbères), bords de trous lumineux, feux d'artifice ; 5 tests, dont un contre le blocage d'un obstacle placé après un trou
+- [x] T052 [FR-021, FR-028] En partie : le bouton SON devient RÉGLAGES (pause, son, vibrations, REPRENDRE, QUITTER LA PARTIE)
 - [ ] T034 Remplacer les pièces dessinées en code par les PNG de Art/cahier-des-charges-skateurs.md quand ils sont livrés (Assets/Resources/Skaters/<skateur>/), mêmes articulations
 
 ---

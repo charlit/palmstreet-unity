@@ -20,7 +20,6 @@ namespace PalmStreet.Core
         // FR-006 saut et accroupi
         public const float OllieSpeed = 9.6f, Gravity = 0.5f;
         public const int DuckAfter = 13;              // 0,22 s
-        public const int DoubleTapWindow = 19;        // 0,32 s
 
         // FR-007 / FR-008 obstacles
         public const int RailsAfterScore = 2000;
@@ -47,6 +46,13 @@ namespace PalmStreet.Core
         public const int BossFlyEvery = 600;          // 10 s
         public const int BossDrops = 4;
         public const float AfterBossFlat = 2500;
+
+        // Niveau 2 « NUIT NÉON » après le premier boss (FR-029 à FR-032, choix)
+        public const float NeonMaxSpeed = 5.0f;
+        public const float GapMin = 50, GapMax = 90, GapChance = 0.4f, FallCrash = -45;
+        public const float GullHeight = 46, GullWidth = 30, GullBody = 16, GullSpeed = 1.6f;
+        public const float PadWidth = 40, PadHeight = 6, PadJump = 13.5f;
+        public const int MegaAirPoints = 50;
 
         // Skateur (choix) : position à l'écran et boîte de collision
         public const float SkaterScreenX = 90, SkaterHalfWidth = 12, SkaterHeight = 60, DuckHeight = 40;

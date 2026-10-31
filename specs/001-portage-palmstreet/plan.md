@@ -28,7 +28,7 @@ décrit la version refaite (commit a646645).
 **Primary Dependencies**: URP (Renderer 2D), uGUI, Input System, Unity Test Framework. Aucun asset ni
 plugin tiers.
 
-**Storage**: PlayerPrefs (`best`, `rider`, `mute`)
+**Storage**: PlayerPrefs (`best`, `total`, `outfit` en JSON, `mute`, `vibrate`)
 
 **Testing**: Unity Test Framework : tests EditMode sur PalmStreet.Core (une règle de la spec par test), et
 un test PlayMode qui fait des captures d'écran pour vérifier le rendu sans téléphone.
@@ -42,7 +42,7 @@ un test PlayMode qui fait des captures d'écran pour vérifier le rendu sans té
 **Constraints**: hors ligne complet (seul le classement a besoin du réseau) ; aucune donnée collectée ;
 taille de l'app < 150 Mo
 
-**Scale/Scope**: 1 scène, 4 skateurs, 3 décors, 1 boss, 25 exigences
+**Scale/Scope**: 1 scène, 1 skateur personnalisable, 3 décors, 1 boss, 32 exigences
 
 ## Constitution Check
 
@@ -81,7 +81,8 @@ Assets/
 │   │   ├── Tuning.cs                # toutes les valeurs de la spec (et les « choix »)
 │   │   ├── Ground.cs                # segments plat / montée / descente, hauteur, pente, vitesse
 │   │   ├── Run.cs                   # une partie : touchers, pas de simulation, obstacles, éclairs, points, événements
-│   │   └── Boss.cs                  # état du boss et des dents
+│   │   ├── Boss.cs                  # état du boss et des dents
+│   │   └── Unlocks.cs               # prix des vêtements en points cumulés
 │   ├── Game/                        # PalmStreet.Game.asmdef — affichage Unity
 │   │   ├── Game.cs                  # démarrage, boucle à pas fixes, touchers, événements, pause, PlayerPrefs, caméra
 │   │   ├── Paint.cs                 # formes (polygones, cercles, capsules, dégradés) → Mesh ; Fader pour les fondus
@@ -93,7 +94,8 @@ Assets/
 │   │   ├── Sound.cs                 # musique 132 bpm et bruitages synthétisés, son coupé
 │   │   └── Hud.cs                   # uGUI : accueil, score, combo, bandeaux, barre du boss, WIPEOUT, pause
 │   └── Services/                    # PalmStreet.Services.asmdef
-│       └── Leaderboard.cs           # Game Center (iOS) ; message d'indisponibilité ailleurs
+│       ├── Leaderboard.cs           # Game Center (iOS) ; message d'indisponibilité ailleurs
+│       └── Haptics.cs               # vibrations courtes (iOS : Plugins/iOS/PalmHaptics.mm ; Android : Vibrator)
 ├── Editor/                          # BuildTools (iOS, Android), OpenGame (jouer en format téléphone)
 └── Tests/
     ├── EditMode/RunTests.cs         # une règle de la spec par test
@@ -116,7 +118,7 @@ chargement de la scène « Game » : pas de prefab, pas d'image importée.
 - **Simulation** : `Run.Step()` avance de 1/60 s ; `Press()` et `Release()` reçoivent les touchers ; les
   événements (`Cue`) s'accumulent dans `Run.Events` et l'affichage les vide (sons, particules, textes).
 - **Choix hors spec** : départ plat de 420 compté depuis le bord droit de l'écran, pour avoir le temps de
-  réagir avant le grand rail ; les deux touchers d'une figure doivent être en l'air ; un rail normal attend
+  réagir avant le grand rail ; une figure se fait en 2 touchers (sauter, puis toucher en l'air), au lieu du double toucher en l'air de la spec d'origine ; un rail normal attend
   le plat suivant plutôt que de devenir un plot ; la figure dure le temps qui reste avant la retombée.
 - **Rendu** : matériau sprite du pipeline sous une lumière globale blanche ; formes en couleurs de sommets
   (converties en espace linéaire) ; pas de post-traitement ; halos en disques dégradés.

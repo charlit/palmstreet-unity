@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PalmStreet.Core
 {
-    public enum SlopeKind { Flat, Up, Down }
+    public enum SlopeKind { Flat, Up, Down, Gap }
 
     public struct Segment
     {
@@ -23,6 +23,10 @@ namespace PalmStreet.Core
 
         /// <summary>Le générateur ne fait que du plat jusqu'à cette abscisse (boss et plat d'après boss).</summary>
         public float FlatUntil = float.NegativeInfinity;
+
+        /// <summary>Niveau 2 : des trous dans la route (FR-030). Hauteur du vide : Abyss.</summary>
+        public bool Gaps;
+        public const float Abyss = -1000;
 
         // la pente la plus raide possible : sert d'échelle aux bonus et freins de vitesse
         static readonly float MaxSlope = Tuning.HillMax * (float)Math.PI / (2 * Tuning.RampMin);
@@ -47,6 +51,11 @@ namespace PalmStreet.Core
             if (last.Kind == SlopeKind.Up)
             {
                 Segments.Add(new Segment { Kind = SlopeKind.Down, X0 = x, X1 = x + Range(Tuning.RampMin, Tuning.RampMax), Top = last.Top });
+                return;
+            }
+            if (last.Kind == SlopeKind.Flat && x >= FlatUntil && Gaps && rng.NextDouble() < Tuning.GapChance)
+            {
+                Segments.Add(new Segment { Kind = SlopeKind.Gap, X0 = x, X1 = x + Range(Tuning.GapMin, Tuning.GapMax) });
                 return;
             }
             if (last.Kind == SlopeKind.Flat && x >= FlatUntil)
@@ -83,6 +92,7 @@ namespace PalmStreet.Core
         {
             var s = At(x);
             if (s.Kind == SlopeKind.Flat) return 0;
+            if (s.Kind == SlopeKind.Gap) return Abyss;
             float t = Clamp01((x - s.X0) / s.Length);
             float k = (1 - (float)Math.Cos(Math.PI * t)) / 2;
             return s.Kind == SlopeKind.Up ? s.Top * k : s.Top * (1 - k);
@@ -91,7 +101,7 @@ namespace PalmStreet.Core
         public float Slope(float x)
         {
             var s = At(x);
-            if (s.Kind == SlopeKind.Flat) return 0;
+            if (s.Kind == SlopeKind.Flat || s.Kind == SlopeKind.Gap) return 0;
             float t = Clamp01((x - s.X0) / s.Length);
             float d = s.Top * (float)Math.PI / (2 * s.Length) * (float)Math.Sin(Math.PI * t);
             return s.Kind == SlopeKind.Up ? d : -d;
@@ -102,6 +112,20 @@ namespace PalmStreet.Core
         {
             float s = Slope(x), k = Math.Min(1, Math.Abs(s) / MaxSlope);
             return s < 0 ? 1 + Tuning.DownhillBoost * k : 1 - Tuning.UphillDrag * k;
+        }
+
+        public bool IsGap(float x) => At(x).Kind == SlopeKind.Gap;
+
+        /// <summary>Hauteur du sol, ou 0 au-dessus d'un trou (pour poser éclairs et mouettes).</summary>
+        public float Floor(float x) => IsGap(x) ? 0 : Height(x);
+
+        /// <summary>Premier trou qui touche [x0, x1], s'il y en a un.</summary>
+        public Segment? GapIn(float x0, float x1)
+        {
+            EnsureUpTo(x1);
+            foreach (var s in Segments)
+                if (s.Kind == SlopeKind.Gap && s.X1 > x0 && s.X0 < x1) return s;
+            return null;
         }
 
         public bool IsFlat(float x0, float x1)

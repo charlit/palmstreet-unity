@@ -17,8 +17,8 @@ namespace PalmStreet.Game
 
         sealed class Layer { public Transform A, B; public Fader Fade; public float Factor; }
 
-        readonly List<Layer>[] layers = { new List<Layer>(), new List<Layer>(), new List<Layer>() };
-        readonly float[] weight = { 1, 0, 0 };
+        readonly List<Layer>[] layers = { new List<Layer>(), new List<Layer>(), new List<Layer>(), new List<Layer>() };
+        readonly float[] weight = { 1, 0, 0, 0 };
         readonly Paint p = new Paint();
         Transform cameraFixed;
         Mesh sky, sun, shine, ground;
@@ -41,7 +41,7 @@ namespace PalmStreet.Game
             ground = Renderer("Route", transform, 0).GetComponent<MeshFilter>().mesh = new Mesh();
 
             var rng = new System.Random(20261030);
-            for (int t = 0; t < 3; t++)
+            for (int t = 0; t < ThemeLook.All.Length; t++)
             {
                 var look = ThemeLook.All[t];
                 AddLayer(t, 0, -96, Far((Theme)t, look, rng));
@@ -67,7 +67,7 @@ namespace PalmStreet.Game
         public void Draw(Theme theme, Ground g, Camera cam, float time, bool instant)
         {
             float k = instant ? 1 : 1 - Mathf.Exp(-Time.unscaledDeltaTime * 2.2f);
-            for (int t = 0; t < 3; t++)
+            for (int t = 0; t < ThemeLook.All.Length; t++)
             {
                 weight[t] = Mathf.Lerp(weight[t], t == (int)theme ? 1 : 0, k);
                 if (weight[t] < 0.002f) weight[t] = 0;
@@ -79,8 +79,8 @@ namespace PalmStreet.Game
             cameraFixed.position = new Vector3(cx / Ppu, 0, 0);
 
             // ciel et soleil (couleurs mélangées entre décors)
-            Color C(System.Func<ThemeLook, Color> f) { var col = Color.clear; for (int t = 0; t < 3; t++) col += f(ThemeLook.All[t]) * weight[t]; return col; }
-            float sea = weight[0] * 1 + weight[1] * 1;   // Arcangues n'a pas d'océan
+            Color C(System.Func<ThemeLook, Color> f) { var col = Color.clear; for (int t = 0; t < ThemeLook.All.Length; t++) col += f(ThemeLook.All[t]) * weight[t]; return col; }
+            float sea = weight[0] + weight[1] + weight[3];   // Arcangues n'a pas d'océan
             p.Clear();
             p.Gradient(-half - 2, 330, half * 2 + 4, Mathf.Max(top - 330, 1) + 2, C(l => l.SkyMid), C(l => l.SkyTop));
             p.Gradient(-half - 2, Horizon - 10, half * 2 + 4, 340 - Horizon, C(l => l.SkyLow), C(l => l.SkyMid));
@@ -88,7 +88,7 @@ namespace PalmStreet.Game
             p.Build(sky);
 
             var sp = Vector2.zero; float sr = 0;
-            for (int t = 0; t < 3; t++) { sp += ThemeLook.All[t].SunPos * weight[t]; sr += ThemeLook.All[t].SunRadius * weight[t]; }
+            for (int t = 0; t < ThemeLook.All.Length; t++) { sp += ThemeLook.All[t].SunPos * weight[t]; sr += ThemeLook.All[t].SunRadius * weight[t]; }
             if (MenuSun) sp = MenuSunPos;
             sp.x += half - 390;   // le soleil garde sa distance au bord droit de l'écran (x relatif au centre de la caméra)
             float pulse = 1 + Mathf.Sin(time * 1.3f) * 0.03f;
@@ -117,7 +117,7 @@ namespace PalmStreet.Game
             p.Build(shine);
 
             // plans en parallaxe
-            for (int t = 0; t < 3; t++)
+            for (int t = 0; t < ThemeLook.All.Length; t++)
                 foreach (var l in layers[t])
                 {
                     l.Fade.SetAlpha(weight[t]);
@@ -140,6 +140,7 @@ namespace PalmStreet.Game
             float start = Mathf.Floor(x0 / step) * step;
             for (float x = start; x < x1; x += step)
             {
+                if (g.IsGap(x) || g.IsGap(x + step)) continue;   // FR-030 : le vide, on voit le décor
                 float ha = g.Height(x), hb = g.Height(x + step);
                 p.Poly(deep, x, bottom - 10, x + step, bottom - 10, x + step, hb - 46, x, ha - 46);
                 Grad(x, step, ha, hb, -46, -8, body, curb);
@@ -150,14 +151,26 @@ namespace PalmStreet.Game
                 Band(x, step, ha, hb, -4, 0, edge);
                 Band(x, step, ha, hb, 0, 1.5f, Color.Lerp(edge, Color.white, 0.5f));
             }
+            // bords des trous : tranche de la route soulignée de néon
+            foreach (var s in g.Segments)
+            {
+                if (s.Kind != SlopeKind.Gap || s.X1 < x0 || s.X0 > x1) continue;
+                p.Gradient(s.X0, bottom - 10, s.Length, 10 - bottom, Color.black, new Color(0, 0, 0, 0.35f));   // le vide s'assombrit vers le bas
+                foreach (float ex in new[] { s.X0, s.X1 })
+                {
+                    p.Rect(ex - 4, bottom - 10, 8, 10 - bottom, Color.Lerp(body, Color.black, 0.5f));
+                    p.Line(ex, bottom - 10, ex, 0, 3, edge);
+                    p.Line(ex, bottom - 10, ex, 0, 9, new Color(edge.r, edge.g, edge.b, 0.25f));
+                }
+            }
             // joints du trottoir et tirets de la route, accrochés au sol
             for (float x = Mathf.Floor(x0 / 44) * 44; x < x1; x += 44)
-                p.Line(x, g.Height(x) - 78, x, g.Height(x) - 50, 1.5f, Color.Lerp(body, Color.black, 0.25f));
+                if (!g.IsGap(x)) p.Line(x, g.Height(x) - 78, x, g.Height(x) - 50, 1.5f, Color.Lerp(body, Color.black, 0.25f));
             for (int row = 0; -110 - row * 34 > bottom - 120; row++)
                 for (float x = Mathf.Floor(x0 / 70) * 70 + row % 2 * 35, y = -110 - row * 34; x < x1; x += 70)
-                    p.Circle(x, g.Height(x) + y, 2.2f, Color.Lerp(deep, edge, 0.12f), 6);
+                    if (!g.IsGap(x)) p.Circle(x, g.Height(x) + y, 2.2f, Color.Lerp(deep, edge, 0.12f), 6);
             for (float x = Mathf.Floor(x0 / 60) * 60; x < x1; x += 60)
-                p.Line(x, g.Height(x) - 26, x + 22, g.Height(x + 22) - 26, 3, new Color(stripe.r, stripe.g, stripe.b, 0.8f));
+                if (!g.IsGap(x) && !g.IsGap(x + 22)) p.Line(x, g.Height(x) - 26, x + 22, g.Height(x + 22) - 26, 3, new Color(stripe.r, stripe.g, stripe.b, 0.8f));
             p.Build(ground);
         }
 
@@ -208,6 +221,23 @@ namespace PalmStreet.Game
                     p.Glow(470, 255, 26, new Color(1, 0.95f, 0.7f, 0.9f), new Color(1, 0.95f, 0.7f, 0));
                     p.Dome(470, 260, 9, 8, l.Mid);
                     break;
+                case Theme.Neon:
+                    // nuit étoilée, grande roue et ville aux toits de néon
+                    for (int i = 0; i < 70; i++) p.Circle(R(r, 0, Tile), R(r, 230, 640), R(r, 0.6f, 1.8f), new Color(1, 1, 1, R(r, 0.3f, 0.9f)), 6);
+                    NeonWheel(p, 470, 190, 78, Hex("#35F2FF"), Hex("#FF4FD8"));
+                    for (float x = 0; x < Tile - 20;)
+                    {
+                        float w = R(r, 34, 70), h = R(r, 70, 175);
+                        var neon = r.NextDouble() < 0.5 ? Hex("#FF4FD8") : Hex("#35F2FF");
+                        p.Rect(x, -60, w, h + 60, l.Far);
+                        p.Rect(x - 1, h - 1, w + 2, 3, neon);
+                        p.Rect(x - 4, h - 6, w + 8, 12, new Color(neon.r, neon.g, neon.b, 0.18f));
+                        for (float wy = 12; wy < h - 12; wy += 16)
+                            for (float wx = x + 6; wx < x + w - 8; wx += 11)
+                                if (r.NextDouble() < 0.35) p.Rect(wx, wy, 5, 7, new Color(neon.r, neon.g, neon.b, 0.55f));
+                        x += w + R(r, 4, 26);
+                    }
+                    break;
                 default:
                     Ridge(p, Color.Lerp(l.Far, l.SkyLow, 0.45f), 230, 40, 31, 0.7f);
                     Ridge(p, Color.Lerp(l.Far, l.SkyMid, 0.2f), 190, 34, 32, 0.5f);
@@ -233,6 +263,17 @@ namespace PalmStreet.Game
             {
                 float y = R(r, 10, Horizon - 8), w = R(r, 14, 40) * (0.5f + y / Horizon), x = R(r, 0, Tile - w);
                 p.Capsule(x, y, x + w, y, 1.6f, new Color(l.SeaLight.r, l.SeaLight.g, l.SeaLight.b, 0.35f));
+            }
+            if (t == Theme.Neon)
+            {
+                // reflets de néon qui ondulent sur l'eau noire
+                for (int i = 0; i < 30; i++)
+                {
+                    var c = i % 2 == 0 ? Hex("#FF4FD8", 0.5f) : Hex("#35F2FF", 0.5f);
+                    float y = R(r, 8, Horizon - 10), w = R(r, 10, 34), x = R(r, 0, Tile - w);
+                    p.Capsule(x, y, x + w, y, 2, c);
+                }
+                return p;
             }
             // surfeurs sur leur vague
             int surfers = t == Theme.Btz ? 4 : 3;
@@ -263,6 +304,31 @@ namespace PalmStreet.Game
             }
             p.Circle(top.x - 3 * scale, top.y - 5 * scale, 4 * scale, col, 10);
             p.Circle(top.x + 4 * scale, top.y - 6 * scale, 4 * scale, col, 10);
+        }
+
+        static void NeonPalm(Paint p, float x, float h, float lean, Color neon, Color dark, float scale)
+        {
+            Palm(p, x, h, lean, new Color(neon.r, neon.g, neon.b, 0.35f), scale * 1.15f);   // halo
+            Palm(p, x, h, lean, neon, scale * 1.04f);
+            Palm(p, x, h, lean, dark, scale);
+        }
+
+        /// <summary>Grande roue de néon : cercle, rayons et nacelles.</summary>
+        static void NeonWheel(Paint p, float cx, float cy, float rad, Color ring, Color cabins)
+        {
+            p.Line(cx - 30, -60, cx, cy, 4, ring * 0.6f + new Color(0, 0, 0, 0.4f));
+            p.Line(cx + 30, -60, cx, cy, 4, ring * 0.6f + new Color(0, 0, 0, 0.4f));
+            for (int i = 0; i < 32; i++)
+            {
+                float a0 = i * Mathf.PI * 2 / 32, a1 = (i + 1) * Mathf.PI * 2 / 32;
+                p.Line(cx + Mathf.Cos(a0) * rad, cy + Mathf.Sin(a0) * rad, cx + Mathf.Cos(a1) * rad, cy + Mathf.Sin(a1) * rad, 2.5f, ring);
+                if (i % 4 == 0)
+                {
+                    p.Line(cx, cy, cx + Mathf.Cos(a0) * rad, cy + Mathf.Sin(a0) * rad, 1.2f, new Color(ring.r, ring.g, ring.b, 0.5f));
+                    p.Circle(cx + Mathf.Cos(a0) * rad, cy + Mathf.Sin(a0) * rad - 6, 5, cabins, 10);
+                }
+            }
+            p.Glow(cx, cy, rad + 20, new Color(ring.r, ring.g, ring.b, 0.12f), new Color(ring.r, ring.g, ring.b, 0));
         }
 
         static void House(Paint p, float x, float w, float h, float roof, Color wall, Color window, bool basque = false)
@@ -297,6 +363,26 @@ namespace PalmStreet.Game
                         x += (int)(w + R(r, 14, 40));
                     }
                     Palm(p, 220, 190, 14, l.Mid, 0.9f);
+                    break;
+                case Theme.Neon:
+                    // palmiers et enseignes de néon
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float x = 60 + i * 160 + R(r, -15, 15);
+                        var c = i % 2 == 0 ? Hex("#FF4FD8") : Hex("#35F2FF");
+                        NeonPalm(p, x, R(r, 160, 220), R(r, -25, 25), c, l.Mid, R(r, 0.85f, 1));
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        float x = 130 + i * 320, y = R(r, 70, 110);
+                        var c = i == 0 ? Hex("#FFE14D") : Hex("#FF4FD8");
+                        p.Rect(x + 18, -10, 4, y + 10, l.Mid);
+                        p.Rect(x - 6, y - 6, 52, 34, new Color(c.r, c.g, c.b, 0.2f));
+                        p.Rect(x, y, 40, 22, l.Mid);
+                        p.Rect(x + 3, y + 3, 34, 3, c); p.Rect(x + 3, y + 16, 34, 3, c);
+                        p.Rect(x + 3, y + 3, 3, 16, c); p.Rect(x + 34, y + 3, 3, 16, c);
+                        p.Line(x + 10, y + 8, x + 28, y + 14, 2.5f, c);
+                    }
                     break;
                 default:
                     // village basque : maisons, église et fronton
@@ -336,6 +422,19 @@ namespace PalmStreet.Game
                         p.Circle(x + 24, 112, 5, l.SunCore, 12);
                     }
                     Palm(p, 300, 260, -30, l.Near, 1.25f);
+                    break;
+                case Theme.Neon:
+                    // réverbères à boules roses, garde-corps lumineux
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float x = 90 + i * 210;
+                        p.Rect(x, -10, 4, 110, l.Near);
+                        p.Glow(x + 2, 112, 26, Hex("#FF4FD8", 0.7f), Hex("#FF4FD8", 0));
+                        p.Circle(x + 2, 112, 6, Hex("#FFC2F2"), 14);
+                    }
+                    for (float x = 0; x < Tile; x += 32) p.Rect(x, -10, 3, 30, l.Near);
+                    p.Rect(0, 20, Tile, 3, Hex("#35F2FF", 0.85f));
+                    p.Rect(0, 17, Tile, 9, Hex("#35F2FF", 0.15f));
                     break;
                 default:
                     for (int i = 0; i < 4; i++)

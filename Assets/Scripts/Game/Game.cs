@@ -28,10 +28,10 @@ namespace PalmStreet.Game
         Fx fx;
         Sound sound;
         Hud hud;
-        RiderView rider;
-        readonly RiderView[] cardRiders = new RiderView[4];
+        RiderView rider, preview;   // preview : le skateur de l'accueil et du profil
         Ground menuGround;
-        Rider selected;
+        Outfit outfit;
+        int total;   // points cumulés de toutes les parties (FR-027)
         float acc, time, menuX, overAt = -1, overShownAt;
         bool paused, instantScenery = true;
         readonly List<RaycastResult> uiHits = new List<RaycastResult>();
@@ -58,7 +58,8 @@ namespace PalmStreet.Game
             Destroy(probe.gameObject);
 
             Run = new Run { Best = PlayerPrefs.GetInt("best", 0) };
-            selected = (Rider)Mathf.Clamp(PlayerPrefs.GetInt("rider", 0), 0, 3);
+            outfit = LoadOutfit();
+            total = Mathf.Max(PlayerPrefs.GetInt("total", 0), Run.Best);
             menuGround = new Ground(new System.Random(1), 0) { FlatUntil = float.PositiveInfinity };
 
             scenery = Child<Scenery>("Décor"); scenery.Init();
@@ -66,10 +67,10 @@ namespace PalmStreet.Game
             fx = Child<Fx>("Particules"); fx.Init();
             sound = Child<Sound>("Son"); sound.Init();
             hud = Child<Hud>("Interface");
-            hud.Init(cam, () => StartRun(false), Select, () => Leaderboard.Show(hud.Toast), ToggleMute, ToMenu);
+            hud.Init(cam, outfit, () => total, () => StartRun(false), OpenProfile, ToMenu, () => Leaderboard.Show(hud.Toast), ToggleMute, () => !sound.Muted, () => Haptics.Enabled, ToggleVibrate, OutfitChanged, () => OpenGameSettings(true), () => OpenGameSettings(false), ToMenu);
             sound.Muted = PlayerPrefs.GetInt("mute", 0) == 1;
-            hud.SetMuted(sound.Muted);
-            for (int i = 0; i < 4; i++) cardRiders[i] = RiderView.Create(RiderLook.All[i], transform, 600);   // au-dessus du canevas (500)
+            Haptics.Enabled = PlayerPrefs.GetInt("vibrate", 1) == 1;
+            preview = RiderView.Create(Wardrobe.Build(outfit), transform, 600);   // au-dessus du canevas (500)
             Leaderboard.SignIn();
             ToMenu();
         }
@@ -85,15 +86,14 @@ namespace PalmStreet.Game
 
         public void StartRun(bool boss)
         {
-            var r = boss ? Rider.Freestill : selected;   // FR-020 : le raccourci du soleil part avec FREESTILL
             if (rider != null) Destroy(rider.gameObject);
-            rider = RiderView.Create(RiderLook.Of(r), transform, 20);
-            Run.Start(r, boss);
+            rider = RiderView.Create(Wardrobe.Build(outfit), transform, 20);
+            Run.Start(boss);
             hud.ShowGame();
             sound.StartRun();
             paused = false; acc = 0; overAt = -1;
             instantScenery = true;
-            ShowCards(false);
+            preview.Show(false);
         }
 
         public void ToMenu()
@@ -102,27 +102,58 @@ namespace PalmStreet.Game
             Run.Obstacles.Clear(); Run.Bolts.Clear(); Run.Boss = null; Run.Events.Clear();
             if (rider != null) rider.Show(false);
             sound.StopMusic();
-            hud.ShowMenu(selected, Run.Best);
+            hud.ShowMenu(Run.Best);
             instantScenery = true;
-            ShowCards(true);
+            preview.Show(true);
         }
 
-        void Select(Rider r)
+        public void OpenProfile()
         {
-            selected = r;
-            hud.Select(r);
-            PlayerPrefs.SetInt("rider", (int)r);
+            ToMenu();
+            hud.ShowProfile();
+        }
+
+        // ---------- tenue (FR-026), gardée dans PlayerPrefs `outfit` ----------
+
+        static Outfit LoadOutfit()
+        {
+            try { return JsonUtility.FromJson<Outfit>(PlayerPrefs.GetString("outfit", "")) ?? new Outfit(); }
+            catch (System.ArgumentException) { return new Outfit(); }   // valeur abîmée : tenue par défaut
+        }
+
+        void OutfitChanged()
+        {
+            PlayerPrefs.SetString("outfit", JsonUtility.ToJson(outfit));
+            PlayerPrefs.Save();
+            Destroy(preview.gameObject);
+            preview = RiderView.Create(Wardrobe.Build(outfit), transform, 600);
+        }
+
+        /// <summary>Bouton RÉGLAGES en partie : pause, son et vibrations ; REPRENDRE relance.</summary>
+        public void OpenGameSettings(bool open)
+        {
+            if (Run.Phase != Phase.Playing) return;
+            paused = open;
+            sound.Pause(open);
+            acc = 0;
+            hud.ShowGameSettings(open);
+        }
+
+        void ToggleVibrate()
+        {
+            Haptics.Enabled = !Haptics.Enabled;
+            PlayerPrefs.SetInt("vibrate", Haptics.Enabled ? 1 : 0);
+            PlayerPrefs.Save();
+            Haptics.Play(Buzz.Medium);   // on sent tout de suite ce qu'on vient d'activer
         }
 
         void ToggleMute()
         {
             sound.Muted = !sound.Muted;
-            hud.SetMuted(sound.Muted);
             PlayerPrefs.SetInt("mute", sound.Muted ? 1 : 0);
             PlayerPrefs.Save();
         }
 
-        void ShowCards(bool on) { foreach (var c in cardRiders) c.Show(on); }
 
         void SetPaused(bool on)
         {
@@ -189,6 +220,7 @@ namespace PalmStreet.Game
             switch (Run.Phase)
             {
                 case Phase.Menu:
+                    if (!hud.MenuVisible) break;   // dans le profil, seuls les boutons comptent
                     if (key) { StartRun(false); break; }
                     var w = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -cam.transform.position.z));
                     if (Vector2.Distance(w, scenery.SunWorld) < scenery.SunWorldRadius * 1.4f) StartRun(true);
@@ -209,6 +241,12 @@ namespace PalmStreet.Game
             foreach (var e in Run.Events)
             {
                 sound.Play(e.Cue);
+                switch (e.Cue)   // FR-028 : vibrations courtes sur les moments forts
+                {
+                    case Cue.Trick: case Cue.GrindEnd: case Cue.MegaAir: Haptics.Play(Buzz.Medium); break;
+                    case Cue.GrindStart: case Cue.GrindOut: Haptics.Play(Buzz.Light); break;
+                    case Cue.Crash: case Cue.Boom: Haptics.Play(Buzz.Heavy); break;
+                }
                 var at = W(e.X, e.Y);
                 switch (e.Cue)
                 {
@@ -241,6 +279,13 @@ namespace PalmStreet.Game
                         props.BossHit();
                         fx.Burst(e.X, e.Y, Color.white, 4, 2, 4);
                         break;
+                    case Cue.Level:
+                        hud.Banner("NIVEAU 2", "NUIT NÉON · trous, mouettes, tremplins", Hex("#35F2FF"));
+                        break;
+                    case Cue.MegaAir:
+                        hud.Float($"+{e.Points} {e.Text}", at, Hex("#35F2FF"));
+                        fx.Burst(e.X, e.Y - 40, Hex("#35F2FF"), 18, 4);
+                        break;
                     case Cue.Boom:
                         fx.Confetti(e.X, e.Y);
                         fx.Burst(e.X, e.Y, Hex("#A55BD6"), 40, 7, 10);
@@ -260,7 +305,13 @@ namespace PalmStreet.Game
             rider.Crash(Run.Skater, Run.CurrentSpeed);
             fx.Burst(Run.Skater.X + 12, Run.Skater.Y + 20, Hex("#FF7A1A"), 16, 4);
             sound.StopMusic();
-            if (Run.NewBest) { PlayerPrefs.SetInt("best", Run.Best); PlayerPrefs.Save(); }
+            if (Run.NewBest) PlayerPrefs.SetInt("best", Run.Best);
+            int before = Unlocks.CountOpen(total);
+            total = (int)System.Math.Min(int.MaxValue, (long)total + Run.Score);
+            PlayerPrefs.SetInt("total", total);
+            PlayerPrefs.Save();
+            int unlocked = Unlocks.CountOpen(total) - before;
+            if (unlocked > 0) hud.Toast(unlocked == 1 ? "Nouveau vêtement débloqué dans le PROFIL !" : $"{unlocked} vêtements débloqués dans le PROFIL !");
             Leaderboard.Report(Run.Score);
             overAt = time + 0.7f;   // on voit d'abord la planche s'échapper
         }
@@ -288,11 +339,9 @@ namespace PalmStreet.Game
 
             if (menu)
             {
-                for (int i = 0; i < 4; i++)
-                {
-                    var feet = hud.CardFeet(i, out float scale);
-                    cardRiders[i].Idle(feet, time + i * 0.7f, i == (int)selected, scale);
-                }
+                var feet = hud.PreviewFeet(out float scale);
+                preview.Show(hud.PreviewVisible);   // caché dans PROFIL › RÉGLAGES
+                preview.Idle(feet, time, true, scale);
             }
             else
             {
@@ -304,8 +353,11 @@ namespace PalmStreet.Game
                     rider.Ride(sk, W(sk.X, sk.Y), slope, time, Run.Speed > 0 ? Run.CurrentSpeed / Run.Speed : 1);
                     if (!paused)
                     {
+                        // NUIT NÉON : feux d'artifice dans le ciel
+                        if (Run.Theme == Theme.Neon && Random.value < dt * 0.9f)
+                            fx.Firework(sk.X + Random.Range(-60f, 280f), Random.Range(300f, 520f));
                         if (sk.Grounded) fx.Dust(sk.X - 12, sk.Y, DustColor(), 0.6f);
-                        if (sk.Rail != null) fx.Sparks(sk.X, sk.Y);
+                        if (sk.Rail != null) fx.Sparks(sk.X + 14, sk.Y);   // sous le truck avant (nose grind)
                     }
                 }
                 else rider.Fall(Run.Ground, dt);

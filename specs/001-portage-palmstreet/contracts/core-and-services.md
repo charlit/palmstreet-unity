@@ -4,8 +4,8 @@
 
 ```csharp
 var run = new Run(seed: 0);          // 0 : graine aléatoire ; autre : partie rejouable (tests)
-run.Start(Rider.Guigui);             // ou Start(Rider.Freestill, bossNow: true) pour le raccourci du soleil
-run.Press();                         // toucher : ollie au sol, OUT! en grind, figure au 2e toucher rapide en l'air
+run.Start();                         // ou Start(bossNow: true) pour le raccourci du soleil
+run.Press();                         // toucher : ollie au sol, OUT! en grind, figure au toucher suivant, en l'air
 run.Release();                       // fin du toucher (fin de l'accroupi)
 run.Step();                          // un pas de 1/60 s, seulement en Phase.Playing
 foreach (var e in run.Events) { … }  // Cue, Points, X, Y, Text

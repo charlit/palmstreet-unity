@@ -43,7 +43,7 @@ namespace PalmStreet.Game
             }
         }
 
-        Pool cones, bolts, teeth, shadows, rails;
+        Pool cones, bolts, teeth, shadows, rails, gulls, pads;
         Transform boss, bossWingL, bossWingR, bossPupil, bossShadow;
         static readonly Color Shadow = new Color(0.05f, 0.02f, 0.08f, 0.35f);
 
@@ -110,6 +110,44 @@ namespace PalmStreet.Game
             });
 
             BuildBoss();
+
+            // mouette (FR-031) : corps blanc, bec jaune, ailes qui battent, halo rose pour la nuit
+            gulls = new Pool(() =>
+            {
+                var t = new GameObject("Mouette").transform;
+                t.SetParent(transform, false);
+                new Paint()
+                    .Glow(15, 8, 26, Hex("#FF4FD8", 0.35f), Hex("#FF4FD8", 0))
+                    .Ellipse(15, 8, 14, 6, Hex("#F4F6FA"), 18)
+                    .Circle(4, 11, 5, Hex("#F4F6FA"), 14)
+                    .Poly(Hex("#FFB21A"), -1, 11, -8, 9.5f, -1, 8.5f)
+                    .Circle(3, 12.5f, 1.1f, Hex("#1B1028"), 6)
+                    .Poly(Hex("#B9C0CC"), 26, 9, 34, 13, 34, 5)
+                    .Make("Corps", t, 16);
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    var w = new GameObject(side < 0 ? "Aile arrière" : "Aile avant").transform;
+                    w.SetParent(t, false);
+                    w.localPosition = W(15, 10);
+                    new Paint().Capsule(0, 0, 4, 14, 5, Hex(side < 0 ? "#C9CED6" : "#FFFFFF")).Capsule(4, 14, 12, 18, 3.5f, Hex("#3A3F4A")).Make("Aile", w, side < 0 ? 15 : 17);
+                }
+                return t;
+            });
+
+            // tremplin néon (FR-032) : socle sombre, bord cyan, chevrons vers le haut
+            var padMesh = new Paint()
+                .Glow(20, 6, 34, Hex("#35F2FF", 0.4f), Hex("#35F2FF", 0))
+                .Poly(Hex("#1B1028"), 0, 0, 40, 0, 36, 6, 4, 6)
+                .Rect(4, 5, 32, 2, Hex("#35F2FF"))
+                .Poly(Hex("#35F2FF"), 14, 10, 20, 16, 26, 10, 26, 13, 20, 19, 14, 13)
+                .Poly(Hex("#FF4FD8"), 14, 18, 20, 24, 26, 18, 26, 21, 20, 27, 14, 21)
+                .Build();
+            pads = new Pool(() =>
+            {
+                var mr = Renderer("Tremplin", transform, 11);
+                mr.GetComponent<MeshFilter>().sharedMesh = padMesh;
+                return mr.transform;
+            });
         }
 
         Mesh coneMesh, bossCone;
@@ -171,7 +209,7 @@ namespace PalmStreet.Game
 
         public void Draw(Run run, float time)
         {
-            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin();
+            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin();
             var g = run.Ground;
             foreach (var o in run.Obstacles)
             {
@@ -181,6 +219,23 @@ namespace PalmStreet.Game
                     if (fresh) BuildRail(t.GetComponent<MeshFilter>().sharedMesh, o);
                     t.position = W(o.X, o.Y);
                     ShadowAt(o, o.X + o.W / 2, o.Y, o.W + 16, 0);
+                    continue;
+                }
+                if (o.Kind == ObstacleKind.Gull)
+                {
+                    var gt = gulls.Get(o, out _);
+                    gt.position = W(o.X, o.Y + Mathf.Sin(time * 5 + o.X * 0.02f) * 3);
+                    float flap = Mathf.Sin(time * 14 + o.X) * 40;
+                    gt.GetChild(1).localRotation = Quaternion.Euler(0, 0, -20 + flap);
+                    gt.GetChild(2).localRotation = Quaternion.Euler(0, 0, -10 + flap);
+                    ShadowAt(o, o.X + o.W / 2, g.Floor(o.X + o.W / 2), 24, o.Y - g.Floor(o.X + o.W / 2));
+                    continue;
+                }
+                if (o.Kind == ObstacleKind.Pad)
+                {
+                    var pt = pads.Get(o, out _);
+                    pt.position = W(o.X, g.Height(o.X));
+                    pt.localScale = new Vector3(1, 1 + (o.Used ? 0 : Mathf.Sin(time * 8) * 0.08f), 1);
                     continue;
                 }
                 var c = cones.Get(o, out _);
@@ -241,7 +296,7 @@ namespace PalmStreet.Game
                 bossShadow.localScale = new Vector3(50, 9, 1) * Mathf.Lerp(1, 0.5f, lift / 160) * (1 - enter);
             }
 
-            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End();
+            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End();
         }
 
         float hitPunch;

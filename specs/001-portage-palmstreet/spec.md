@@ -17,7 +17,7 @@ mêmes unités logiques, à mettre à l'échelle de l'écran.
 
 ### User Story 1 - Rouler, sauter, tomber (Priority: P1)
 
-Le joueur ouvre le jeu, choisit son skateur, touche l'écran pour partir. Le skateur roule seul
+Le joueur ouvre le jeu, voit son skateur, touche START pour partir. Le skateur roule seul
 vers la droite sur un sol avec des bosses ; le joueur touche l'écran pour faire un ollie au-dessus
 des plots. Le score monte avec la distance. Toucher un plot fait chuter : écran « WIPEOUT ! »
 avec le score, puis on rejoue d'un toucher.
@@ -42,7 +42,7 @@ partie s'arrête, le score s'affiche, un toucher relance une partie.
 
 ### User Story 2 - Figures, grinds, éclairs et combos (Priority: P2)
 
-En l'air, un deuxième toucher rapide fait une figure (FLIP, SHOVE-IT, 360°, 360° INVERSÉ).
+En l'air, un deuxième toucher fait une figure (FLIP, SHOVE-IT, 360°, 360° INVERSÉ).
 Atterrir sur un rail lance un grind automatique. Des rangées d'éclairs jaunes rapportent des
 points. Chaque figure ou grind réussi augmente le combo, qui multiplie les points.
 
@@ -53,7 +53,7 @@ d'éclairs : les points affichés suivent les barèmes de FR-010 à FR-014.
 
 **Acceptance Scenarios**:
 
-1. **Given** le skateur en l'air, **When** le joueur touche deux fois en moins de 0,32 s,
+1. **Given** le skateur en l'air, **When** le joueur touche l'écran,
    **Then** une figure s'anime, le texte « +points NOM ! » s'affiche et le combo augmente.
 2. **Given** le skateur qui retombe sur le dessus d'un rail, **When** ses pieds touchent le rail,
    **Then** il grinde sans chuter jusqu'au bout du rail, puis reçoit le bonus « GRIND! ».
@@ -84,6 +84,29 @@ automatiquement, le boss s'envole régulièrement et lâche des plots à sauter.
 
 ---
 
+### User Story 5 - Niveau 2 : NUIT NÉON (Priority: P3)
+
+Le premier boss battu, le joueur entre dans un nouveau monde : la côte de nuit, lune, étoiles, grande
+roue et ville en néon, feux d'artifice. La route a des trous à sauter, des mouettes foncent à hauteur de
+tête (on s'accroupit ou on saute), des tremplins néon envoient très haut, et la vitesse monte plus.
+
+**Why this priority**: donner une suite au boss, avec des difficultés vraiment nouvelles.
+
+**Independent Test**: battre le boss (ou raccourci du soleil) : bandeau NIVEAU 2, décor de nuit, puis
+un trou, une mouette et un tremplin dans les 30 secondes.
+
+**Acceptance Scenarios**:
+
+1. **Given** le premier boss battu, **When** le plat du nose grind se termine, **Then** le décor NUIT NÉON
+   reste jusqu'à la fin de la partie et le bandeau « NIVEAU 2 » s'affiche.
+2. **Given** un trou devant le skateur, **When** il ne saute pas, **Then** il tombe et la partie s'arrête.
+3. **Given** une mouette qui arrive, **When** le joueur garde le doigt appuyé (accroupi), **Then** elle
+   passe au-dessus sans le toucher.
+4. **Given** un tremplin, **When** le skateur roule dessus, **Then** il s'envole (« MÉGA AIR ! ») et peut
+   faire deux figures avant de retomber.
+
+---
+
 ### User Story 4 - Classement et réglages (Priority: P4)
 
 Le joueur voit son meilleur score, coupe ou remet le son, et compare ses scores à ceux des autres
@@ -109,7 +132,7 @@ retrouver son score dans le classement.
 - Écran très haut (iPhone récent) ou large (iPad, tablette Android) : le jeu garde sa zone de jeu
   en portrait sans déformer l'image ; les marges sont remplies par le décor.
 - Toucher pendant un grind : sortie de grind avec bonus « +15 OUT! » et un saut un peu plus court.
-- Deux touchers rapides au sol : un seul ollie, pas de figure (les figures se font en l'air).
+- Un toucher au sol fait seulement un ollie ; la figure vient du toucher suivant, en l'air (2 touchers en tout).
 - Un plot lâché par le boss tombe sur une pente : il se pose sur le sol à cet endroit.
 - Téléphone hors ligne : le jeu marche entièrement ; seul le classement en ligne est indisponible
   et le dit.
@@ -121,8 +144,9 @@ retrouver son score dans le classement.
 **Boucle de jeu**
 
 - **FR-001**: Le jeu MUST se jouer en portrait, plein écran, au toucher seul.
-- **FR-002**: L'écran d'accueil MUST proposer 4 skateurs (FREESTILL, KEKETSK8, GUIGUI,
-  MAXWELL) avec leur image, un bouton START et un bouton TOP 10 ; GUIGUI roule sur une planche jaune.
+- **FR-002**: L'écran d'accueil MUST montrer le skateur du joueur avec sa tenue, un grand bouton
+  START, un bouton PROFIL en haut à droite et un bouton TOP 10. (Révision 2026-10-30 : le choix entre 4 skateurs est remplacé
+  par un skateur unique qu'on habille dans le profil, FR-026.)
 - **FR-003**: Le skateur MUST rouler seul ; la vitesse démarre à 1,7 et gagne 0,045 tous les
   100 points de score, jusqu'à 4,3 (unités logiques par image à 60 images/s).
 - **FR-004**: Le score MUST gagner 1 point par image de jeu (60 par seconde).
@@ -141,7 +165,7 @@ retrouver son score dans le classement.
 
 **Points**
 
-- **FR-010**: Une figure MUST se faire par double toucher (moins de 0,32 s) en l'air, une seule
+- **FR-010**: Une figure MUST se faire par un toucher en l'air (le premier toucher fait sauter, le deuxième fait la figure), une seule
   par saut ; les figures tournent dans l'ordre FLIP (30), SHOVE-IT (35), 360° (45),
   360° INVERSÉ (45), multipliés par le combo.
 - **FR-011**: Retomber sur le dessus d'un rail MUST lancer un grind : +2 points par image, puis
@@ -166,12 +190,14 @@ retrouver son score dans le classement.
 - **FR-019**: Le boss battu MUST donner +5 000 points, « BOOM », « TU ES UN VRAI PST ! », puis un
   plat de 2 500 avec une barre de nose grind 15 fois plus longue qu'un rail, avant la reprise.
 - **FR-020**: Toucher le soleil sur l'écran d'accueil MUST lancer directement le boss avec
-  FREESTILL (raccourci caché du jeu web).
+  le skateur du joueur (raccourci caché du jeu web).
 
 **Son, sauvegarde, classement**
 
-- **FR-021**: Le jeu MUST jouer la musique et les sons du jeu web (saut, éclair, chute, grind,
-  figure) et proposer un bouton pour couper le son, gardé entre deux lancements.
+- **FR-021**: Le jeu MUST jouer une musique et des sons (saut, éclair, chute, grind, figure). Le son
+  se coupe et se remet dans l'onglet RÉGLAGES du profil, et pendant une partie par le bouton RÉGLAGES en
+  haut à droite, qui met le jeu en pause (son, vibrations, REPRENDRE, QUITTER LA PARTIE) ; le choix est
+  gardé entre deux lancements.
 - **FR-022**: Le meilleur score MUST être gardé sur l'appareil. Le classement en ligne MUST
   passer par Game Center sur iOS et Google Play Games sur Android (un classement « meilleur
   score » par plateforme) ; le bouton TOP 10 ouvre ce classement. Sans connexion au service, le
@@ -181,12 +207,36 @@ retrouver son score dans le classement.
   (skate, palmiers, coucher de soleil, couleurs de chaque décor) : décors en plusieurs plans de
   parallaxe, lumière et halo du soleil, skateurs animés (poussée, ollie, figures, grind, chute),
   particules (poussière, étincelles de grind, éclairs), écrans d'accueil et de fin refaits.
-- **FR-025**: Les 4 skateurs MUST rester reconnaissables (silhouette, tenue, couleur de planche
-  des sprites du jeu web), redessinés et animés dans le nouveau style.
+- **FR-025**: Le skateur MUST être dessiné et animé dans le nouveau style, avec sa tenue
+  du profil dans toutes les poses.
+- **FR-026**: L'écran PROFIL MUST avoir deux onglets, TENUE et RÉGLAGES. TENUE MUST permettre de changer la tenue du skateur, avec un aperçu animé
+  qui suit chaque changement : coiffure (casquette, bonnet, boucles, bandeau) et sa couleur, couleur
+  des cheveux, peau, couleur du sweat et de son détail, coupe (pantalon ou short) et couleur du bas,
+  chaussures, couleur du plateau et des roues de la planche. La tenue est gardée sur l'appareil.
+  L'écran de fin propose d'y aller (« CHANGER MA TENUE »).
+- **FR-027**: Les vêtements MUST se débloquer avec les points cumulés (somme des scores de toutes
+  les parties, gardée sur l'appareil) : une tenue de départ est libre, puis des couleurs (de 500 à
+  20 000 points), le bonnet (3 000), le short (6 000) et le bandeau (10 000). Le profil affiche les
+  points cumulés et le prix des éléments verrouillés ; toucher un élément verrouillé dit à combien
+  il se débloque ; l'écran de fin annonce les nouveautés débloquées. Peau et cheveux restent libres.
+- **FR-029**: Le premier boss battu MUST ouvrir le niveau 2 « NUIT NÉON » jusqu'à la fin de la partie :
+  décor de nuit (lune, étoiles, grande roue et ville en néon, palmiers et enseignes lumineux, feux
+  d'artifice), bandeau « NIVEAU 2 », vitesse maximale portée à 5,0. Les boss suivants continuent tous
+  les 15 000 points.
+- **FR-030**: Au niveau 2, la route MUST avoir des trous de 50 à 90 (40 % des fins de plat), jamais sous
+  un obstacle ni juste avant ou après ; tomber dedans termine la partie, heurter le bord aussi. Des arcs
+  d'éclairs passent au-dessus des trous.
+- **FR-031**: Au niveau 2, des mouettes MUST voler vers le skateur à 46 au-dessus du sol : debout il les
+  touche, accroupi il passe dessous, on peut aussi les sauter.
+- **FR-032**: Au niveau 2, des tremplins néon MUST envoyer le skateur très haut (vitesse 13,5) avec
+  « +50 × combo MÉGA AIR ! » et deux figures possibles dans ce saut ; ils se placent souvent juste
+  avant un trou.
+- **FR-028**: Le téléphone MUST vibrer brièvement aux moments forts (figure, début et fin de grind,
+  chute, boss battu), avec un réglage VIBRATIONS dans PROFIL › RÉGLAGES et dans les réglages en partie, gardé entre deux lancements.
 
 ### Key Entities
 
-- **Skateur** : personnage choisi (image, couleur de planche), position, vitesse verticale,
+- **Skateur** : tenue choisie dans le profil, position, vitesse verticale,
   au sol / en l'air / en grind / accroupi.
 - **Obstacle** : plot (petit ou grand) ou rail (normal, grand arc-en-ciel, nose grind).
 - **Éclair** : bonus à ramasser, hauteur au-dessus du sol.
@@ -217,7 +267,7 @@ retrouver son score dans le classement.
 
 - Les graphismes sont créés pour le projet (dessinés et animés dans le moteur, ou assets libres de
   droits notés dans le plan) ; aucun graphisme sous licence d'un tiers sans droit.
-- Les sprites des 4 skateurs du jeu web servent de modèle pour les redessiner.
+- Un seul skateur, que le joueur habille ; la tenue par défaut reprend celle de FREESTILL.
 - La musique du jeu web (mélodie à 132 bpm, synthétisée) est reproduite à l'identique ou
   enregistrée depuis le jeu web.
 - Le jeu est en français comme le jeu web ; pas d'autre langue dans la première version.

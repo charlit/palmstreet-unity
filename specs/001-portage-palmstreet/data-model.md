@@ -8,12 +8,12 @@ sol de base à 0. Durées en pas de 1/60 s. Valeurs : Tuning.cs (spec, et « cho
 | Champ | Type | Règle |
 |---|---|---|
 | Phase | Menu, Playing, Over | Start() → Playing ; collision → Over ; BackToMenu() → Menu |
-| Rider | Freestill, Keketsk8, Guigui, Maxwell | choisi à l'accueil ; FREESTILL pour le raccourci du soleil (FR-020) |
 | Score | int | +1 par pas (FR-004), + points des figures, grinds, éclairs, boss |
 | Best, NewBest | int, bool | mis à jour à la chute ; gardé par l'affichage dans PlayerPrefs `best` |
 | Combo, ComboTimer | int | +1 par figure ou grind, retour à 1 après 132 pas sans (FR-014) |
 | Speed, CurrentSpeed | float | min(4,3 ; 1,7 + 0,045 × ⌊Score/100⌋) × facteur de pente (FR-003, FR-005) |
-| Theme | Largente, Btz, Arcangues | Score mod 20 000 : < 5 000, < 10 000, sinon Arcangues (FR-015) |
+| Theme | Largente, Btz, Arcangues, Neon | Score mod 20 000 : < 5 000, < 10 000, sinon Arcangues (FR-015) ; Neon dès le niveau 2 (FR-029) |
+| Level | 1, 2 | passe à 2 quand le premier boss est battu |
 | NextBossScore | int | 15 000, puis score à la victoire + 15 000 (FR-017) |
 | Ground, Skater, Obstacles, Bolts, Boss, Events | | ci-dessous |
 
@@ -43,6 +43,8 @@ d'après boss). Facteur de vitesse : jusqu'à 1,55 en descente, jusqu'à 0,78 en
 | BigRail | 300 × 30 | premier obstacle, puis tous les 5 000 ; plot s'il n'y a pas de plat (FR-008) |
 | NoseRail | 1 500 × 30 | 400 après la victoire sur le boss, dans un plat de 2 500 (FR-019) |
 | DroppedCone | 26 × 34 | lâché par le boss, tombe et se pose sur le sol, même en pente |
+| Gull | 30 × 16 | niveau 2, vole vers le skateur à 46 du sol (FR-031) |
+| Pad | 40 × 6 | niveau 2, tremplin : saut à 13,5 et deux figures (FR-032) |
 
 Un seul obstacle à la fois, écart de 200 à 400 + 40 × vitesse ; jamais dans le premier tiers d'une descente.
 
@@ -67,4 +69,10 @@ ConeDrop, Tooth, BossHit, Boom), Points, X, Y, Text. Ajoutés par Run, lus puis 
 
 ## Persistance (PlayerPrefs, côté Game)
 
-`best` (meilleur score), `rider` (dernier skateur), `mute` (son coupé).
+`best` (meilleur score), `total` (points cumulés, FR-027), `outfit` (tenue, JSON), `mute` (son coupé), `vibrate` (vibrations, FR-028).
+
+## Outfit (côté Game, FR-026)
+
+Index dans les listes de Wardrobe : Head (4 coiffures), HatColor, HairColor (5), Skin (5), Top, Accent,
+Legs (pantalon ou short), Pants, Shoes, Deck, Wheels (palette commune de 14 couleurs). La tenue n'a aucun
+effet sur les règles : Run ne la connaît pas.

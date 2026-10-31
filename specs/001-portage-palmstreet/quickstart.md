@@ -31,7 +31,7 @@ Menu PalmStreet › « Jouer dans l'éditeur (format téléphone) », puis au cl
 |---|---|
 | START, Espace devant chaque plot | ollies, score qui monte de 60 par seconde |
 | Percuter un plot | WIPEOUT !, le skateur tombe, la planche rebondit, BEST mis à jour |
-| Espace, puis deux fois Espace vite en l'air | FLIP ! +30, COMBO x2 |
+| Espace, puis Espace en l'air | FLIP ! +30, COMBO x2 |
 | Retomber sur le grand rail du départ | grind, étincelles, +20 × combo GRIND! en sortie |
 | Cliquer le soleil à l'accueil | boss immédiat, barre de vie, plots violets lâchés en vol |
 

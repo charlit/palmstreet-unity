@@ -39,6 +39,15 @@ namespace PalmStreet.Game
                 Far = Hex("#3B2559"), Sea = Hex("#2F4A3A"), SeaLight = Hex("#9BE15D"),
                 Mid = Hex("#1F3527"), Near = Hex("#11211A"), Ground = Hex("#272A20"), GroundTop = Hex("#9BE15D"), Stripe = Hex("#F2C94C"),
             },
+            new ThemeLook
+            {
+                // niveau 2 (FR-029) : nuit, lune, néons roses et cyan
+                Name = "NUIT NÉON", HasSea = true, SunPos = new Vector2(300, 430), SunRadius = 26,
+                SkyTop = Hex("#04010D"), SkyMid = Hex("#1B0A3F"), SkyLow = Hex("#5A1A7A"),
+                Sun = Hex("#DCE6FF"), SunCore = Hex("#FFFFFF"), Glow = Hex("#6FE8FF", 0.35f),
+                Far = Hex("#120A2B"), Sea = Hex("#0A0524"), SeaLight = Hex("#FF4FD8"),
+                Mid = Hex("#0E0820"), Near = Hex("#07040F"), Ground = Hex("#0B0716"), GroundTop = Hex("#FF2BD6"), Stripe = Hex("#35F2FF"),
+            },
         };
 
         public static ThemeLook Of(Theme t) => All[(int)t];
@@ -46,26 +55,49 @@ namespace PalmStreet.Game
 
     public enum Headwear { Cap, Beanie, Curls, Headband }
 
-    /// <summary>Tenue d'un skateur (FR-025) : chacun a sa silhouette et sa couleur de planche ; GUIGUI roule en jaune (FR-002).</summary>
+    /// <summary>Apparence du skateur, telle que le moteur de dessin l'utilise.</summary>
     public sealed class RiderLook
     {
-        public string Name;
         public Color Skin, Hair, Hat, Top, Accent, Pants, Shoes, Deck, Wheels;
         public Headwear Head;
         public bool Shorts;
+    }
 
-        public static readonly RiderLook[] All =
+    /// <summary>Tenue choisie dans le profil (FR-026) : des index dans les listes de Wardrobe, gardés dans PlayerPrefs.</summary>
+    [System.Serializable]
+    public sealed class Outfit
+    {
+        public int Head, HatColor = 0, HairColor, Skin, Top = 9, Accent, Legs, Pants = 6, Shoes, Deck, Wheels = 13;
+    }
+
+    /// <summary>Ce qu'on peut changer dans le profil : coiffures, peaux, cheveux et une palette commune aux vêtements et à la planche.</summary>
+    public static class Wardrobe
+    {
+        public static readonly string[] Heads = { "CASQUETTE", "BONNET", "BOUCLES", "BANDEAU" };
+        public static readonly string[] Legs = { "PANTALON", "SHORT" };
+        public static readonly Color[] Skins = { Hex("#F6D2B3"), Hex("#E8B48A"), Hex("#C68B59"), Hex("#8D5524"), Hex("#5C3317") };
+        public static readonly Color[] Hairs = { Hex("#E8C26A"), Hex("#B5502A"), Hex("#7A4B2A"), Hex("#3B2412"), Hex("#141414") };
+        public static readonly Color[] Palette =
         {
-            new RiderLook { Name = "FREESTILL", Head = Headwear.Cap, Skin = Hex("#F1C7A1"), Hair = Hex("#E8C26A"), Hat = Hex("#E63946"),
-                Top = Hex("#F4F1EA"), Accent = Hex("#E63946"), Pants = Hex("#23233B"), Shoes = Hex("#E63946"), Deck = Hex("#E63946"), Wheels = Hex("#FFF4D6") },
-            new RiderLook { Name = "KEKETSK8", Head = Headwear.Beanie, Skin = Hex("#C68B59"), Hair = Hex("#2A1A10"), Hat = Hex("#2A9D8F"),
-                Top = Hex("#FF8C1A"), Accent = Hex("#FFF4D6"), Pants = Hex("#3D5A80"), Shoes = Hex("#FFFFFF"), Deck = Hex("#222222"), Wheels = Hex("#FF8C1A") },
-            new RiderLook { Name = "GUIGUI", Head = Headwear.Curls, Shorts = true, Skin = Hex("#E8B48A"), Hair = Hex("#3B2412"), Hat = Hex("#3B2412"),
-                Top = Hex("#3BB273"), Accent = Hex("#FFE14D"), Pants = Hex("#D9C29C"), Shoes = Hex("#1D1D1D"), Deck = Hex("#FFD400"), Wheels = Hex("#FFFFFF") },
-            new RiderLook { Name = "MAXWELL", Head = Headwear.Headband, Skin = Hex("#8D5524"), Hair = Hex("#141414"), Hat = Hex("#FF4D6D"),
-                Top = Hex("#7B2CBF"), Accent = Hex("#C77DFF"), Pants = Hex("#5C6670"), Shoes = Hex("#FFE14D"), Deck = Hex("#3A86FF"), Wheels = Hex("#FFE14D") },
+            Hex("#E63946"), Hex("#FF8C1A"), Hex("#FFD400"), Hex("#3BB273"), Hex("#2A9D8F"), Hex("#3A86FF"), Hex("#23233B"),
+            Hex("#7B2CBF"), Hex("#FF4D6D"), Hex("#F4F1EA"), Hex("#222222"), Hex("#5C6670"), Hex("#3D5A80"), Hex("#D9C29C"),
         };
 
-        public static RiderLook Of(Rider r) => All[(int)r];
+        static int Wrap(int i, int n) => ((i % n) + n) % n;
+
+        public static RiderLook Build(Outfit o) => new RiderLook
+        {
+            Head = (Headwear)Wrap(o.Head, Heads.Length),
+            Shorts = Wrap(o.Legs, Legs.Length) == 1,
+            Skin = Skins[Wrap(o.Skin, Skins.Length)],
+            Hair = Hairs[Wrap(o.HairColor, Hairs.Length)],
+            Hat = Palette[Wrap(o.HatColor, Palette.Length)],
+            Top = Palette[Wrap(o.Top, Palette.Length)],
+            Accent = Palette[Wrap(o.Accent, Palette.Length)],
+            Pants = Palette[Wrap(o.Pants, Palette.Length)],
+            Shoes = Palette[Wrap(o.Shoes, Palette.Length)],
+            Deck = Palette[Wrap(o.Deck, Palette.Length)],
+            Wheels = Palette[Wrap(o.Wheels, Palette.Length)],
+        };
     }
 }

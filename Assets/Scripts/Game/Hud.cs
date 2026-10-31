@@ -10,8 +10,9 @@ using static PalmStreet.Game.Paint;
 namespace PalmStreet.Game
 {
     /// <summary>
-    /// Interface (FR-002, FR-009, FR-014, FR-016, FR-017, FR-021, FR-022) : accueil avec les 4 skateurs, START et
-    /// TOP 10 ; score, BEST, combo, bandeaux, barre de vie du boss, textes de points ; écran WIPEOUT ; pause ; son.
+    /// Interface (FR-002, FR-009, FR-014, FR-016, FR-017, FR-021, FR-022, FR-026) : accueil avec le skateur, START,
+    /// PROFIL et TOP 10 ; profil où l'on change la tenue ; score, BEST, combo, bandeaux, barre de vie du boss,
+    /// textes de points ; écran WIPEOUT ; pause ; son.
     /// Le canevas est rendu par la caméra du jeu, en unités proches de l'écran logique de 390 × 620.
     /// </summary>
     public sealed class Hud : MonoBehaviour
@@ -21,19 +22,32 @@ namespace PalmStreet.Game
         Font font;
         Sprite round;
         RectTransform safe;
-        GameObject menu, game, over, pause;
-        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, toast, muteLabel;
+        GameObject menu, game, over, pause, profile;
+        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, toast;
         RectTransform bossBar, bossFill, bannerRt;
         CanvasGroup toastGroup;
-        readonly Image[] cardFrames = new Image[4];
-        readonly RectTransform[] cards = new RectTransform[4];
+        RectTransform menuStage, profileStage;
+        Outfit outfit;
+        Func<int> points;
+        Func<bool> soundOn, vibrateOn;
+        Action toggleVibrate, mute;
+        RectTransform startButton, settingsButton;
+        GameObject gameSettings;
+        Text pointsLabel;
+        Action outfitChanged;
+        readonly List<Action> refresh = new List<Action>();
+        readonly List<(Image tab, GameObject page)> tabs = new List<(Image, GameObject)>(), sections = new List<(Image, GameObject)>();
         readonly List<(Text text, float life, Vector3 pos)> floats = new List<(Text, float, Vector3)>();
         readonly Queue<(string, string, Color)> banners = new Queue<(string, string, Color)>();
         float bannerTime = 99, toastTime = 99, comboPop;
         int lastCombo = 1;
 
-        public void Init(Camera cam, Action start, Action<Rider> select, Action top10, Action mute, Action changeRider)
+        public void Init(Camera cam, Outfit outfit, Func<int> points, Action start, Action openProfile, Action closeProfile, Action top10, Action mute, Func<bool> soundOn, Func<bool> vibrateOn, Action toggleVibrate, Action outfitChanged, Action openSettings, Action resume, Action quit)
         {
+            this.soundOn = soundOn; this.vibrateOn = vibrateOn; this.toggleVibrate = toggleVibrate; this.mute = mute;
+            this.points = points;
+            this.outfit = outfit;
+            this.outfitChanged = outfitChanged;
             font = Font.CreateDynamicFontFromOSFont(new[] { "Avenir Next Condensed", "Futura", "Arial Black", "Roboto Condensed", "Roboto", "Arial" }, 32);
             round = RoundSprite();
 
@@ -56,16 +70,35 @@ namespace PalmStreet.Game
             ApplySafeArea();
 
             BuildGame();
-            BuildMenu(start, select, top10);
-            BuildOver(changeRider);
+            BuildMenu(start, openProfile, top10);
+            BuildProfile(closeProfile);
+            BuildOver(openProfile);
 
             pause = Panel("Pause", 0.55f);
             Label(pause.transform, "PAUSE", 54, Cream, new Vector2(0, 40));
             Label(pause.transform, "Touche l'écran pour reprendre", 18, Cream, new Vector2(0, -20));
 
-            // bouton son, toujours visible
-            var mb = Button(safe, "Son", new Vector2(1, 1), new Vector2(-34, -30), new Vector2(52, 40), new Color(Night.r, Night.g, Night.b, 0.6f), mute);
-            muteLabel = Label(mb.transform, "SON", 15, Cream, Vector2.zero);
+            // en partie : bouton RÉGLAGES en haut à droite, qui met le jeu en pause
+            var sbtn = Button(safe, "Réglages", new Vector2(1, 1), new Vector2(-52, -30), new Vector2(92, 40), new Color(Night.r, Night.g, Night.b, 0.6f), openSettings);
+            settingsButton = sbtn.GetComponent<RectTransform>();
+            Label(sbtn.transform, "RÉGLAGES", 14, Cream, Vector2.zero);
+
+            // fenêtre des réglages en partie : son, vibrations, reprendre ou revenir à l'accueil
+            gameSettings = Panel("Réglages en partie", 0.7f);
+            gameSettings.GetComponent<Image>().raycastTarget = true;   // un toucher à côté ne relance pas la partie
+            var box = Rect("Fenêtre", gameSettings.transform);
+            box.anchorMin = box.anchorMax = new Vector2(0.5f, 0.5f);
+            box.sizeDelta = new Vector2(300, 380);
+            Img(box, new Color(Night.r, Night.g, Night.b, 0.95f)).raycastTarget = false;
+            Label(box, "RÉGLAGES", 30, Cream, new Vector2(0, -34), new Vector2(0.5f, 1));
+            var page = Page(box, "Interrupteurs", -64).transform;
+            float gy = 0;
+            Toggle(page, ref gy, "SON (MUSIQUE ET BRUITAGES)", soundOn, mute);
+            Toggle(page, ref gy, "VIBRATIONS", vibrateOn, toggleVibrate);
+            var rb = Button(box, "Reprendre", new Vector2(0.5f, 0), new Vector2(0, 82), new Vector2(220, 48), Orange, resume);
+            Label(rb.transform, "REPRENDRE", 22, Night, Vector2.zero);
+            var qb = Button(box, "Accueil", new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(220, 38), new Color(1, 1, 1, 0.12f), quit);
+            Label(qb.transform, "QUITTER LA PARTIE", 15, Cream, Vector2.zero);
 
             var tg = new GameObject("Message", typeof(RectTransform), typeof(CanvasGroup));
             var trt = tg.GetComponent<RectTransform>();
@@ -117,36 +150,278 @@ namespace PalmStreet.Game
             }
         }
 
-        void BuildMenu(Action start, Action<Rider> select, Action top10)
+        void BuildMenu(Action start, Action openProfile, Action top10)
         {
             menu = Group("Accueil");
             var t = menu.transform;
-            Label(t, "PALM", 62, Cream, new Vector2(0, -58), new Vector2(0.5f, 1));
-            Label(t, "STREET", 62, Orange, new Vector2(0, -110), new Vector2(0.5f, 1));
-            Label(t, "S K A T E   R U N", 15, Pink, new Vector2(0, -150), new Vector2(0.5f, 1));
-            menuBest = Label(t, "", 15, Yellow, new Vector2(0, -174), new Vector2(0.5f, 1));
+            Label(t, "PALM", 62, Cream, new Vector2(0, -80), new Vector2(0.5f, 1));
+            Label(t, "STREET", 62, Orange, new Vector2(0, -132), new Vector2(0.5f, 1));
+            Label(t, "S K A T E   R U N", 15, Pink, new Vector2(0, -172), new Vector2(0.5f, 1));
+            menuBest = Label(t, "", 15, Yellow, new Vector2(0, -196), new Vector2(0.5f, 1));
 
-            for (int i = 0; i < 4; i++)
-            {
-                var r = (Rider)i;
-                var pos = new Vector2(i % 2 == 0 ? -76 : 76, i < 2 ? -262 : -382);
-                var frame = Button(t, RiderLook.All[i].Name, new Vector2(0.5f, 1), pos, new Vector2(144, 112), Orange, () => select(r));
-                cardFrames[i] = frame.GetComponent<Image>();
-                var inner = Rect("Fond", frame.transform);
-                inner.offsetMin = new Vector2(3, 3); inner.offsetMax = new Vector2(-3, -3);
-                Img(inner, new Color(Night.r, Night.g, Night.b, 0.72f)).raycastTarget = false;
-                Label(frame.transform, RiderLook.All[i].Name, 15, Cream, new Vector2(0, -44));
-                cards[i] = frame.GetComponent<RectTransform>();
-            }
+            // le skateur du joueur, sur un socle (dessiné par le jeu au-dessus du canevas)
+            menuStage = Rect("Socle", t);
+            menuStage.anchorMin = menuStage.anchorMax = new Vector2(0.5f, 1);
+            menuStage.anchoredPosition = new Vector2(0, -318);
+            menuStage.sizeDelta = new Vector2(190, 190);
+            Img(menuStage, new Color(Night.r, Night.g, Night.b, 0.45f)).raycastTarget = false;
 
-            var sb = Button(t, "START", new Vector2(0.5f, 0), new Vector2(0, 112), new Vector2(230, 58), Orange, start);
-            Label(sb.transform, "START", 30, Night, Vector2.zero);
-            var tb = Button(t, "TOP 10", new Vector2(0.5f, 0), new Vector2(0, 58), new Vector2(150, 38), new Color(Night.r, Night.g, Night.b, 0.75f), top10);
+            startButton = StartButton(t, start);
+            // profil en haut à droite (le bouton son se range à sa gauche sur l'accueil)
+            var pb = Button(t, "PROFIL", new Vector2(1, 1), new Vector2(-58, -30), new Vector2(96, 40), Pink, openProfile);
+            Label(pb.transform, "PROFIL", 16, Cream, Vector2.zero);
+            var tb = Button(t, "TOP 10", new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(150, 38), new Color(1, 1, 1, 0.1f), top10);
             Label(tb.transform, "TOP 10", 17, Yellow, Vector2.zero);
-            Label(t, "Touche : ollie  ·  double touche en l'air : figure", 12, Cream, new Vector2(0, 22), new Vector2(0.5f, 0));
+            Label(t, "Touche : ollie  ·  touche en l'air : figure", 12, Cream, new Vector2(0, 22), new Vector2(0.5f, 0));
         }
 
-        void BuildOver(Action changeRider)
+        // ---------- profil : tenue du skateur (FR-026) ----------
+
+        void BuildProfile(Action close)
+        {
+            profile = Group("Profil");
+            var t = profile.transform;
+            Label(t, "PROFIL", 30, Cream, new Vector2(0, -28), new Vector2(0.5f, 1));
+            pointsLabel = Label(t, "", 14, Yellow, new Vector2(0, -56), new Vector2(0.5f, 1));
+
+            // deux grands onglets : TENUE et RÉGLAGES
+            string[] sectionNames = { "TENUE", "RÉGLAGES" };
+            for (int i = 0; i < 2; i++)
+            {
+                int index = i;
+                var tb = Button(t, sectionNames[i], new Vector2(0.5f, 1), new Vector2(i == 0 ? -82 : 82, -94), new Vector2(156, 40), Night, () => ShowSection(index));
+                Label(tb.transform, sectionNames[i], 18, Cream, Vector2.zero);
+                sections.Add((tb.GetComponent<Image>(), Rect("Section " + sectionNames[i], t).gameObject));
+            }
+
+            // TENUE : aperçu animé, puis les parties du skateur en petits onglets
+            var tenue = sections[0].page.transform;
+            profileStage = Rect("Aperçu", tenue);
+            profileStage.anchorMin = profileStage.anchorMax = new Vector2(0.5f, 1);
+            profileStage.anchoredPosition = new Vector2(0, -186);
+            profileStage.sizeDelta = new Vector2(170, 130);
+            Img(profileStage, new Color(Night.r, Night.g, Night.b, 0.45f)).raycastTarget = false;
+            Panel(tenue, -262);
+
+            string[] names = { "TÊTE", "PEAU", "HAUT", "BAS", "PIEDS", "PLANCHE" };
+            for (int i = 0; i < names.Length; i++)
+            {
+                int index = i;
+                var tb = Button(tenue, names[i], new Vector2(0.5f, 1), new Vector2(-150 + i * 60, -276), new Vector2(56, 28), Night, () => ShowTab(index));
+                Label(tb.transform, names[i], 12, Cream, Vector2.zero);
+                tabs.Add((tb.GetComponent<Image>(), Page(tenue, "Page " + names[i], -298)));
+            }
+            float y;
+            var p = tabs[0].page.transform; y = 0;
+            Selector(p, ref y, "COIFFURE", Wardrobe.Heads, Unlocks.Heads, () => outfit.Head, v => outfit.Head = v);
+            Swatches(p, ref y, "COULEUR (CASQUETTE, BONNET, BANDEAU)", Wardrobe.Palette, Unlocks.Colors, () => outfit.HatColor, v => outfit.HatColor = v);
+            Swatches(p, ref y, "CHEVEUX", Wardrobe.Hairs, null, () => outfit.HairColor, v => outfit.HairColor = v);
+            p = tabs[1].page.transform; y = 0;
+            Swatches(p, ref y, "PEAU", Wardrobe.Skins, null, () => outfit.Skin, v => outfit.Skin = v);
+            p = tabs[2].page.transform; y = 0;
+            Swatches(p, ref y, "SWEAT", Wardrobe.Palette, Unlocks.Colors, () => outfit.Top, v => outfit.Top = v);
+            Swatches(p, ref y, "DÉTAIL (BANDE, CHAUSSETTES)", Wardrobe.Palette, Unlocks.Colors, () => outfit.Accent, v => outfit.Accent = v);
+            p = tabs[3].page.transform; y = 0;
+            Selector(p, ref y, "COUPE", Wardrobe.Legs, Unlocks.Legs, () => outfit.Legs, v => outfit.Legs = v);
+            Swatches(p, ref y, "COULEUR", Wardrobe.Palette, Unlocks.Colors, () => outfit.Pants, v => outfit.Pants = v);
+            p = tabs[4].page.transform; y = 0;
+            Swatches(p, ref y, "CHAUSSURES", Wardrobe.Palette, Unlocks.Colors, () => outfit.Shoes, v => outfit.Shoes = v);
+            p = tabs[5].page.transform; y = 0;
+            Swatches(p, ref y, "PLATEAU", Wardrobe.Palette, Unlocks.Colors, () => outfit.Deck, v => outfit.Deck = v);
+            Swatches(p, ref y, "ROUES", Wardrobe.Palette, Unlocks.Colors, () => outfit.Wheels, v => outfit.Wheels = v);
+
+            // RÉGLAGES : son et vibrations
+            var settings = sections[1].page.transform;
+            Panel(settings, -126);
+            p = Page(settings, "Réglages", -146).transform; y = 0;
+            Toggle(p, ref y, "SON (MUSIQUE ET BRUITAGES)", soundOn, mute);
+            Toggle(p, ref y, "VIBRATIONS", vibrateOn, toggleVibrate);
+
+            var ok = Button(t, "RETOUR", new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(210, 46), Orange, close);
+            Label(ok.transform, "RETOUR", 22, Night, Vector2.zero);
+            ShowTab(0);
+            ShowSection(0);
+            Refresh();
+        }
+
+        /// <summary>Fond sombre des réglages, du haut donné jusqu'en bas de l'écran.</summary>
+        void Panel(Transform parent, float top)
+        {
+            var back = Rect("Fond", parent);
+            back.offsetMin = new Vector2(8, 8); back.offsetMax = new Vector2(-8, top);
+            Img(back, new Color(Night.r, Night.g, Night.b, 0.88f)).raycastTarget = false;
+        }
+
+        static GameObject Page(Transform parent, string name, float top)
+        {
+            var page = Rect(name, parent);
+            page.anchorMin = page.anchorMax = new Vector2(0.5f, 1);
+            page.pivot = new Vector2(0.5f, 1);
+            page.anchoredPosition = new Vector2(0, top);
+            page.sizeDelta = new Vector2(390, 10);
+            return page.gameObject;
+        }
+
+        static void Select(List<(Image tab, GameObject page)> list, int index)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].tab.color = i == index ? Orange : new Color(Night.r, Night.g, Night.b, 0.9f);
+                list[i].page.SetActive(i == index);
+            }
+        }
+
+        public void ShowTab(int index) => Select(tabs, index);
+        public void ShowSection(int index) => Select(sections, index);
+
+        void Changed()
+        {
+            Refresh();
+            outfitChanged();
+        }
+
+        void Refresh() { foreach (var r in refresh) r(); }
+
+        static string Pts(int n) => n.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("fr-FR")) + " PTS";
+
+        void Locked(int cost) => Toast($"Se débloque à {Pts(cost)} (tu en as {points():N0})");
+
+        /// <summary>Choix dans une liste de mots : ‹ VALEUR ›. Un choix verrouillé s'affiche avec son prix et ne s'applique pas.</summary>
+        void Selector(Transform parent, ref float y, string label, string[] names, int[] costs, Func<int> get, Action<int> set)
+        {
+            Label(parent, label, 13, Yellow, new Vector2(0, y - 10), new Vector2(0.5f, 1));
+            var value = Label(parent, "", 18, Cream, new Vector2(0, y - 38), new Vector2(0.5f, 1));
+            int n = names.Length, shown = 0;
+            void Step(int d)
+            {
+                shown = (shown + d + n) % n;
+                if (Unlocks.Open(costs[shown], points())) { set(shown); Changed(); }
+                else { Display(); Locked(costs[shown]); }
+            }
+            void Display()
+            {
+                bool open = Unlocks.Open(costs[shown], points());
+                value.text = open ? names[shown] : $"{names[shown]}  ·  {Pts(costs[shown])}";
+                value.color = open ? Cream : new Color(Cream.r, Cream.g, Cream.b, 0.45f);
+            }
+            var l = Button(parent, label + " ‹", new Vector2(0.5f, 1), new Vector2(-130, y - 38), new Vector2(46, 34), Orange, () => Step(-1));
+            Label(l.transform, "<", 20, Night, Vector2.zero);
+            var r = Button(parent, label + " ›", new Vector2(0.5f, 1), new Vector2(130, y - 38), new Vector2(46, 34), Orange, () => Step(1));
+            Label(r.transform, ">", 20, Night, Vector2.zero);
+            refresh.Add(() => { shown = ((get() % n) + n) % n; Display(); });
+            y -= 66;
+        }
+
+        /// <summary>Pastilles de couleur, 7 par ligne ; la pastille choisie a un anneau clair, une pastille verrouillée montre son prix.</summary>
+        void Swatches(Transform parent, ref float y, string label, Color[] colors, int[] costs, Func<int> get, Action<int> set)
+        {
+            Label(parent, label, 13, Yellow, new Vector2(0, y - 10), new Vector2(0.5f, 1));
+            const float step = 44;
+            var rings = new Image[colors.Length];
+            var locks = new GameObject[colors.Length];
+            for (int i = 0; i < colors.Length; i++)
+            {
+                int index = i, row = i / 7, col = i % 7, inRow = Mathf.Min(7, colors.Length - row * 7);
+                var pos = new Vector2((col - (inRow - 1) / 2f) * step, y - 40 - row * step);
+                var ring = Rect("Anneau", parent);
+                ring.anchorMin = ring.anchorMax = new Vector2(0.5f, 1);
+                ring.anchoredPosition = pos;
+                ring.sizeDelta = new Vector2(40, 40);
+                rings[i] = Img(ring, Cream);
+                rings[i].raycastTarget = false;
+                int cost = costs != null ? costs[i] : 0;
+                var b = Button(parent, label + " " + i, new Vector2(0.5f, 1), pos, new Vector2(32, 32), colors[i], () =>
+                {
+                    if (Unlocks.Open(cost, points())) { set(index); Changed(); }
+                    else Locked(cost);
+                });
+                b.GetComponent<UnityEngine.UI.Button>().transition = Selectable.Transition.None;
+                if (cost > 0)
+                {
+                    var veil = Rect("Verrou", b.transform);
+                    Img(veil, new Color(Night.r, Night.g, Night.b, 0.7f)).raycastTarget = false;
+                    var price = Label(veil, cost >= 1000 ? (cost / 1000f).ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("fr-FR")) + "K" : cost.ToString(), 11, Cream, Vector2.zero);
+                    price.rectTransform.sizeDelta = new Vector2(40, 16);
+                    locks[i] = veil.gameObject;
+                }
+            }
+            refresh.Add(() =>
+            {
+                for (int i = 0; i < rings.Length; i++)
+                {
+                    rings[i].enabled = i == get();
+                    if (locks[i] != null) locks[i].SetActive(!Unlocks.Open(costs[i], points()));
+                }
+            });
+            y -= 26 + Mathf.CeilToInt(colors.Length / 7f) * step;
+        }
+
+        /// <summary>Interrupteur : vert ACTIVÉ / gris COUPÉ.</summary>
+        void Toggle(Transform parent, ref float y, string label, Func<bool> get, Action flip)
+        {
+            Label(parent, label, 13, Yellow, new Vector2(0, y - 10), new Vector2(0.5f, 1));
+            var b = Button(parent, label, new Vector2(0.5f, 1), new Vector2(0, y - 44), new Vector2(220, 44), Orange, () => { flip(); Refresh(); });
+            var img = b.GetComponent<Image>();
+            var text = Label(b.transform, "", 19, Night, Vector2.zero);
+            refresh.Add(() =>
+            {
+                bool on = get();
+                img.color = on ? Hex("#3BB273") : Hex("#5C6670");
+                text.text = on ? "ACTIVÉ" : "COUPÉ";
+                text.color = on ? Night : Cream;
+            });
+            y -= 80;
+        }
+
+        /// <summary>Bouton START : pilule orange en relief (ombre, reflet), icône lecture, qui respire doucement.</summary>
+        RectTransform StartButton(Transform parent, Action start)
+        {
+            var root = Rect("START", parent);
+            root.anchorMin = root.anchorMax = new Vector2(0.5f, 0);
+            root.anchoredPosition = new Vector2(0, 118);
+            root.sizeDelta = new Vector2(250, 68);
+            var shadow = Rect("Ombre", root);
+            shadow.offsetMin = new Vector2(0, -7); shadow.offsetMax = new Vector2(0, -7);
+            Img(shadow, Hex("#A8400A")).raycastTarget = false;
+            var face = Rect("Bouton", root);
+            var img = Img(face, Orange);
+            img.pixelsPerUnitMultiplier = 0.9f;   // coins très ronds : une pilule
+            shadow.GetComponent<Image>().pixelsPerUnitMultiplier = 0.9f;
+            var shine = Rect("Reflet", face);
+            shine.anchorMin = new Vector2(0, 0.66f); shine.offsetMin = new Vector2(24, 0); shine.offsetMax = new Vector2(-24, -5);
+            var s = Img(shine, new Color(1, 1, 1, 0.16f));
+            s.raycastTarget = false;
+            s.pixelsPerUnitMultiplier = 1.4f;
+            var b = face.gameObject.AddComponent<UnityEngine.UI.Button>();
+            b.targetGraphic = img;
+            b.onClick.AddListener(() => start());
+            var icon = Rect("Lecture", face);
+            icon.anchorMin = icon.anchorMax = new Vector2(0.5f, 0.5f);
+            icon.anchoredPosition = new Vector2(-62, 0);
+            icon.sizeDelta = new Vector2(26, 28);
+            var tri = icon.gameObject.AddComponent<Image>();
+            tri.sprite = TriangleSprite();
+            tri.color = Night;
+            tri.raycastTarget = false;
+            Destroy(Label(face, "START", 34, Night, new Vector2(16, 0)).GetComponent<Shadow>());
+            return root;
+        }
+
+        static Sprite TriangleSprite()
+        {
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float half = (n - x) / 2f, d = Mathf.Min(half - Mathf.Abs(y + 0.5f - n / 2f), x + 0.5f);
+                    tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(d)));
+                }
+            tex.Apply();
+            return Sprite.Create(tex, new UnityEngine.Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100);
+        }
+
+        void BuildOver(Action openProfile)
         {
             over = Panel("Fin", 0.45f);
             var t = over.transform;
@@ -155,23 +430,24 @@ namespace PalmStreet.Game
             overScore = Label(t, "0", 46, Cream, new Vector2(0, 104));
             overBest = Label(t, "", 17, Yellow, new Vector2(0, 66));
             record = Label(t, "NOUVEAU RECORD !", 22, Pink, new Vector2(0, 36));
-            var cb = Button(t, "Changer", new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(240, 46), new Color(Night.r, Night.g, Night.b, 0.85f), changeRider);
-            Label(cb.transform, "CHANGER DE SKATEUR", 17, Cream, Vector2.zero);
+            var cb = Button(t, "Profil", new Vector2(0.5f, 0.5f), new Vector2(0, -30), new Vector2(240, 46), new Color(Night.r, Night.g, Night.b, 0.85f), openProfile);
+            Label(cb.transform, "CHANGER MA TENUE", 17, Cream, Vector2.zero);
             hint = Label(t, "Touche l'écran pour rejouer", 18, Cream, new Vector2(0, -88));
         }
 
         // ---------- écrans ----------
 
-        public void ShowMenu(Rider selected, int bestScore)
+        public void ShowMenu(int bestScore)
         {
             Show(menu);
             menuBest.text = bestScore > 0 ? "BEST " + bestScore : "";
-            Select(selected);
         }
 
-        public void Select(Rider r)
+        public void ShowProfile()
         {
-            for (int i = 0; i < 4; i++) cardFrames[i].color = i == (int)r ? Orange : new Color(Cream.r, Cream.g, Cream.b, 0.25f);
+            Show(profile);
+            ShowSection(0);
+            Refresh();
         }
 
         public void ShowGame()
@@ -195,11 +471,22 @@ namespace PalmStreet.Game
         {
             menu.SetActive(g == menu);
             game.SetActive(g == game);
+            profile.SetActive(g == profile);
+            settingsButton.gameObject.SetActive(g == game);   // en partie ; sinon les réglages sont dans PROFIL
+            gameSettings.SetActive(false);
+            if (g == profile) pointsLabel.text = "POINTS CUMULÉS : " + Pts(points());
             over.SetActive(false);
             pause.SetActive(false);
         }
 
-        public void SetMuted(bool m) => muteLabel.text = m ? "MUET" : "SON";
+        public void ShowGameSettings(bool on)
+        {
+            gameSettings.SetActive(on);
+            settingsButton.gameObject.SetActive(!on && game.activeSelf);
+            if (on) Refresh();
+        }
+
+        public bool GameSettingsOpen => gameSettings.activeSelf;
 
         public void Toast(string message)
         {
@@ -207,12 +494,16 @@ namespace PalmStreet.Game
             toastTime = 0;
         }
 
-        /// <summary>Position monde des pieds du skateur d'une carte, et l'échelle à lui donner.</summary>
-        public Vector3 CardFeet(int i, out float scale)
+        /// <summary>Position monde des pieds du skateur affiché (accueil ou profil), et l'échelle à lui donner.</summary>
+        public Vector3 PreviewFeet(out float scale)
         {
-            scale = cards[i].lossyScale.x / 0.01f * 1.15f;
-            return cards[i].TransformPoint(new Vector3(0, -30, 0));
+            bool inProfile = profile.activeSelf;
+            var stage = inProfile ? profileStage : menuStage;
+            scale = stage.lossyScale.x / 0.01f * (inProfile ? 1.45f : 2.1f);
+            return stage.TransformPoint(new Vector3(0, inProfile ? -56 : -78, 0));
         }
+
+        public bool PreviewVisible => menu.activeSelf || (profile.activeSelf && sections[0].page.activeSelf);
 
         public bool MenuVisible => menu.activeSelf;
 
@@ -236,6 +527,7 @@ namespace PalmStreet.Game
 
         public void Tick(Run run, float dt, float time)
         {
+            if (menu.activeSelf) startButton.localScale = Vector3.one * (1 + 0.035f * Mathf.Sin(time * 3.2f));
             if (game.activeSelf)
             {
                 score.text = run.Score.ToString();

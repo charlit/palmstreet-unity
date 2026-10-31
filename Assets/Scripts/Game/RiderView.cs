@@ -24,6 +24,9 @@ namespace PalmStreet.Game
         Transform[] wheels;
         RiderLook look;
 
+        bool wasAirborne;
+        float landedAt = -9;
+
         // chute
         bool crashed;
         Vector2 bodyPos, bodyVel, boardPos, boardVel;
@@ -31,7 +34,7 @@ namespace PalmStreet.Game
 
         public static RiderView Create(RiderLook look, Transform parent, int order, string layer = "Default")
         {
-            var v = new GameObject("Skateur " + look.Name).AddComponent<RiderView>();
+            var v = new GameObject("Skateur").AddComponent<RiderView>();
             v.transform.SetParent(parent, false);
             v.Build(look, order, layer);
             return v;
@@ -218,7 +221,7 @@ namespace PalmStreet.Game
         /// crouch : 0 debout, 1 accroupi ; lean : buste penché en avant (°) ; bras en ° (0 = le long du corps, 90 = devant) ;
         /// push : phase de la poussée (0 à 1, le pied arrière va pousser sur le sol), négatif sans poussée.
         /// </summary>
-        void Pose(float crouch, float lean, float armFront, float armBack, float tilt = 0, float lift = 0, float push = -1)
+        void Pose(float crouch, float lean, float armFront, float armBack, float tilt = 0, float lift = 0, float push = -1, float forward = 0)
         {
             body.localPosition = W(0, -Center);
             var rot = Quaternion.Euler(0, 0, tilt);
@@ -226,7 +229,7 @@ namespace PalmStreet.Game
             Vector2 back = Top(BackFoot), front = Top(FrontFoot);
             float pushWeight = push >= 0 ? Mathf.Sin(push * Mathf.PI) : 0;
             crouch += pushWeight * 0.5f;
-            var hip = new Vector2((back.x + front.x) / 2 - 1 + lean * 0.05f, (back.y + front.y) / 2 + Ankle + 25 * (1 - 0.5f * Mathf.Clamp01(crouch)));
+            var hip = new Vector2((back.x + front.x) / 2 - 1 + lean * 0.05f + forward, (back.y + front.y) / 2 + Ankle + 25 * (1 - 0.5f * Mathf.Clamp01(crouch)));
             if (push >= 0) back = Vector2.Lerp(back, new Vector2(-4 - 10 * push, 0), pushWeight);   // le pied arrière pousse sur le sol
             Solve(legB, hip + new Vector2(-1, 0), back, push >= 0 ? tilt * (1 - pushWeight) : tilt);
             Solve(legF, hip + new Vector2(1, 0), front, tilt);
@@ -276,7 +279,7 @@ namespace PalmStreet.Game
             var f = sy > 0 ? gripFace : bottomFace;
             f.localPosition = W(0, -1 * cy);
             f.localRotation = Quaternion.Euler(0, 0, tilt);
-            f.localScale = new Vector3(shove != 0 ? Mathf.Max(Mathf.Abs(sx), 0.28f) : sx2, Mathf.Abs(sy) * 0.55f, 1);
+            f.localScale = new Vector3(shove != 0 ? Mathf.Max(Mathf.Abs(sx), 0.28f) : sx2, Mathf.Abs(sy) * (shove != 0 ? 0.55f : 1), 1);
         }
 
         void Wheels(float distance)
@@ -294,36 +297,42 @@ namespace PalmStreet.Game
             if (current > 180) current -= 360;
             float spinAngle = Mathf.Lerp(current, tilt, 0.35f);
             Wheels(s.X);
+            bool airborne = !s.Grounded && s.Rail == null;
+            if (wasAirborne && !airborne) landedAt = time;
+            wasAirborne = airborne;
 
             float p = s.Trick >= 0 ? Mathf.Clamp01((float)s.TrickStep / s.TrickLength) : 0;
             float ease = 1 - (1 - p) * (1 - p) * (1 - p);   // rapide au départ, rattrapée en douceur
             float lift = Mathf.Sin(p * Mathf.PI);            // les pieds quittent la planche au milieu de la figure
             if (s.Rail != null)
             {
-                Pose(0.35f, -8, 100, -95, -7);
-                Board(-7);
+                // nose grind : le nez sur le rail, la queue levée ; le skateur penché sur l'avant, bras en balancier
+                const float nose = -18, up = 4.5f;   // up : la roue avant reste posée sur le rail
+                Pose(0.45f, 26, 115, -45, nose, up, -1, 7);
+                Board(nose, 0, 0, -up);
             }
             else if (s.Grounded)
             {
                 // rouler : petit balancement, et une poussée de temps en temps sur le plat
                 float cycle = Mathf.Repeat(time, 2.6f), push = cycle < 0.7f && speedFactor < 1.05f && !s.Ducking ? cycle / 0.7f : -1;
+                float squash = Mathf.Max(0, 1 - (time - landedAt) / 0.2f) * 0.6f;   // genoux qui amortissent la retombée
                 if (s.Ducking) Pose(1, 32, 55, 15);
-                else Pose(0.15f + Mathf.Sin(time * 2.4f) * 0.04f, 10 + Mathf.Max(0, Mathf.Sin(push * Mathf.PI)) * 12, -14 + Mathf.Sin(time * 2.4f) * 6, 22, 0, 0, push);
+                else Pose(0.15f + squash + Mathf.Sin(time * 2.4f) * 0.04f, 10 + Mathf.Max(0, Mathf.Sin(push * Mathf.PI)) * 12, -14 + Mathf.Sin(time * 2.4f) * 6, 22, 0, 0, push);
                 Board(0);
             }
             else
             {
                 float rise = Mathf.Clamp(s.Vy / Tuning.OllieSpeed, -1, 1);
-                float nose = Mathf.Max(0, rise) * 18;   // nez de la planche relevé au début du saut, pieds collés au grip
-                Pose(0.25f + Mathf.Max(0, rise) * 0.45f, 14, 60 + rise * 40, -70 - rise * 30, nose);
-                Board(nose);
+                Ollie(rise, out float nose, out float up);
+                Pose(0.2f + (1 - Mathf.Abs(rise)) * 0.5f, 14, 60 + rise * 40, -70 - rise * 30, nose, up);
+                Board(nose, 0, 0, -up);
             }
 
             switch (s.Trick)
             {
-                case 0:   // FLIP : genoux remontés, les pieds quittent le grip, la planche tourne dans sa longueur dessous
-                    Pose(0.3f + lift * 0.35f, 12 + lift * 8, 75 + lift * 25, -85 - lift * 20, 0, lift * 6);
-                    Board(0, ease * Mathf.PI * 2, 0, lift * 2);
+                case 0:   // FLIP : genoux remontés, pieds écartés de la planche qui tourne bien visible dessous, nez un peu levé
+                    Pose(0.3f + lift * 0.45f, 12 + lift * 8, 75 + lift * 25, -85 - lift * 20, 0, lift * 10);
+                    Board(lift * 14, p * p * (3 - 2 * p) * Mathf.PI * 2, 0, lift * 8);   // tour régulier : on voit chaque face
                     break;
                 case 1:   // SHOVE-IT : même saut groupé, la planche fait un tour à plat sous les pieds
                     Pose(0.3f + lift * 0.35f, 6, 95 + lift * 20, -95 - lift * 15, 0, lift * 5);
@@ -343,16 +352,32 @@ namespace PalmStreet.Game
             spin.rotation = Quaternion.Euler(0, 0, spinAngle);
         }
 
+        /// <summary>
+        /// Mouvement de la planche pendant un ollie, selon rise (1 au décollage, 0 au sommet, −1 à la retombée) :
+        /// la queue claque, le nez monte fort (pivot sur la queue, d'où up), la planche se remet à plat en montant,
+        /// puis pique un peu du nez juste avant de toucher le sol.
+        /// </summary>
+        static void Ollie(float rise, out float nose, out float up)
+        {
+            float k = Mathf.Clamp01((rise - 0.1f) / 0.6f);
+            nose = rise > 0.1f ? 32 * k * k * (3 - 2 * k) : rise < -0.5f ? -8 * (-0.5f - rise) / 0.5f : 0;
+            up = Mathf.Max(0, Mathf.Sin(nose * Mathf.Deg2Rad) * 22);   // la queue reste en bas, le centre monte
+        }
+
         /// <summary>Pose d'accueil : debout sur la planche, qui respire ; le skateur choisi fait des petits ollies.</summary>
         public void Idle(Vector3 feet, float time, bool selected, float scale)
         {
             if (crashed) Reset();
             transform.localScale = Vector3.one * scale;
-            float hop = selected ? Mathf.Max(0, Mathf.Sin(time * 3.2f)) : 0;
-            spin.localPosition = (feet - transform.position) / scale + W(0, Center + hop * 14);
+            // le skateur choisi enchaîne des petits ollies : même mouvement de planche qu'en partie
+            float a = Mathf.Repeat(time * 3.2f, Mathf.PI * 2);
+            bool air = selected && a < Mathf.PI;
+            float hop = air ? Mathf.Sin(a) : 0, nose = 0, up = 0;
+            if (air) Ollie(Mathf.Cos(a), out nose, out up);
+            spin.localPosition = (feet - transform.position) / scale + W(0, Center + hop * 16);
             spin.localRotation = Quaternion.identity;
-            Pose(0.15f + hop * 0.4f, 8, -10 + Mathf.Sin(time * 1.7f) * 5 + hop * 60, 18 - hop * 70, hop * 14);
-            Board(hop * 14);
+            Pose(0.15f + hop * 0.4f, 8, -10 + Mathf.Sin(time * 1.7f) * 5 + hop * 60, 18 - hop * 70, nose, up);
+            Board(nose, 0, 0, -up);
         }
 
         // ---------- chute (FR-009) ----------

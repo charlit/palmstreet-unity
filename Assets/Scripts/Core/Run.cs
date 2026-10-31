@@ -4,10 +4,9 @@ using System.Collections.Generic;
 namespace PalmStreet.Core
 {
     public enum Phase { Menu, Playing, Over }
-    public enum Rider { Freestill, Keketsk8, Guigui, Maxwell }
-    public enum Theme { Largente, Btz, Arcangues }
-    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone }
-    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom }
+    public enum Theme { Largente, Btz, Arcangues, Neon }
+    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad }
+    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, Level, MegaAir }
 
     public sealed class Obstacle
     {
@@ -15,7 +14,7 @@ namespace PalmStreet.Core
         public float X, W, H;   // X : bord gauche
         public float Y;         // hauteur du bas de l'obstacle
         public float Vy;
-        public bool Falling;
+        public bool Falling, Used;   // Used : tremplin déjà pris
         public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail;
         public float Top => Y + H;
     }
@@ -33,7 +32,8 @@ namespace PalmStreet.Core
     public sealed class Skater
     {
         public float X, Y, Vy;          // Y : hauteur des pieds
-        public bool Grounded = true, Ducking, TrickUsed;
+        public bool Grounded = true, Ducking;
+        public int TricksLeft = 1;      // figures encore possibles dans ce saut (2 après un tremplin)
         public Obstacle Rail;           // rail en cours de grind
         public int Trick = -1, TrickStep, TrickLength = 24;   // TrickLength : durée de l'animation, finie avant la retombée
         public float Height => Ducking ? Tuning.DuckHeight : Tuning.SkaterHeight;
@@ -49,8 +49,7 @@ namespace PalmStreet.Core
         public const float SpawnAhead = 330;   // les obstacles naissent juste après le bord droit de l'écran
 
         public Phase Phase = Phase.Menu;
-        public Rider Rider;
-        public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore;
+        public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore, Level = 1;
         public bool NewBest;
         public float Speed, CurrentSpeed;
         public Theme Theme;
@@ -64,12 +63,15 @@ namespace PalmStreet.Core
         readonly int seed;
         Random rng;
         float nextObstacleX, speedFactor = 1;
-        bool bigRailPending, holding, lastPressInAir;
-        int pattern, trickIndex, holdSteps, lastPressStep, milestone;
+        bool bigRailPending, holding;
+        int pattern, trickIndex, holdSteps, milestone;
 
         public Run(int seed = 0) { this.seed = seed; }
 
-        public static float SpeedFor(int score) => Math.Min(Tuning.MaxSpeed, Tuning.StartSpeed + Tuning.SpeedPer100Points * (score / 100));
+        public static float SpeedFor(int score, int level = 1) =>
+            Math.Min(level >= 2 ? Tuning.NeonMaxSpeed : Tuning.MaxSpeed, Tuning.StartSpeed + Tuning.SpeedPer100Points * (score / 100));
+
+        Theme CurrentTheme => Level >= 2 ? Theme.Neon : ThemeFor(Score);
 
         public static Theme ThemeFor(int score)
         {
@@ -78,10 +80,9 @@ namespace PalmStreet.Core
         }
 
         /// <summary>Nouvelle partie. bossNow : raccourci du soleil (FR-020), le boss arrive tout de suite.</summary>
-        public void Start(Rider rider, bool bossNow = false)
+        public void Start(bool bossNow = false)
         {
             rng = new Random(seed != 0 ? seed : Environment.TickCount);
-            Rider = rider;
             Skater = new Skater();
             Ground = new Ground(rng, 300);   // choix : le départ plat de 420 commence au bord droit de l'écran
             Obstacles.Clear(); Bolts.Clear(); Events.Clear();
@@ -89,12 +90,13 @@ namespace PalmStreet.Core
             Score = bossNow ? Tuning.BossAt : 0;
             NextBossScore = Tuning.BossAt;
             milestone = Score / Tuning.MilestoneEvery;
+            Level = 1;
             Theme = ThemeFor(Score);
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
             Speed = SpeedFor(Score); CurrentSpeed = Speed; speedFactor = 1;
             nextObstacleX = SpawnAhead;
             bigRailPending = true;   // FR-008 : le premier obstacle est un grand rail
-            pattern = 0; trickIndex = 0; holding = false; lastPressInAir = false; lastPressStep = -999;
+            pattern = 0; trickIndex = 0; holding = false;
             Phase = Phase.Playing;
         }
 
@@ -114,22 +116,14 @@ namespace PalmStreet.Core
                 sk.Vy = Tuning.OllieSpeed * (float)Math.Sqrt(Tuning.OutJump);
                 AddPoints(Cue.GrindOut, Tuning.OutBonus, "OUT!");
                 Combo++; ComboTimer = 0;
-                lastPressInAir = false;
             }
             else if (sk.Grounded)
             {
                 sk.Grounded = false; sk.Ducking = false;
                 sk.Vy = Tuning.OllieSpeed;
                 Add(Cue.Ollie);
-                lastPressInAir = false;
             }
-            else if (lastPressInAir && StepCount - lastPressStep <= Tuning.DoubleTapWindow && !sk.TrickUsed)
-            {
-                Trick();
-                lastPressInAir = false;
-            }
-            else lastPressInAir = true;
-            lastPressStep = StepCount;
+            else if (sk.TricksLeft > 0 && sk.Trick < 0) Trick();   // FR-010 : un toucher en l'air fait la figure (2 touchers en tout)
         }
 
         public void Release()
@@ -142,7 +136,7 @@ namespace PalmStreet.Core
         {
             var sk = Skater;
             int k = trickIndex++ % Tuning.TrickPoints.Length;
-            sk.Trick = k; sk.TrickStep = 0; sk.TrickUsed = true;
+            sk.Trick = k; sk.TrickStep = 0; sk.TricksLeft--;
             // pas restants avant de retomber au niveau du sol actuel : y(n) = Y + (Vy - 0,25) n - 0,25 n²
             float b = sk.Vy - Tuning.Gravity / 2, drop = Math.Max(0, sk.Y - Ground.Height(sk.X));
             float n = (b + (float)Math.Sqrt(b * b + 4 * (Tuning.Gravity / 2) * drop)) / Tuning.Gravity;
@@ -161,7 +155,7 @@ namespace PalmStreet.Core
             var sk = Skater;
             if (holding && ++holdSteps >= Tuning.DuckAfter && sk.Grounded) sk.Ducking = true;
 
-            Speed = SpeedFor(Score);
+            Speed = SpeedFor(Score, Level);
             if (sk.Grounded) speedFactor = Ground.SpeedFactor(sk.X);
             CurrentSpeed = Speed * speedFactor;
             float prevY = sk.Y;
@@ -169,6 +163,7 @@ namespace PalmStreet.Core
             Ground.EnsureUpTo(sk.X + 800);
 
             MoveSkater(prevY);
+            if (Phase != Phase.Playing) return;   // chute pendant le mouvement (bord d'un trou)
             if (sk.Trick >= 0 && ++sk.TrickStep > sk.TrickLength) sk.Trick = -1;
             if (sk.Rail == null && ++ComboTimer >= Tuning.ComboTimeout) Combo = 1;   // FR-014
 
@@ -199,7 +194,11 @@ namespace PalmStreet.Core
                 }
                 return;
             }
-            if (sk.Grounded) { sk.Y = Ground.Height(sk.X); return; }
+            if (sk.Grounded)
+            {
+                if (!Ground.IsGap(sk.X)) { sk.Y = Ground.Height(sk.X); return; }
+                sk.Grounded = false; sk.Vy = 0;   // FR-030 : la route s'arrête, il tombe
+            }
 
             sk.Vy -= Tuning.Gravity;
             sk.Y += sk.Vy;
@@ -207,14 +206,15 @@ namespace PalmStreet.Core
                 foreach (var o in Obstacles)
                     if (o.IsRail && OverlapsX(o.X, o.X + o.W) && sk.Y <= o.Top && prevY >= o.Top - 8)
                     {
-                        sk.Rail = o; sk.Y = o.Top; sk.Vy = 0; sk.TrickUsed = false; sk.Trick = -1;
+                        sk.Rail = o; sk.Y = o.Top; sk.Vy = 0; sk.TricksLeft = 1; sk.Trick = -1;
                         Add(Cue.GrindStart);
                         return;
                     }
             float g = Ground.Height(sk.X);
             if (sk.Y <= g)
             {
-                sk.Y = g; sk.Vy = 0; sk.Grounded = true; sk.TrickUsed = false; sk.Trick = -1;
+                if (prevY < g - 2) { Crash(); return; }   // arrivé par le côté : il heurte le bord du trou
+                sk.Y = g; sk.Vy = 0; sk.Grounded = true; sk.TricksLeft = 1; sk.Trick = -1;
                 if (holding && holdSteps >= Tuning.DuckAfter) sk.Ducking = true;
                 Add(Cue.Land);
             }
@@ -225,10 +225,24 @@ namespace PalmStreet.Core
         void Collide()
         {
             var sk = Skater;
+            if (sk.Y < Tuning.FallCrash) { Crash(); return; }   // tombé dans un trou
             float top = sk.Y + sk.Height;
             foreach (var o in Obstacles)
             {
                 if (o == sk.Rail) continue;
+                if (o.Kind == ObstacleKind.Pad)
+                {
+                    // FR-032 : tremplin néon, saut géant et deux figures possibles
+                    if (!o.Used && sk.Grounded && OverlapsX(o.X, o.X + o.W))
+                    {
+                        o.Used = true;
+                        sk.Grounded = false; sk.Ducking = false;
+                        sk.Vy = Tuning.PadJump;
+                        sk.TricksLeft = 2;
+                        AddPoints(Cue.MegaAir, Tuning.MegaAirPoints * Combo, "MÉGA AIR !");
+                    }
+                    continue;
+                }
                 float x0 = o.X, x1 = o.X + o.W, y1 = o.Top;
                 if (!o.IsRail) { x0 += o.W * 0.2f; x1 -= o.W * 0.2f; y1 = o.Y + o.H * 0.85f; }   // un plot est pointu
                 if (OverlapsX(x0, x1) && sk.Y < y1 && top > o.Y) { Crash(); return; }
@@ -266,7 +280,7 @@ namespace PalmStreet.Core
                 bigRailPending = true;   // FR-008
                 Add(Cue.FullSpeed, "FULL SPEED");   // FR-016
             }
-            var t = ThemeFor(Score);
+            var t = CurrentTheme;
             if (t != Theme) { Theme = t; Add(Cue.Theme); }
         }
 
@@ -274,6 +288,7 @@ namespace PalmStreet.Core
         {
             float behind = Skater.X - 300;
             Obstacles.RemoveAll(o => o.X + o.W < behind);
+            foreach (var o in Obstacles) if (o.Kind == ObstacleKind.Gull) o.X -= Tuning.GullSpeed;   // FR-031 : les mouettes foncent sur le skateur
             Bolts.RemoveAll(b => b.X < behind);
             Ground.DropBefore(Skater.X - 600);
         }
@@ -290,6 +305,9 @@ namespace PalmStreet.Core
         {
             float x = nextObstacleX;
             if (Ground.InDescentStart(x, out float after)) x = after;
+            // jamais d'obstacle juste avant, sur ou juste après un trou : on le pose bien après
+            for (var hole = Ground.GapIn(x - 150, x + 150); hole != null; hole = Ground.GapIn(x - 150, x + 150)) x = hole.Value.X1 + 160;   // plus loin que la marge de 150, sinon on retrouve le même trou
+            if (Level >= 2 && !bigRailPending && PlaceNeon(x)) return;
             bool rails = Score >= Tuning.RailsAfterScore;
             bool wantRail = bigRailPending || (rails && pattern % 3 == 2);
             if (rails) pattern++;
@@ -323,6 +341,31 @@ namespace PalmStreet.Core
             return null;
         }
 
+        /// <summary>Niveau 2 : mouette (FR-031) ou tremplin (FR-032), sinon false pour un obstacle normal.</summary>
+        bool PlaceNeon(float x)
+        {
+            double r = rng.NextDouble();
+            Obstacle o;
+            if (r < 0.28)
+            {
+                float gx = x + 140;   // elle vole vers le skateur : on la fait naître plus loin
+                o = new Obstacle { Kind = ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
+            }
+            else if (r < 0.45)
+            {
+                // le tremplin se met juste avant le prochain trou s'il y en a un : saut géant par-dessus
+                var gap = Ground.GapIn(x, x + 400);
+                float px = gap != null ? gap.Value.X0 - 70 : x;
+                if (!Ground.IsFlat(px - 5, px + Tuning.PadWidth + 5)) return false;
+                o = new Obstacle { Kind = ObstacleKind.Pad, X = px, W = Tuning.PadWidth, H = Tuning.PadHeight };
+                if (gap != null) { Obstacles.Add(o); nextObstacleX = gap.Value.X1 + 160 + Speed * 40; return true; }
+            }
+            else return false;
+            Obstacles.Add(o);
+            nextObstacleX = o.X + o.W + Range(220, 380) + Speed * 40;
+            return true;
+        }
+
         void PlaceBolts(float from, float to)
         {
             int n = rng.Next(Tuning.BoltRowMin, Tuning.BoltRowMax + 1);
@@ -330,6 +373,19 @@ namespace PalmStreet.Core
             float width = (n - 1) * spacing;
             if (to - from < width) return;
             Ground.EnsureUpTo(to);
+            var hole = Ground.GapIn(from, to);
+            if (hole != null)
+            {
+                // un arc d'éclairs au-dessus du trou
+                var h = hole.Value;
+                float cx = (h.X0 + h.X1) / 2;
+                for (int i = 0; i < n; i++)
+                {
+                    float k = n == 1 ? 0.5f : (float)i / (n - 1);
+                    Bolts.Add(new Bolt { X = cx - width / 2 + i * spacing, Y = 45 + 45 * (float)Math.Sin(Math.PI * k) });
+                }
+                return;
+            }
             // toujours sur une montée ou un début de descente s'il y en a une dans l'intervalle, sinon 38 % du temps
             float? onSlope = null;
             foreach (var s in Ground.Segments)
@@ -345,7 +401,7 @@ namespace PalmStreet.Core
             for (int i = 0; i < n; i++)
             {
                 float bx = x0 + i * spacing;
-                Bolts.Add(new Bolt { X = bx, Y = Ground.Height(bx) + lift });
+                Bolts.Add(new Bolt { X = bx, Y = Ground.Floor(bx) + lift });
             }
         }
 
@@ -449,6 +505,13 @@ namespace PalmStreet.Core
             float x = Skater.X;
             Ground.FlatUntil = x + Tuning.AfterBossFlat;
             Obstacles.Add(new Obstacle { Kind = ObstacleKind.NoseRail, X = x + 400, W = Tuning.RailLength * Tuning.NoseRailFactor, H = Tuning.RailHeight });
+            if (Level == 1)
+            {
+                // FR-029 : le premier boss battu ouvre le niveau 2, NUIT NÉON
+                Level = 2;
+                Ground.Gaps = true;
+                Add(Cue.Level, "NIVEAU 2");
+            }
             nextObstacleX = x + Tuning.AfterBossFlat;
             NextBossScore = Score + Tuning.BossAt;
         }
