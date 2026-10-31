@@ -15,7 +15,13 @@ des boss (FR-015 à FR-019 et FR-029 de 001), la tenue et ses déblocages (FR-02
 
 Révision du 2026-10-31 (demandes du propriétaire) : accueil sans TOP 10 ni grand skateur, petit skateur
 sur la carte, animation de lancement avec la planche « P. ST. », vêtements gagnés en finissant les
-niveaux au lieu des couleurs libres (User Stories 5 et 6, FR-022 à FR-027).
+niveaux au lieu des couleurs libres (User Stories 5 et 6, FR-022 à FR-028).
+
+**Écart au jeu web (constitution, principe I)** : le jeu web PalmStreet est une course sans fin, sans
+niveaux, sans carte, sans boss différents, sans figures ni vêtements à débloquer et sans animation de
+lancement. Tout ce que décrit cette spec s'en écarte, à la demande du propriétaire du jeu (2026-10-31),
+pour donner une progression et des récompenses. Les règles de base (saut, grind, éclairs, combo, points des
+figures, boss à dents) restent celles de la spec 001, donc du jeu web.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -206,8 +212,8 @@ lisible sous la planche, un toucher la passe.
   directement le niveau suivant.
 - **FR-009**: Une chute pendant un niveau MUST proposer RECOMMENCER (le niveau depuis le début) et CARTE ;
   le niveau n'est pas réussi.
-- **FR-010**: Les points gagnés en niveau MUST compter dans les points cumulés qui débloquent les
-  vêtements (spec 001, FR-027).
+- **FR-010**: Les vêtements MUST se gagner en finissant les niveaux (FR-025), pas avec des points ;
+  le score d'un niveau ne sert qu'à son meilleur score.
 
 **Boss**
 
@@ -237,7 +243,7 @@ lisible sous la planche, un toucher la passe.
 **Mode infini**
 
 - **FR-018**: INFINI MUST lancer une course sans fin dont la vitesse augmente avec le temps de jeu
-  (et non plus avec le score), sans palier ni pause, jusqu'à une vitesse maximale qui reste jouable.
+  (et non plus avec le score), sans palier ni pause, plafonnée à 5,5 (un saut reste assez long pour passer les obstacles).
 - **FR-019**: En mode infini, les décors des villes déjà ouvertes en histoire MUST défiler à tour de
   rôle, et un boss MUST revenir régulièrement, choisi parmi ceux déjà rencontrés en histoire.
 - **FR-020**: Le mode infini MUST avoir son propre meilleur score, envoyé au classement ; le bouton

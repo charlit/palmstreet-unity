@@ -25,7 +25,7 @@ et trois nouveaux boss dans `Props`. Tout est testé en mode Edit, comme les rè
 **Primary Dependencies**: URP Renderer 2D, uGUI (ScrollRect pour la carte), Input System, Unity Test Framework. Aucun ajout.
 
 **Storage**: PlayerPrefs ; nouvelle clé `progress` (JSON : niveaux réussis, meilleur score par niveau,
-meilleur score infini) ; `best` existant repris comme meilleur score infini.
+meilleur score infini, bulles d'aide vues, tenue portée, peau, coiffure, cheveux) ; `best` existant repris comme meilleur score infini.
 
 **Testing**: tests EditMode sur PalmStreet.Core (Levels, Progress, Run en mode histoire et infini, boss) ;
 captures PlayMode pour la carte, les nouvelles villes, la ligne d'arrivée et les boss.

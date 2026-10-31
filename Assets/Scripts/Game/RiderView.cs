@@ -59,10 +59,10 @@ namespace PalmStreet.Game
             legB = MakeLeg("Jambe arrière", order + 3, layer, 0.8f);
             torso = new GameObject("Buste").transform;
             torso.SetParent(body, false);
-            var dark = Color.Lerp(l.Top, Color.black, 0.18f);
             new Paint()
                 .Capsule(0, 2, 2.5f, 18, 15, l.Top)
-                .Rect(-6.5f, 1, 13, 3.5f, dark)
+                .Ellipse(0, 0, 7.6f, 5.5f, l.Pants, 16)                 // bassin de la couleur du bas
+                .Rect(-6.8f, 3, 13.6f, 3, l.Top)                        // le sweat recouvre le haut du bassin
                 .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent)
                 .Make("Sweat", torso, order + 4, layer);
             if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 4, layer);   // aile de goéland
@@ -198,7 +198,9 @@ namespace PalmStreet.Game
             p.Circle(0, 0, 7.5f, l.Skin, 20);
             p.Circle(-5.5f, -0.5f, 2, Color.Lerp(l.Skin, Color.black, 0.15f), 10);   // oreille
             // cheveux (libres), puis couvre-chef gagné (spec 002)
-            if (l.Curly)
+            if (l.Hat == Hat.Cap || l.Hat == Hat.Beanie)
+                p.Ellipse(-5.8f, -0.5f, 2.6f, 3.2f, l.Hair, 10);       // le bonnet ou la casquette cache les cheveux : seule la nuque dépasse
+            else if (l.Curly)
                 for (int i = 0; i < 9; i++)
                 {
                     float a = Mathf.PI * (0.05f + i / 8f * 1.05f);
@@ -212,7 +214,7 @@ namespace PalmStreet.Game
             switch (l.Hat)
             {
                 case Hat.Cap:
-                    p.Dome(0, 1.5f, 8, 7.5f, l.HatColor, 14);
+                    p.Dome(0, 1.2f, 8.4f, 8, l.HatColor, 14);
                     p.Capsule(-7, 2.2f, -13, 1.2f, 3, l.HatColor);   // visière à l'envers
                     break;
                 case Hat.Beanie:

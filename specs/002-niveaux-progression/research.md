@@ -74,6 +74,8 @@ Les décisions ci-dessous fixent ce que la spec laisse ouvert.
 
 ## 8. Sauvegarde et anciennes données
 
-- **Decision**: PlayerPrefs `progress` en JSON (`JsonUtility`) : `cleared` (bool[12]), `best` (int[12]),
-  `endlessBest` ; à la première ouverture, `endlessBest` = ancien `best`.
+- **Decision**: PlayerPrefs `progress` en JSON (`JsonUtility`) : `Cleared` (bool[12]), `Best` (int[12]),
+  `EndlessBest`, `SeenObstacles`, `Worn` (5 objets portés), `Skin`, `HairStyle`, `HairColor` ; à la première
+  ouverture, `EndlessBest` = ancien `best`, et la peau et les cheveux sont repris de l'ancienne clé `outfit`
+  (les couleurs de vêtements libres de 001 disparaissent).
 - **Rationale**: comme `outfit` (001) ; un seul enregistrement ; migration simple.

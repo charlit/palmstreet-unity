@@ -8,17 +8,17 @@ pas de 1/60 s.
 | N° | Ville (Theme) | Distance d'arrivée | Vitesse départ → max | Obstacles permis | Boss | Figure débloquée |
 |---|---|---|---|---|---|---|
 | 1 | Anglet | 10 500 | 2,5 → 3,2 | petits plots, sol plat | — | FLIP |
-| 2 | Biarritz | 10 000 | 2,6 → 3,3 | + rails, grand rail | — | — |
-| 3 | Bidart | 10 500 | 2,7 → 3,4 | plots, rails | Crabe (4 000) | SHOVE-IT |
+| 2 | Biarritz | 11 000 | 2,6 → 3,3 | + rails, grand rail | — | — |
+| 3 | Bidart | 11 200 | 2,7 → 3,4 | plots, rails | Crabe (4 000) | SHOVE-IT |
 | 4 | Guéthary | 12 000 | 2,8 → 3,5 | + grands plots, bosses | — | — |
 | 5 | Saint-Jean-de-Luz | 13 000 | 2,9 → 3,6 | idem | — | — |
-| 6 | Hendaye | 12 000 | 3,0 → 3,7 | idem | Goéland (6 000) | 360° |
+| 6 | Hendaye | 12 400 | 3,0 → 3,7 | idem | Goéland (6 000) | 360° |
 | 7 | Bayonne | 14 000 | 3,1 → 3,9 | + mouettes | — | — |
 | 8 | Arcangues | 15 000 | 3,2 → 4,1 | + tremplins | — | — |
 | 9 | Espelette | 14 000 | 3,4 → 4,3 | idem | Sanglier (7 000) | 360° INVERSÉ |
 | 10 | Ascain | 16 000 | 3,6 → 4,5 | + trous | — | — |
 | 11 | Cambo-les-Bains | 17 000 | 3,8 → 4,7 | idem | — | — |
-| 12 | Biarritz la nuit | 16 000 | 4,0 → 5,0 | tout | Violet (8 000) | — |
+| 12 | Biarritz la nuit | 16 500 | 4,0 → 5,0 | tout | Violet (8 000) | — |
 
 Champs : `Number`, `City` (nom affiché), `Theme`, `Finish` (distance), `StartSpeed`, `MaxSpeed`,
 `Allowed` (drapeaux : Rails, BigCones, Hills, Gulls, Pads, Gaps), `Boss` (BossKind ou aucun),
@@ -27,7 +27,7 @@ Champs : `Number`, `City` (nom affiché), `Theme`, `Finish` (distance), `StartSp
 Règles :
 - Vitesse en histoire : `Start + (Max − Start) × min(1, distance parcourue / Finish)`.
 - Les éclairs et les règles de points de 001 restent dans tous les niveaux.
-- Durée à vitesse moyenne : de 55 à 67 s avant l'arrivée ou le boss (vitesses relevées le 2026-10-31 : le niveau 1 était trop lent).
+- Durée à vitesse moyenne : de 60 à 70 s avant l'arrivée ou le boss (SC-002 ; vitesses relevées le 2026-10-31 : le niveau 1 était trop lent, distances ajustées en conséquence).
 
 ## Endless (mode infini)
 

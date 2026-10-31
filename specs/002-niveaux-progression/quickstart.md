@@ -10,13 +10,13 @@ Tools/run-tests.sh
 ```
 
 Attendu : tous les tests passent, dont LevelTests :
-- table des 12 niveaux (boss aux niveaux 3, 6, 9, 12 ; durée 59 à 75 s ; un nouvel obstacle par niveau
-  annoncé) ;
-- progression (niveau 1 seul ouvert au départ, ouverture du suivant, figures déduites, migration de `best`) ;
+- table des 12 niveaux (boss aux niveaux 3, 6, 9, 12 ; durée 60 à 90 s, SC-002 ; vitesses croissantes) ;
+- progression (niveau 1 seul ouvert au départ, ouverture du suivant, figures et objets déduits, tenue portée) ;
 - histoire (arrivée → Phase.Cleared ; chute → Over ; boss → Cleared à sa défaite ; aucune figure sans
   déblocage) ;
 - infini (vitesse ≥ 1,5 × départ après 2 min ; ne dépend pas du score) ;
-- boss (Crabe, Goéland, Sanglier : vie et attaque propres).
+- boss (Crabe, Goéland, Sanglier : vie et attaque propres, chacun esquivable au bon geste) ;
+- vêtements (tenue de départ, un objet par niveau, donné une seule fois, porté seulement s'il est gagné).
 
 ## 2. Rendu
 

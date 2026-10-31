@@ -7,17 +7,20 @@ LevelDef def = Levels.Get(3);              // 1 à 12 ; Levels.All, Levels.Count
 var tricks = progress.Tricks;              // figures connues, déduites des niveaux réussis
 
 run.StartLevel(def, tricks);               // mode histoire
-run.StartEndless(progress, tricks);        // mode infini (villes et boss ouverts)
+run.StartEndless(cities, bosses, tricks, allowed, bossNow);   // mode infini : villes ouvertes, boss des niveaux réussis,
+                                           // obstacles permis des niveaux ouverts (Game les déduit de Progress)
 run.Start(bossNow: true);                  // raccourci du soleil (001), en mode infini
 
 run.Phase == Phase.Cleared;                // ligne d'arrivée passée, ou boss du niveau battu
 run.Events : Cue.Finish, Cue.Cleared, Cue.NewObstacle (Text = explication), + les Cue de 001
 
-Trick? unlocked = progress.Clear(def.Number, run.Score);   // figure à annoncer, ou null
+var (trick, item) = progress.Clear(def.Number, run.Score);   // figure (index, −1 si aucune) et objet (null si aucun)
+                                                            // gagnés pour la première fois
 bool open = progress.IsOpen(n);
 Item? gift = Items.ForLevel(n);            // objet donné par le niveau (FR-025)
-progress.Owns(itemId); progress.Wear(itemId);
-string json = progress.ToJson();  Progress.FromJson(json, legacyBest);
+progress.Owns(itemId); progress.Wear(itemId);   // Wear refuse un objet non gagné
+progress.Tricks; progress.NextLevel; progress.IsCleared(n); progress.WornIn(slot);
+JsonUtility.ToJson(progress) / FromJson<Progress>(json) puis progress.Repair()   // côté Game, clé `progress`
 ```
 
 Garanties : sans figure connue, un toucher en l'air ne fait rien ; en histoire, la vitesse ne dépend que de

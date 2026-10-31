@@ -32,7 +32,7 @@ namespace PalmStreet.Tests
                 Assert.AreEqual((Theme)(n - 1), d.Theme, "un décor par ville, dans l'ordre de la carte");
                 Assert.AreEqual(n % 3 == 0, d.Boss != BossKind.None, "boss aux niveaux 3, 6, 9, 12");
                 float seconds = d.Finish / ((d.StartSpeed + d.MaxSpeed) / 2) / 60;
-                Assert.That(seconds, Is.InRange(55f, 80f), $"durée du niveau {n}");
+                Assert.That(seconds, Is.InRange(60f, 90f), $"durée du niveau {n} (SC-002)");
                 if (n > 1)
                 {
                     Assert.That(d.StartSpeed, Is.GreaterThan(Levels.Get(n - 1).StartSpeed));
