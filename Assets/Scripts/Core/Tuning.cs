@@ -25,6 +25,7 @@ namespace PalmStreet.Core
         // FR-006 saut et accroupi
         public const float OllieSpeed = 9.6f, Gravity = 0.5f;
         public const int DuckAfter = 13;              // 0,22 s
+        public const int DuckSwipeSteps = 9;          // glissé vers le bas dans les 0,15 s après l'ollie : il se baisse à la place
 
         // FR-007 / FR-008 obstacles
         public const int RailsAfterScore = 2000;
@@ -44,7 +45,7 @@ namespace PalmStreet.Core
         public static readonly int[] RailPoints = { 0, 30, 40, 40, 30, 45, 45, 50, 50 };
         public static readonly int[] RailSwipe = { -1, 0, 2, 6, 1, 3, 4, 5, 7 };   // direction de chaque variante (comme TrickSwipe)
         // manual : glissé vers le bas juste avant de retomber (ou après la figure du saut) ; roule sur deux roues
-        public const int ManualMax = 150, ManualPoints = 15;   // 2,5 s au plus ; points au départ, puis 1 de plus par pas
+        public const int ManualMax = 150, ManualPoints = 15, NoseManualPoints = 20;   // 2,5 s au plus ; points au départ, puis 1 de plus par pas
         public const int SpotPoints = 150;                     // spot d'une ville grindé jusqu'au bout
         public const int HalfTurn = 8, HalfTurnPoints = 25;   // le 180 (toucher à 2 doigts) : pas une figure à débloquer
         public const float FakieBonus = 1.5f;         // figures faites en fakie
@@ -60,7 +61,7 @@ namespace PalmStreet.Core
         public const int ThemeCycle = 20000, MilestoneEvery = 5000;
 
         // FR-017 à FR-019 boss
-        public const int BossAt = 15000, BossHp = 5000, ToothDamage = 250, BossBonus = 5000;   // ToothDamage : dent lancée par une figure
+        public const int BossAt = 15000, BossHp = 8000, ToothDamage = 250, BossBonus = 5000;   // ToothDamage : dent lancée par une figure
         public const float ToothSpeed = 9;
         public const int BossFlyEvery = 180;          // 3 s au sol entre deux envols
         // sorts débloqués en battant les boss (crabe, goéland, sanglier, violet) ; temps de recharge en pas

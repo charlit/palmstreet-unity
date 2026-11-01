@@ -41,6 +41,7 @@ namespace PalmStreet.Core
         public int GrindStyle;          // index de Tuning.RailNames ; repart à 0 sur chaque rail
         public int RailUsed;            // variantes déjà faites sur ce rail (un bit par variante)
         public bool Manual, ManualQueued;   // manual en cours ; demandé pour la retombée
+        public bool Nose;                   // le manual (en cours ou demandé) est un NOSE MANUAL, sur les roues avant
         public int ManualSteps;
         public int Wobble;              // pas restants de déséquilibre après un BAIL (pour l'affichage)
         public int Trick = -1, TrickStep, TrickLength = 24;   // TrickLength : durée de l'animation, finie avant la retombée
@@ -61,6 +62,7 @@ namespace PalmStreet.Core
         // pour les défis des villes
         public int TricksDone, FakieTricks, GrindSteps, RailTricks, BoltsTaken, MaxCombo = 1, Spots, Bails;
         bool spotPlaced, boosted;
+        int ollieAge = 999;   // pas depuis le dernier ollie parti du sol
         /// <summary>Sorts connus (index de Tuning.SpellNames) et leur recharge restante, en pas.</summary>
         public List<int> Spells = new List<int> { 0, 1, 2, 3 };
         public readonly int[] SpellCooldown = new int[4];
@@ -141,7 +143,7 @@ namespace PalmStreet.Core
             Score = 0;
             milestone = 0;
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
-            TricksDone = FakieTricks = GrindSteps = RailTricks = BoltsTaken = Spots = Bails = 0; MaxCombo = 1; spotPlaced = boosted = false;
+            TricksDone = FakieTricks = GrindSteps = RailTricks = BoltsTaken = Spots = Bails = 0; MaxCombo = 1; spotPlaced = boosted = false; ollieAge = 999;
             Array.Clear(SpellCooldown, 0, SpellCooldown.Length);
             Skater.Y = Ground.Height(0);   // en haut de la rampe de départ, s'il y en a une
             Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; speedFactor = StartRamp ? Tuning.StartRampFrom : 1; CurrentSpeed = Speed * speedFactor;
@@ -172,6 +174,7 @@ namespace PalmStreet.Core
             {
                 sk.Grounded = false; sk.Ducking = false; sk.Manual = false;   // un ollie depuis un manual garde le combo
                 sk.Vy = Tuning.OllieSpeed;
+                ollieAge = 0;
                 Add(Cue.Ollie);
             }
         }
@@ -182,13 +185,37 @@ namespace PalmStreet.Core
             var sk = Skater;
             if (sk.Rail != null) { RailTrick(dx, dy); return; }
             int k = TrickFor(dx, dy);
-            // vers le bas trop près du sol pour finir une figure, ou après la figure du saut : manual à la retombée
-            if (Phase == Phase.Playing && !sk.Grounded && Tuning.TrickSwipe[k] == 6 && (sk.TricksLeft <= 0 || StepsToLand() - 2 < 10))
+            // vers le bas tout de suite après avoir posé le doigt : il se baisse au lieu de sauter (oiseaux, goéland)
+            if (Phase == Phase.Playing && Tuning.TrickSwipe[k] == 6 && (sk.Grounded || ollieAge <= Tuning.DuckSwipeSteps && sk.Trick < 0))
+            {
+                Duck();
+                return;
+            }
+            // vers le bas (manual) ou vers le haut (nose manual), trop près du sol pour finir une figure ou après la
+            // figure du saut : il retombera sur deux roues
+            int dir = Tuning.TrickSwipe[k];
+            if (Phase == Phase.Playing && !sk.Grounded && (dir == 6 || dir == 2) && (sk.TricksLeft <= 0 || StepsToLand() - 2 < 10))
             {
                 sk.ManualQueued = true;
+                sk.Nose = dir == 2;
                 return;
             }
             if (Phase == Phase.Playing && !sk.Grounded && sk.Rail == null && sk.TricksLeft > 0 && sk.Trick < 0 && Tricks.Contains(k)) Trick(k);
+        }
+
+        /// <summary>Se baisser : annule l'ollie qui vient de partir ; il reste baissé tant que le doigt est posé.</summary>
+        void Duck()
+        {
+            var sk = Skater;
+            if (!sk.Grounded)
+            {
+                if (Ground.IsGap(sk.X)) return;   // au-dessus d'un trou : on garde le saut
+                sk.Y = Ground.Height(sk.X); sk.Vy = 0; sk.Grounded = true; sk.TricksLeft = 1;
+            }
+            sk.Manual = false;
+            sk.Ducking = true;
+            holdSteps = Math.Max(holdSteps, Tuning.DuckAfter);
+            ollieAge = 999;
         }
 
         /// <summary>Toucher à 2 doigts : 180, le skateur fait un demi-tour en l'air et passe en fakie (ou en revient).</summary>
@@ -295,7 +322,7 @@ namespace PalmStreet.Core
                 sk.Manual = true; sk.ManualSteps = 0;
                 TricksDone++;
                 Shoot(1);
-                AddPoints(Cue.Trick, Tuning.ManualPoints * Combo, "MANUAL !");
+                AddPoints(Cue.Trick, (sk.Nose ? Tuning.NoseManualPoints : Tuning.ManualPoints) * Combo, sk.Nose ? "NOSE MANUAL !" : "MANUAL !");
                 Combo++; ComboTimer = 0;
             }
             sk.ManualQueued = false;
@@ -342,6 +369,7 @@ namespace PalmStreet.Core
             if (sk.Trick >= 0 && ++sk.TrickStep > sk.TrickLength) sk.Trick = -1;
             MaxCombo = Math.Max(MaxCombo, Combo);
             if (sk.Wobble > 0) sk.Wobble--;
+            if (ollieAge < 999) ollieAge++;
             if (sk.Rail == null && ++ComboTimer >= Tuning.ComboTimeout) Combo = 1;   // FR-014
 
             FallingCones();

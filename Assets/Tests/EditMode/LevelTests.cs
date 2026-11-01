@@ -188,7 +188,7 @@ namespace PalmStreet.Tests
             for (int k = 0; k < Tuning.TrickNames.Length; k++)
             {
                 Clean(r, 2);
-                r.Press(); Clean(r, 4); RunTests.SwipeFor(r, k);
+                r.Press(); Clean(r, 12); RunTests.SwipeFor(r, k);
                 names.AddRange(r.Events.Where(e => e.Cue == Cue.Trick).Select(e => e.Text));
                 r.Events.Clear();
                 Land(r);
@@ -337,6 +337,13 @@ namespace PalmStreet.Tests
             Assert.IsTrue(r.Skater.Manual);
             r.Press();
             Assert.IsFalse(r.Skater.Manual, "un ollie sort du manual");
+
+            Clean(r, 4); RunTests.SwipeFor(r, 0);   // FLIP tôt (il finit avant le sol), puis vers le haut : nose manual
+            Clean(r, 3);
+            r.Swipe(0, 60);
+            Land(r);
+            Assert.IsTrue(r.Skater.Manual && r.Skater.Nose, "sur les roues avant");
+            Assert.IsTrue(r.Events.Any(e => e.Text == "NOSE MANUAL !"));
         }
 
         [Test] public void Spot_UnParVilleGrindeJusquAuBout()
@@ -440,7 +447,7 @@ namespace PalmStreet.Tests
 
         [Test] public void Boss_ArriveALaFinDuNiveau()
         {
-            foreach (var (n, kind, hp) in new[] { (3, BossKind.Crab, 2500), (6, BossKind.Gull, 3000), (9, BossKind.Boar, 3500), (12, BossKind.Purple, 5000) })
+            foreach (var (n, kind, hp) in new[] { (3, BossKind.Crab, 4000), (6, BossKind.Gull, 5000), (9, BossKind.Boar, 6000), (12, BossKind.Purple, 8000) })
             {
                 var r = AtBoss(n);
                 Assert.IsNotNull(r.Boss, $"boss du niveau {n}");

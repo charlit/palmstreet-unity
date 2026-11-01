@@ -155,7 +155,7 @@ namespace PalmStreet.Game
 
         /// <summary>Figure montrée par le skateur du profil (index de Tuning.TrickNames, 8 = 180, ou DemoOllie, DemoGrind, DemoManual).</summary>
         public int DemoTrick { get; private set; }
-        public const int DemoOllie = 100, DemoGrind = 101, DemoManual = 102;
+        public const int DemoOllie = 100, DemoGrind = 101, DemoManual = 102, DemoNoseManual = 103;
         RectTransform trickStage, demoRail;
         Text demoName, demoHow;
 
@@ -185,7 +185,7 @@ namespace PalmStreet.Game
 
             // à droite : la liste ; toucher une figure la montre
             var entries = new System.Collections.Generic.List<(string name, int id)>
-                { ("OLLIE", DemoOllie), ("GRIND", DemoGrind), ("MANUAL", DemoManual), ("180 · FAKIE", Tuning.HalfTurn) };
+                { ("OLLIE", DemoOllie), ("GRIND", DemoGrind), ("MANUAL", DemoManual), ("NOSE MANUAL", DemoNoseManual), ("180 · FAKIE", Tuning.HalfTurn) };
             for (int k = 0; k < Tuning.TrickNames.Length; k++) entries.Add((Tuning.TrickNames[k], k));
             var equippedCount = Label(section, "", 13, Yellow, new Vector2(76, -142), new Vector2(0.5f, 1));
             equippedCount.rectTransform.sizeDelta = new Vector2(200, 18);
@@ -247,7 +247,8 @@ namespace PalmStreet.Game
             {
                 case DemoOllie: return "TOUCHE";
                 case DemoGrind: return shortText ? "SUR UN RAIL · GLISSE : 8 GRINDS" : "Retombe sur un rail ; glisse pour changer de grind (50-50, boardslide, smith…)";
-                case DemoManual: return shortText ? "GLISSE VERS LE BAS AVANT LE SOL" : "Juste avant de retomber, glisse vers le bas : il roule sur deux roues";
+                case DemoManual: return shortText ? "GLISSE VERS LE BAS AVANT LE SOL" : "Juste avant de retomber, glisse vers le bas : il roule sur les roues arrière";
+                case DemoNoseManual: return shortText ? "GLISSE VERS LE HAUT AVANT LE SOL" : "Juste avant de retomber, glisse vers le haut : il roule sur les roues avant";
                 case Tuning.HalfTurn: return shortText ? "2 DOIGTS · FIGURES ×1,5" : "Touche avec 2 doigts : 180, il passe en fakie (figures ×1,5)";
             }
             if (progress != null && !progress().Tricks.Contains(id))
@@ -262,7 +263,7 @@ namespace PalmStreet.Game
         void SelectDemo(int id, bool refreshAll = true)
         {
             DemoTrick = id;
-            demoName.text = id == DemoOllie ? "OLLIE" : id == DemoGrind ? "GRIND" : id == DemoManual ? "MANUAL" : id == Tuning.HalfTurn ? "180 · FAKIE" : Tuning.TrickNames[id];
+            demoName.text = id == DemoOllie ? "OLLIE" : id == DemoGrind ? "GRIND" : id == DemoManual ? "MANUAL" : id == DemoNoseManual ? "NOSE MANUAL" : id == Tuning.HalfTurn ? "180 · FAKIE" : Tuning.TrickNames[id];
             demoHow.text = DemoHow(id, false);
             demoRail.gameObject.SetActive(id == DemoGrind);
             if (refreshAll) foreach (var r in refresh) r();

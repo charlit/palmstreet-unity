@@ -159,7 +159,7 @@ namespace PalmStreet.Tests
             {
                 r.Obstacles.Clear();   // pas de rail : 8 sauts de suite finiraient par retomber dessus
                 Clear(r, 2);
-                r.Press(); Clear(r, 5);
+                r.Press(); Clear(r, 12);   // après 0,2 s : un glissé vers le bas fait la figure, pas « se baisser »
                 r.Events.Clear();
                 int combo = r.Combo;
                 SwipeFor(r, k);
@@ -231,6 +231,26 @@ namespace PalmStreet.Tests
             r.HalfTurn();
             Assert.AreEqual("180 !", r.Events.Single(e => e.Cue == Cue.Trick).Text);
             Assert.IsFalse(r.Skater.Fakie, "un deuxième 180 le remet à l'endroit");
+        }
+
+        [Test] public void Baisse_GlisseVersLeBasToutDeSuite()
+        {
+            var r = NewRun();
+            r.Obstacles.Clear();
+            Clear(r, 2);
+            r.Press(); Clear(r, 3);                 // le doigt vient de se poser : l'ollie est parti
+            r.Swipe(0, -60);                        // vers le bas tout de suite : il se baisse
+            Assert.IsTrue(r.Skater.Grounded, "l'ollie est annulé");
+            Assert.IsTrue(r.Skater.Ducking);
+            Clear(r, 30);
+            Assert.IsTrue(r.Skater.Ducking, "baissé tant que le doigt reste posé");
+            r.Release();
+            Assert.IsFalse(r.Skater.Ducking, "doigt levé : il se relève");
+
+            r.Press(); Clear(r, 12);
+            r.Swipe(0, -60);                        // plus tard en l'air : la figure vers le bas (360° INVERSÉ)
+            Assert.IsFalse(r.Skater.Grounded);
+            Assert.AreEqual(3, r.Skater.Trick);
         }
 
         [Test] public void Fr010_GlisserAuSolNeFaitRien()

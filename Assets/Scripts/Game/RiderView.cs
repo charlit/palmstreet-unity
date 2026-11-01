@@ -399,9 +399,17 @@ namespace PalmStreet.Game
         }
 
         /// <summary>Pose en partie, d'après l'état du skateur. feet : position monde des pieds.</summary>
+        float duck, lastTime, drawY = float.NaN;   // duck : 0 debout → 1 baissé, en douceur ; drawY : hauteur des pieds affichée
+
         public void Ride(Skater s, Vector3 feet, float slope, float time, float speedFactor)
         {
             if (crashed) Reset();
+            float dt = Mathf.Clamp(time - lastTime, 0, 0.1f);
+            lastTime = time;
+            // se baisser annule le saut qui venait de partir : les pieds redescendent en 0,1 s au lieu de sauter au sol
+            if (s.Ducking && s.Grounded && !float.IsNaN(drawY) && drawY > feet.y) feet.y = Mathf.MoveTowards(drawY, feet.y, dt * 9);
+            drawY = feet.y;
+            duck = Mathf.MoveTowards(duck, s.Ducking && s.Grounded ? 1 : 0, dt * 9);   // ~0,11 s pour se baisser ou se relever
             float tilt = s.Grounded || s.Rail != null ? Mathf.Atan(slope) * Mathf.Rad2Deg : 0;
             spin.position = feet + W(0, Center);
             float current = spin.localEulerAngles.z;
@@ -464,7 +472,13 @@ namespace PalmStreet.Game
                 // rouler : petit balancement, et une poussée de temps en temps sur le plat
                 float cycle = Mathf.Repeat(time, 2.6f), push = cycle < 0.7f && speedFactor < 1.05f && !s.Ducking ? cycle / 0.7f : -1;
                 float squash = Mathf.Max(0, 1 - (time - landedAt) / 0.2f) * 0.6f;   // genoux qui amortissent la retombée
-                if (s.Manual)   // manual : sur les roues arrière, penché en arrière, bras en balancier
+                if (s.Manual && s.Nose)   // nose manual : sur les roues avant, penché en avant, bras ouverts
+                {
+                    float nose = -(12 + Mathf.Sin(time * 9) * 2), up = Mathf.Sin(-nose * Mathf.Deg2Rad) * 22;
+                    Pose(0.4f, 24, 100 + Mathf.Sin(time * 9) * 10, -60, nose, up, -1, 6);
+                    Board(nose, 0, 0, -up);
+                }
+                else if (s.Manual)   // manual : sur les roues arrière, penché en arrière, bras en balancier
                 {
                     float nose = 13 + Mathf.Sin(time * 9) * 2, up = Mathf.Sin(nose * Mathf.Deg2Rad) * 22;
                     Pose(0.35f, -6, 75 + Mathf.Sin(time * 9) * 10, -100, nose, up);
@@ -472,7 +486,11 @@ namespace PalmStreet.Game
                 }
                 else
                 {
-                    if (s.Ducking) Pose(1, 32, 55, 15);
+                    if (duck > 0)   // se baisser / se relever : mélange de la pose qui roule et de la pose baissée
+                    {
+                        float k = duck * duck * (3 - 2 * duck);
+                        Pose(Mathf.Lerp(0.15f + squash, 1, k), Mathf.Lerp(10, 32, k), Mathf.Lerp(-14, 55, k), Mathf.Lerp(22, 15, k));
+                    }
                     else if (s.Wobble > 0)   // BAIL : il titube, bras en moulinet
                     {
                         float w = s.Wobble / 30f, a = Mathf.Sin(time * 22) * w;
@@ -570,7 +588,8 @@ namespace PalmStreet.Game
             s.Rail = null; s.Manual = false; s.Ducking = false; s.Wobble = 0; s.GrindStyle = 0; s.Trick = -1; s.Grounded = true; s.Vy = 0;
             s.Fakie = false;
             if (id == Hud.DemoGrind) { s.Rail = demoRail; s.Grounded = false; s.GrindStyle = (int)(time / 0.9f) % Tuning.RailNames.Length; }
-            else if (id == Hud.DemoManual) s.Manual = true;
+            else if (id == Hud.DemoManual) { s.Manual = true; s.Nose = false; }
+            else if (id == Hud.DemoNoseManual) { s.Manual = true; s.Nose = true; }
             else
             {
                 bool air = steps >= 0 && steps < 38;   // un ollie dure 38 pas

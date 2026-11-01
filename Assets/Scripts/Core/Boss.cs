@@ -33,7 +33,7 @@ namespace PalmStreet.Core
         public Boss(BossKind kind = BossKind.Purple)
         {
             Kind = kind;
-            MaxHp = Hp = kind switch { BossKind.Crab => 2500, BossKind.Gull => 3000, BossKind.Boar => 3500, _ => Tuning.BossHp };
+            MaxHp = Hp = kind switch { BossKind.Crab => 4000, BossKind.Gull => 5000, BossKind.Boar => 6000, _ => Tuning.BossHp };
         }
         public float X, Lift;   // Lift : hauteur au-dessus du sol
         public float Offset = Distance;   // distance devant le skateur (négative quand il est passé derrière)

@@ -205,7 +205,7 @@ namespace PalmStreet.Tests
                 while (!run.Skater.Grounded) { run.Step(); yield return null; }
                 run.Obstacles.Clear(); run.Bolts.Clear();
                 run.Press(); run.Release();
-                yield return Steps(run, 4, false);
+                yield return Steps(run, 12, false);
                 float a = Tuning.TrickSwipe[k] * Mathf.PI / 4;
                 run.Swipe(Mathf.Cos(a), Mathf.Sin(a));
                 Assert.AreEqual(k, run.Skater.Trick, "figure attendue");

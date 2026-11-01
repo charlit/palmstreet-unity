@@ -53,7 +53,7 @@ namespace PalmStreet.Core
             L(4, "GUÉTHARY", Theme.Guethary, 12000, 2.8f, 3.5f, Mid, BossKind.None, -1, "Grands plots et bosses : saute plus tôt", ChallengeKind.RailTricks, 2, "LE PORT"),
             L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, 5, null, ChallengeKind.Fakie, 2, "LA DIGUE"),
             L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null, ChallengeKind.Tricks, 8, "LES DEUX JUMEAUX"),
-            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : garde le doigt appuyé pour t'accroupir", ChallengeKind.GrindSeconds, 5, "LES REMPARTS"),
+            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : glisse vers le bas pour te baisser", ChallengeKind.GrindSeconds, 5, "LES REMPARTS"),
             L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6, "LE FRONTON"),
             L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null, ChallengeKind.Fakie, 4, "LE CHÂTEAU"),
             L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les", ChallengeKind.RailTricks, 4, "LE PONT ROMAIN"),

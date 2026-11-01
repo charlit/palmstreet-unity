@@ -492,7 +492,7 @@ namespace PalmStreet.Game
         static string BossTip(BossKind k) => k switch
         {
             BossKind.Crab => "Saute-le quand il fonce sur toi !",
-            BossKind.Gull => "Accroupis-toi quand il pique !",
+            BossKind.Gull => "Glisse vers le bas quand il pique !",
             BossKind.Boar => "Saute ses charges et ses barrières !",
             _ => "Saute ses plots !",
         };

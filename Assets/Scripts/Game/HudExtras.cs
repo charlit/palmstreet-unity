@@ -62,11 +62,11 @@ namespace PalmStreet.Game
 
         static readonly string[] Gestures =
         {
-            "TOUCHE : ollie",
+            "TOUCHE : ollie\nGLISSE VERS LE BAS : il se baisse (oiseaux)",
             "EN L'AIR, GLISSE : une figure par direction",
             "2 DOIGTS : 180, passe en fakie (figures ×1,5)",
             "SUR UN RAIL, GLISSE : 8 grinds (50-50, boardslide, smith…)\nTOUCHE pour sauter du rail",
-            "JUSTE AVANT DE RETOMBER, GLISSE VERS LE BAS : manual\nUne figure pas finie à la retombée : BAIL",
+            "JUSTE AVANT DE RETOMBER, GLISSE VERS LE BAS : manual, VERS LE HAUT : nose manual\nUne figure pas finie à la retombée : BAIL",
         };
 
         void BuildTutorial()
