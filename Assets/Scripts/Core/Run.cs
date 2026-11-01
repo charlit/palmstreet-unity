@@ -34,9 +34,11 @@ namespace PalmStreet.Core
     public sealed class Skater
     {
         public float X, Y, Vy;          // Y : hauteur des pieds
-        public bool Grounded = true, Ducking;
+        public bool Grounded = true, Ducking, Fakie;   // Fakie : roule à l'envers, la queue devant
         public int TricksLeft = 1;      // figures encore possibles dans ce saut (2 après un tremplin)
         public Obstacle Rail;           // rail en cours de grind
+        public int GrindStyle;          // index de Tuning.RailNames ; repart à 0 sur chaque rail
+        public int RailUsed;            // variantes déjà faites sur ce rail (un bit par variante)
         public int Trick = -1, TrickStep, TrickLength = 24;   // TrickLength : durée de l'animation, finie avant la retombée
         public float Height => Ducking ? Tuning.DuckHeight : Tuning.SkaterHeight;
     }
@@ -52,9 +54,11 @@ namespace PalmStreet.Core
 
         public Phase Phase = Phase.Menu;
         public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore;
+        // pour les défis des villes
+        public int TricksDone, FakieTricks, GrindSteps, RailTricks, BoltsTaken, MaxCombo = 1;
         public GameMode Mode = GameMode.Endless;
         public LevelDef Def;                                  // niveau en cours (histoire)
-        public List<int> Tricks = new List<int> { 0, 1, 2, 3 };   // figures connues (spec 002, FR-013)
+        public List<int> Tricks = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7 };   // figures connues (spec 002, FR-013)
         public Allow Allowed = Allow.All;                     // obstacles permis
         public List<Theme> Cities = new List<Theme> { Theme.Anglet };
         public List<BossKind> Bosses = new List<BossKind>();
@@ -72,7 +76,7 @@ namespace PalmStreet.Core
         Random rng;
         float nextObstacleX, speedFactor = 1;
         bool bigRailPending, holding, bossDone;
-        int pattern, trickIndex, holdSteps, milestone;
+        int pattern, holdSteps, milestone;
 
         public Run(int seed = 0) { this.seed = seed; }
 
@@ -111,7 +115,7 @@ namespace PalmStreet.Core
 
         /// <summary>Partie infinie avec tout débloqué (raccourci du soleil, tests).</summary>
         public void Start(bool bossNow = false) =>
-            StartEndless(new[] { Theme.Anglet, Theme.Biarritz, Theme.Arcangues }, new[] { BossKind.Purple }, new[] { 0, 1, 2, 3 }, Allow.All & ~Allow.Gaps & ~Allow.Gulls & ~Allow.Pads, bossNow);
+            StartEndless(new[] { Theme.Anglet, Theme.Biarritz, Theme.Arcangues }, new[] { BossKind.Purple }, new[] { 0, 1, 2, 3, 4, 5, 6, 7 }, Allow.All & ~Allow.Gaps & ~Allow.Gulls & ~Allow.Pads, bossNow);
 
         void Begin(GameMode mode, Allow allowed, IList<int> tricks)
         {
@@ -129,11 +133,12 @@ namespace PalmStreet.Core
             Score = 0;
             milestone = 0;
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
+            TricksDone = FakieTricks = GrindSteps = RailTricks = BoltsTaken = 0; MaxCombo = 1;
             Skater.Y = Ground.Height(0);   // en haut de la rampe de départ, s'il y en a une
             Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; speedFactor = StartRamp ? Tuning.StartRampFrom : 1; CurrentSpeed = Speed * speedFactor;
             nextObstacleX = StartRamp ? Math.Max(SpawnAhead, Tuning.StartRampLength + 150) : SpawnAhead;   // rien sur la rampe
             bigRailPending = (allowed & Allow.Rails) != 0;   // FR-008 : le premier obstacle est un grand rail
-            pattern = 0; trickIndex = 0; holding = false;
+            pattern = 0; holding = false;
             Phase = Phase.Playing;
         }
 
@@ -160,7 +165,69 @@ namespace PalmStreet.Core
                 sk.Vy = Tuning.OllieSpeed;
                 Add(Cue.Ollie);
             }
-            else if (sk.TricksLeft > 0 && sk.Trick < 0 && Tricks.Count > 0) Trick();   // spec 002 : seulement les figures connues   // FR-010 : un toucher en l'air fait la figure (2 touchers en tout)
+        }
+
+        /// <summary>Glissé du doigt (dx, dy, y vers le haut) : en l'air, fait la figure de cette direction si elle est connue.</summary>
+        public void Swipe(float dx, float dy)
+        {
+            var sk = Skater;
+            if (sk.Rail != null) { RailTrick(dx, dy); return; }
+            int k = TrickFor(dx, dy);
+            if (Phase == Phase.Playing && !sk.Grounded && sk.Rail == null && sk.TricksLeft > 0 && sk.Trick < 0 && Tricks.Contains(k)) Trick(k);
+        }
+
+        /// <summary>Toucher à 2 doigts : 180, le skateur fait un demi-tour en l'air et passe en fakie (ou en revient).</summary>
+        public void HalfTurn()
+        {
+            if (Phase != Phase.Playing) return;
+            var sk = Skater;
+            if (sk.Grounded || sk.Rail != null) Press();   // les deux doigts arrivent ensemble : on saute d'abord
+            if (sk.Grounded || sk.Rail != null || sk.TricksLeft <= 0 || sk.Trick >= 0) return;
+            sk.Fakie = !sk.Fakie;
+            Animate(Tuning.HalfTurn);
+            TricksDone++;
+            AddPoints(Cue.Trick, Tuning.HalfTurnPoints * Combo, sk.Fakie ? "180 FAKIE !" : "180 !");
+            Combo++; ComboTimer = 0;
+        }
+
+        /// <summary>Glissé pendant un grind : la variante de cette direction, si elle n'est pas déjà faite sur ce rail.</summary>
+        void RailTrick(float dx, float dy)
+        {
+            var sk = Skater;
+            int style = RailFor(dx, dy);
+            if (Phase != Phase.Playing || style < 1 || (sk.RailUsed & 1 << style) != 0) return;
+            sk.GrindStyle = style;
+            sk.RailUsed |= 1 << style;
+            RailTricks++;
+            AddPoints(Cue.Trick, Tuning.RailPoints[sk.GrindStyle] * Combo, Tuning.RailNames[sk.GrindStyle] + " !");
+            Combo++; ComboTimer = 0;
+        }
+
+        /// <summary>Où en est le défi du niveau (même unité que LevelDef.Goal).</summary>
+        public int ChallengeValue(LevelDef d) => d.Challenge switch
+        {
+            ChallengeKind.Tricks => TricksDone,
+            ChallengeKind.Fakie => FakieTricks,
+            ChallengeKind.GrindSeconds => GrindSteps / 60,
+            ChallengeKind.Combo => Math.Max(MaxCombo, Combo),
+            ChallengeKind.Bolts => BoltsTaken,
+            _ => RailTricks,
+        };
+
+        public bool ChallengeDone(LevelDef d) => ChallengeValue(d) >= d.Goal;
+
+        /// <summary>Variante de grind du glissé : la plus proche des 8 directions.</summary>
+        public static int RailFor(float dx, float dy)
+        {
+            int dir = ((int)Math.Round(Math.Atan2(dy, dx) / (Math.PI / 4)) + 8) % 8;
+            return Array.IndexOf(Tuning.RailSwipe, dir);
+        }
+
+        /// <summary>Figure du glissé : la plus proche des 8 directions.</summary>
+        public static int TrickFor(float dx, float dy)
+        {
+            int dir = ((int)Math.Round(Math.Atan2(dy, dx) / (Math.PI / 4)) + 8) % 8;
+            return Array.IndexOf(Tuning.TrickSwipe, dir);
         }
 
         public void Release()
@@ -169,17 +236,24 @@ namespace PalmStreet.Core
             Skater.Ducking = false;
         }
 
-        void Trick()
+        void Trick(int k)
+        {
+            Animate(k);
+            bool fakie = Skater.Fakie;
+            TricksDone++;
+            if (fakie) FakieTricks++;
+            AddPoints(Cue.Trick, (int)(Tuning.TrickPoints[k] * Combo * (fakie ? Tuning.FakieBonus : 1)), (fakie ? "FAKIE " : "") + Tuning.TrickNames[k] + " !");
+            Combo++; ComboTimer = 0;
+        }
+
+        void Animate(int k)
         {
             var sk = Skater;
-            int k = Tricks[trickIndex++ % Tricks.Count];
             sk.Trick = k; sk.TrickStep = 0; sk.TricksLeft--;
             // pas restants avant de retomber au niveau du sol actuel : y(n) = Y + (Vy - 0,25) n - 0,25 n²
             float b = sk.Vy - Tuning.Gravity / 2, drop = Math.Max(0, sk.Y - Ground.Height(sk.X));
             float n = (b + (float)Math.Sqrt(b * b + 4 * (Tuning.Gravity / 2) * drop)) / Tuning.Gravity;
             sk.TrickLength = (int)Math.Max(10, Math.Min(24, n - 2));
-            AddPoints(Cue.Trick, Tuning.TrickPoints[k] * Combo, Tuning.TrickNames[k] + " !");
-            Combo++; ComboTimer = 0;
         }
 
         // ---------- un pas de simulation ----------
@@ -214,6 +288,7 @@ namespace PalmStreet.Core
             MoveSkater(prevY);
             if (Phase != Phase.Playing) return;   // chute pendant le mouvement (bord d'un trou)
             if (sk.Trick >= 0 && ++sk.TrickStep > sk.TrickLength) sk.Trick = -1;
+            MaxCombo = Math.Max(MaxCombo, Combo);
             if (sk.Rail == null && ++ComboTimer >= Tuning.ComboTimeout) Combo = 1;   // FR-014
 
             FallingCones();
@@ -242,6 +317,7 @@ namespace PalmStreet.Core
                 sk.Y = r.Top; sk.Vy = 0;
                 Score += Tuning.GrindPerStep;   // FR-011
                 ComboTimer = 0;
+                GrindSteps++;
                 if (sk.X - Tuning.SkaterHalfWidth > r.X + r.W)
                 {
                     sk.Rail = null;
@@ -262,7 +338,7 @@ namespace PalmStreet.Core
                 foreach (var o in Obstacles)
                     if (o.IsRail && OverlapsX(o.X, o.X + o.W) && sk.Y <= o.Top && prevY >= o.Top - 8)
                     {
-                        sk.Rail = o; sk.Y = o.Top; sk.Vy = 0; sk.TricksLeft = 1; sk.Trick = -1;
+                        sk.Rail = o; sk.Y = o.Top; sk.Vy = 0; sk.TricksLeft = 1; sk.Trick = -1; sk.GrindStyle = 0; sk.RailUsed = 0;
                         Add(Cue.GrindStart);
                         return;
                     }
@@ -336,6 +412,7 @@ namespace PalmStreet.Core
                 {
                     Bolts.RemoveAt(i);
                     AddPoints(Cue.Bolt, Tuning.BoltPoints * Combo, null, b.X, b.Y);   // FR-013
+                    BoltsTaken++;
                 }
             }
         }

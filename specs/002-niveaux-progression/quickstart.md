@@ -32,8 +32,8 @@ Attendu : carte (installation neuve et progression avancée), départ de chaque 
 | Étape | Attendu |
 |---|---|
 | Installation neuve, JOUER | carte, seul Anglet ouvert |
-| Jouer Anglet, toucher en l'air | ollie seulement, pas de figure |
-| Passer l'arrivée | NIVEAU RÉUSSI, « NOUVELLE FIGURE : FLIP » ; NIVEAU SUIVANT lance Biarritz |
+| Jouer Anglet, toucher puis glisser en l'air | ollie seulement, pas de figure |
+| Passer l'arrivée | NIVEAU RÉUSSI, « NOUVELLE FIGURE : FLIP » et son glissé (en haut à droite) ; NIVEAU SUIVANT lance Biarritz |
 | Chuter à Biarritz | RECOMMENCER relance Biarritz du début ; CARTE : Biarritz toujours ouvert, non réussi |
 | Niveau 3 | le Crabe arrive à la fin ; le battre réussit le niveau, annonce SHOVE-IT |
 | MODE INFINI pendant 2 min | la vitesse monte nettement ; décor d'Anglet (et des villes ouvertes) |

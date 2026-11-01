@@ -9,7 +9,7 @@ namespace PalmStreet.Game
     /// <summary>
     /// Animation de lancement (spec 002, FR-028) : sur un ciel de nuit avec la lune en haut à gauche, la planche
     /// arrive en sautant, grinde sur le mot STREET du titre de l'accueil (étincelles, les lettres s'allument à son
-    /// passage), puis s'en échappe en kickflip (« P. ST. » visible) pendant que la nuit s'efface sur l'accueil.
+    /// passage), puis s'en échappe en kickflip (« PST » visible) pendant que la nuit s'efface sur l'accueil.
     /// 2,4 s ; un toucher passe. Le ciel est dessiné sous l'interface (ordre 400), la planche au-dessus (900 et plus).
     /// </summary>
     public sealed class Splash : MonoBehaviour
@@ -36,7 +36,7 @@ namespace PalmStreet.Game
             onDone = done;
             bg = Renderer("Nuit du lancement", transform, 400).GetComponent<MeshFilter>().mesh = new Mesh();
             fx = Renderer("Étincelles", transform, 901).GetComponent<MeshFilter>().mesh = new Mesh();
-            board = new GameObject("Planche P. ST.").transform;
+            board = new GameObject("Planche PST").transform;
             board.SetParent(transform, false);
             deck = new GameObject("Profil").transform;
             deck.SetParent(board, false);
@@ -56,16 +56,16 @@ namespace PalmStreet.Game
                 for (int i = 0; i < 4; i++) top.Circle(cx + (i % 2 == 0 ? -1.6f : 1.6f), i < 2 ? -2.4f : 2.4f, 0.7f, metal, 6);
             gripFace = top.Make("Dessus", board, 902).transform;
 
-            // dessous : orange, liserés rose et jaune, « P. ST. » en grandes lettres
+            // dessous : orange, liserés rose et jaune, « PST » en grandes lettres
             var under = new Paint().Capsule(-25, 0, 25, 0, 15, wood)
                 .Capsule(-21, -5.6f, 21, -5.6f, 1.2f, Hex("#FF4D8D")).Capsule(-21, 5.6f, 21, 5.6f, 1.2f, Hex("#FFE14D"));
             Letters(under, Hex("#1B1028"));
-            bottomFace = under.Make("Dessous P. ST.", board, 903).transform;
+            bottomFace = under.Make("Dessous PST", board, 903).transform;
             gripFace.gameObject.SetActive(false);
             bottomFace.gameObject.SetActive(false);
         }
 
-        /// <summary>« P. ST. » tracé au trait, centré, lettres de 9 de haut.</summary>
+        /// <summary>« PST » tracé au trait, centré, lettres de 9 de haut.</summary>
         static void Letters(Paint p, Color ink)
         {
             const float w = 1.7f, h = 4.5f;
@@ -73,14 +73,12 @@ namespace PalmStreet.Game
             {
                 for (int i = 2; i + 1 < xy.Length; i += 2) p.Capsule(x0 + xy[i - 2], xy[i - 1], x0 + xy[i], xy[i + 1], w, ink);
             }
-            float x = -15;
+            float x = -11;
             S(x, 0, -h, 0, h, 3.5f, h, 5, 3, 5, 1, 3.5f, 0, 0, 0);                                  // P
-            p.Circle(x + 7.5f, -h + 0.6f, 1.1f, ink, 10);                                            // .
-            x += 11;
+            x += 8;
             S(x, 5, 3.5f, 3.5f, h, 1.2f, h, 0, 3, 0.6f, 1, 2.6f, 0, 4.4f, -1, 5, -3, 3.8f, -h, 1.2f, -h, 0, -3.6f);   // S
             x += 8;
             S(x, 0, h, 6, h); S(x, 3, h, 3, -h);                                                    // T
-            p.Circle(x + 8.5f, -h + 0.6f, 1.1f, ink, 10);                                            // .
         }
 
         public void Skip() => Finish();
@@ -96,7 +94,7 @@ namespace PalmStreet.Game
         }
 
         // kickflip de sortie sur une seule courbe (temps, angle, vitesse) : vif au départ, ralenti le dessous face à
-        // l'écran (« P. ST. » lisible), puis fin du tour en douceur
+        // l'écran (« PST » lisible), puis fin du tour en douceur
         static readonly float[] Keys =
         {
             0f,    0f,                       3.2f,

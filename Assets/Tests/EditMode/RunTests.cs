@@ -15,6 +15,13 @@ namespace PalmStreet.Tests
             return r;
         }
 
+        /// <summary>Glissé dans la direction de la figure k.</summary>
+        internal static void SwipeFor(Run r, int k)
+        {
+            double a = Tuning.TrickSwipe[k] * System.Math.PI / 4;
+            r.Swipe((float)System.Math.Cos(a) * 80, (float)System.Math.Sin(a) * 80);
+        }
+
         /// <summary>Avance sans obstacle ni éclair (pour tester une règle à la fois).</summary>
         static void Clear(Run r, int steps)
         {
@@ -144,20 +151,21 @@ namespace PalmStreet.Tests
             Assert.AreEqual(r.Score, r.Best);
         }
 
-        [Test] public void Fr010_FiguresEnLairDansLOrdreEtMultiplieesParLeCombo()
+        [Test] public void Fr010_ChaqueGlisseFaitSaFigureMultiplieeParLeCombo()
         {
             var r = NewRun();
-            int[] expected = { 30, 35 * 2, 45 * 3, 45 * 4 };
-            for (int k = 0; k < 4; k++)
+            for (int k = 0; k < Tuning.TrickNames.Length; k++)
             {
+                r.Obstacles.Clear();   // pas de rail : 8 sauts de suite finiraient par retomber dessus
                 Clear(r, 2);
                 r.Press(); Clear(r, 5);
                 r.Events.Clear();
-                r.Press();
+                int combo = r.Combo;
+                SwipeFor(r, k);
                 var t = r.Events.Single(e => e.Cue == Cue.Trick);
-                Assert.AreEqual(expected[k], t.Points);
+                Assert.AreEqual(Tuning.TrickPoints[k] * combo, t.Points);
                 Assert.AreEqual(Tuning.TrickNames[k] + " !", t.Text);
-                r.Press(); Clear(r, 3); r.Press();
+                Clear(r, 3); SwipeFor(r, (k + 1) % Tuning.TrickNames.Length);
                 Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick), "une seule figure par saut");
                 while (!r.Skater.Grounded) Clear(r, 1);
             }
@@ -172,13 +180,64 @@ namespace PalmStreet.Tests
             Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
         }
 
-        [Test] public void Fr010_DeuxTouchersFontSautPuisFigure()
+        [Test] public void Fr010_ToucherPuisGlisserFontSautPuisFigure()
         {
             var r = NewRun();
             Clear(r, 2);
-            r.Press(); Clear(r, 20); r.Press();   // même tard dans le saut
+            r.Press(); Clear(r, 20); r.Press();   // un toucher en l'air ne fait plus de figure
+            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick));
+            r.Swipe(60, 50);   // glissé vers le haut à droite, même tard dans le saut : FLIP
             Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
-            Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick));
+            Assert.AreEqual("FLIP !", r.Events.Single(e => e.Cue == Cue.Trick).Text);
+        }
+
+        [Test] public void Fr010_HuitDirectionsHuitFigures()
+        {
+            Assert.AreEqual(0, Run.TrickFor(1, 1), "en haut à droite : FLIP");
+            Assert.AreEqual(1, Run.TrickFor(1, 0.2f), "à droite : SHOVE-IT");
+            Assert.AreEqual(2, Run.TrickFor(0.1f, 1), "en haut : 360°");
+            Assert.AreEqual(3, Run.TrickFor(0, -1), "en bas : 360° INVERSÉ");
+            Assert.AreEqual(4, Run.TrickFor(-1, 1), "en haut à gauche : HEELFLIP");
+            CollectionAssert.AreEquivalent(Enumerable.Range(0, 8), Tuning.TrickSwipe, "une direction par figure");
+        }
+
+        [Test] public void Fakie_DeuxDoigtsFont180EtLesFiguresValentPlus()
+        {
+            var r = NewRun();
+            r.Obstacles.Clear();
+            Clear(r, 2);
+            r.HalfTurn();   // au sol : saute et fait le 180
+            Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
+            var half = r.Events.Single(e => e.Cue == Cue.Trick);
+            Assert.AreEqual("180 FAKIE !", half.Text);
+            Assert.AreEqual(Tuning.HalfTurnPoints, half.Points);
+            Assert.IsTrue(r.Skater.Fakie);
+            r.HalfTurn();
+            Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick), "un seul 180 par saut");
+            while (!r.Skater.Grounded) Clear(r, 1);
+            Assert.IsTrue(r.Skater.Fakie, "il reste en fakie après la retombée");
+
+            r.Events.Clear();
+            r.Press(); Clear(r, 5);
+            int combo = r.Combo;
+            SwipeFor(r, 0);
+            var flip = r.Events.Single(e => e.Cue == Cue.Trick);
+            Assert.AreEqual("FAKIE FLIP !", flip.Text);
+            Assert.AreEqual((int)(30 * combo * 1.5f), flip.Points, "figures ×1,5 en fakie");
+            while (!r.Skater.Grounded) Clear(r, 1);
+
+            r.Events.Clear();
+            r.HalfTurn();
+            Assert.AreEqual("180 !", r.Events.Single(e => e.Cue == Cue.Trick).Text);
+            Assert.IsFalse(r.Skater.Fakie, "un deuxième 180 le remet à l'endroit");
+        }
+
+        [Test] public void Fr010_GlisserAuSolNeFaitRien()
+        {
+            var r = NewRun();
+            Clear(r, 2);
+            r.Swipe(60, 50);
+            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick || e.Cue == Cue.Ollie));
         }
 
         static Run OnRail(out Obstacle rail)
@@ -413,11 +472,11 @@ namespace PalmStreet.Tests
             for (int i = 0; i < 10 && r.Skater.Grounded; i++) r.Step();
             var mega = r.Events.Single(e => e.Cue == Cue.MegaAir);
             Assert.AreEqual(Tuning.MegaAirPoints, mega.Points);
-            r.Press(); r.Release();
+            SwipeFor(r, 0);
             while (r.Skater.Trick >= 0) r.Step();
-            r.Press(); r.Release();
+            SwipeFor(r, 1);
             Assert.AreEqual(2, r.Events.Count(e => e.Cue == Cue.Trick), "deux figures pendant un méga air");
-            r.Press(); r.Release();
+            SwipeFor(r, 2);
             Assert.AreEqual(2, r.Events.Count(e => e.Cue == Cue.Trick));
         }
 

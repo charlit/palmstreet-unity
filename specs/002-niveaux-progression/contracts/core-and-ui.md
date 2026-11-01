@@ -23,7 +23,7 @@ progress.Tricks; progress.NextLevel; progress.IsCleared(n); progress.WornIn(slot
 JsonUtility.ToJson(progress) / FromJson<Progress>(json) puis progress.Repair()   // côté Game, clé `progress`
 ```
 
-Garanties : sans figure connue, un toucher en l'air ne fait rien ; en histoire, la vitesse ne dépend que de
+Garanties : sans figure connue, un glissé en l'air ne fait rien ; en histoire, la vitesse ne dépend que de
 la distance parcourue ; en infini, que du temps ; un niveau à boss n'est réussi qu'à la défaite du boss.
 
 ## 2. Écrans et boutons

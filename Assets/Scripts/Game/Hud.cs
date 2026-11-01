@@ -86,6 +86,9 @@ namespace PalmStreet.Game
             BuildProfile(a.CloseProfile);
             BuildOver(a);
             BuildCleared(a);
+            BuildPreview(a.PickLevel);
+            BuildShout();
+            BuildTutorial();
 
             pause = Panel("Pause", 0.55f);
             Label(pause.transform, "PAUSE", 54, Cream, new Vector2(0, 40));
@@ -101,13 +104,15 @@ namespace PalmStreet.Game
             gameSettings.GetComponent<Image>().raycastTarget = true;   // un toucher à côté ne relance pas la partie
             var box = Rect("Fenêtre", gameSettings.transform);
             box.anchorMin = box.anchorMax = new Vector2(0.5f, 0.5f);
-            box.sizeDelta = new Vector2(300, 380);
+            box.sizeDelta = new Vector2(300, 430);
             Img(box, new Color(Night.r, Night.g, Night.b, 0.95f)).raycastTarget = false;
             Label(box, "RÉGLAGES", 30, Cream, new Vector2(0, -34), new Vector2(0.5f, 1));
             var page = Page(box, "Interrupteurs", -64).transform;
             float gy = 0;
             Toggle(page, ref gy, "SON (MUSIQUE ET BRUITAGES)", soundOn, mute);
             Toggle(page, ref gy, "VIBRATIONS", vibrateOn, toggleVibrate);
+            var gb = Button(box, "Gestes", new Vector2(0.5f, 0), new Vector2(0, 138), new Vector2(220, 38), new Color(1, 1, 1, 0.12f), () => ShowTutorial());
+            Label(gb.transform, "RAPPEL DES GESTES", 15, Cream, Vector2.zero);
             var rb = Button(box, "Reprendre", new Vector2(0.5f, 0), new Vector2(0, 82), new Vector2(220, 48), Orange, resume);
             Label(rb.transform, "REPRENDRE", 22, Night, Vector2.zero);
             var qb = Button(box, "Accueil", new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(220, 38), new Color(1, 1, 1, 0.12f), quit);
@@ -179,7 +184,7 @@ namespace PalmStreet.Game
             Label(pb.transform, "PROFIL", 16, Cream, Vector2.zero);
             var eb = Button(t, "INFINI", new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(180, 42), new Color(1, 1, 1, 0.14f), endless);
             Label(eb.transform, "MODE INFINI", 18, Yellow, Vector2.zero);
-            Label(t, "Touche : ollie  ·  touche en l'air : figure", 12, Cream, new Vector2(0, 22), new Vector2(0.5f, 0));
+            Label(t, "Touche : ollie  ·  glisse en l'air : figure  ·  2 doigts : fakie", 12, Cream, new Vector2(0, 22), new Vector2(0.5f, 0));
         }
 
         // ---------- profil : tenue du skateur (FR-026) ----------
@@ -492,6 +497,7 @@ namespace PalmStreet.Game
             gameSettings.SetActive(false);
             over.SetActive(false);
             pause.SetActive(false);
+            preview.SetActive(false);
         }
 
         public void ShowGameSettings(bool on)
@@ -541,6 +547,8 @@ namespace PalmStreet.Game
         public void Tick(Run run, float dt, float time)
         {
             TickStory(run, dt);
+            TickTutorial(time);
+            TickShout(dt);
             if (menu.activeSelf) startButton.localScale = Vector3.one * (1 + 0.035f * Mathf.Sin(time * 3.2f));
             if (game.activeSelf)
             {

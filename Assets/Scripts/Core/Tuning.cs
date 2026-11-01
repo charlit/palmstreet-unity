@@ -31,8 +31,19 @@ namespace PalmStreet.Core
         public const int BigRailEvery = 5000;
 
         // FR-010 à FR-014 points
-        public static readonly int[] TrickPoints = { 30, 35, 45, 45 };
-        public static readonly string[] TrickNames = { "FLIP", "SHOVE-IT", "360°", "360° INVERSÉ" };
+        public static readonly int[] TrickPoints = { 30, 35, 45, 45, 35, 35, 50, 60 };
+        public static readonly string[] TrickNames = { "FLIP", "SHOVE-IT", "360°", "360° INVERSÉ", "HEELFLIP", "SHOVE-IT INVERSÉ", "VARIAL FLIP", "360 FLIP" };
+        // geste de chaque figure : glissé du doigt dans une des 8 directions (0 = droite, puis tous les 45° vers le haut)
+        public static readonly int[] TrickSwipe = { 1, 0, 2, 6, 3, 4, 7, 5 };
+        public static readonly string[] SwipeWords = { "à droite", "en haut à droite", "vers le haut", "en haut à gauche", "à gauche", "en bas à gauche", "vers le bas", "en bas à droite" };
+        // variantes de grind : glissé pendant le grind, dans une des 8 directions (chacune une fois par rail) ;
+        // 0 = le nose grind de départ
+        public static readonly string[] RailNames = { "NOSE GRIND", "50-50", "BOARDSLIDE", "CROOKED", "5-0", "LIPSLIDE", "TAILSLIDE", "FEEBLE", "SMITH" };
+        public static readonly int[] RailPoints = { 0, 30, 40, 40, 30, 45, 45, 50, 50 };
+        public static readonly int[] RailSwipe = { -1, 0, 2, 6, 1, 3, 4, 5, 7 };   // direction de chaque variante (comme TrickSwipe)
+        public const int HalfTurn = 8, HalfTurnPoints = 25;   // le 180 (toucher à 2 doigts) : pas une figure à débloquer
+        public const float FakieBonus = 1.5f;         // figures faites en fakie
+        public const float SwipeMin = 0.05f;          // longueur d'un glissé, en part de la hauteur de l'écran
         public const int GrindPerStep = 2, GrindBonus = 20, OutBonus = 15;
         public const float OutJump = 0.85f;           // part de la hauteur d'un ollie
         public const int BoltPoints = 10, BoltRowMin = 3, BoltRowMax = 5;

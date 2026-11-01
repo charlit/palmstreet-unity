@@ -11,15 +11,14 @@ namespace PalmStreet.Game
     /// </summary>
     public sealed partial class Hud
     {
-        const float NodeStep = 112, MapTop = 90;
-
         GameObject map, cleared;
-        RectTransform mapViewport, mapContent;
+        RectTransform mapViewport;
+        MapArt mapArt;
         readonly RectTransform[] nodes = new RectTransform[12];
         readonly Image[] nodeFills = new Image[12];
         readonly Text[] nodeBests = new Text[12];
         Image clearedChip;
-        Text clearedTitle, clearedCity, clearedScore, clearedBest, clearedGift, clearedTrick, clearedHow, nextLabel;
+        Text clearedTitle, clearedCity, clearedScore, clearedBest, clearedGift, clearedTrick, clearedHow, clearedChallenge, nextLabel, challengeHud;
         RectTransform storyBar, storyFill, bubble;
         Text bubbleText;
         float bubbleTime = 99;
@@ -30,61 +29,36 @@ namespace PalmStreet.Game
         {
             map = Group("Carte");
             var t = map.transform;
-            Label(t, "LA CÔTE BASQUE", 26, Cream, new Vector2(0, -34), new Vector2(0.5f, 1));
+            Label(t, "LE PAYS BASQUE", 26, Cream, new Vector2(0, -34), new Vector2(0.5f, 1));
 
-            mapViewport = Rect("Vue", t);
-            mapViewport.offsetMin = new Vector2(0, 76); mapViewport.offsetMax = new Vector2(0, -64);
-            mapViewport.gameObject.AddComponent<RectMask2D>();
-            var scroll = mapViewport.gameObject.AddComponent<ScrollRect>();
-            scroll.horizontal = false;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 30;
+            mapViewport = Rect("Carte du Pays basque", t);
+            mapViewport.offsetMin = new Vector2(8, 70); mapViewport.offsetMax = new Vector2(-8, -64);
+            mapViewport.gameObject.AddComponent<CanvasRenderer>();   // créé par code : RequireComponent ne l'ajoute pas ici
+            mapArt = mapViewport.gameObject.AddComponent<MapArt>();
+            mapArt.raycastTarget = false;
+            Label(mapViewport, "OCÉAN\nATLANTIQUE", 12, Hex("#FFF4E0", 0.5f), Vector2.zero, new Vector2(0.13f, 0.62f)).rectTransform.sizeDelta = new Vector2(120, 40);
+            Label(mapViewport, "ESPAGNE", 12, Hex("#FFF4E0", 0.5f), Vector2.zero, new Vector2(0.2f, 0.06f));
+            Label(mapViewport, "LA RHUNE", 10, Hex("#FFF4E0", 0.6f), new Vector2(0, -16), new Vector2(0.40f, 0.17f));
 
-            mapContent = Rect("Côte", mapViewport);
-            mapContent.anchorMin = new Vector2(0, 1); mapContent.anchorMax = new Vector2(1, 1);
-            mapContent.pivot = new Vector2(0.5f, 1);
-            mapContent.sizeDelta = new Vector2(0, MapTop + 11 * NodeStep + 120);
-            scroll.content = mapContent;
-            scroll.viewport = mapViewport;
-            var land = Img(mapContent, Hex("#3E6B47"));   // la terre
-            land.raycastTarget = true;                     // pour faire défiler au doigt partout
-            var sea = Rect("Océan", mapContent);
-            sea.anchorMax = new Vector2(0, 1); sea.offsetMax = new Vector2(96, 0);
-            Img(sea, Hex("#1D5F8C")).raycastTarget = false;
-            var foam = Rect("Écume", mapContent);
-            foam.anchorMax = new Vector2(0, 1); foam.offsetMin = new Vector2(94, 0); foam.offsetMax = new Vector2(104, 0);
-            Img(foam, Hex("#E9D8A6")).raycastTarget = false;
-
-            var pos = new Vector2[12];
-            for (int i = 0; i < 12; i++) pos[i] = NodePos(i);
-            for (int i = 0; i < 11; i++)   // la route
-            {
-                var seg = Rect("Route", mapContent);
-                seg.anchorMin = seg.anchorMax = new Vector2(0.5f, 1);
-                var d = pos[i + 1] - pos[i];
-                seg.anchoredPosition = (pos[i] + pos[i + 1]) / 2;
-                seg.sizeDelta = new Vector2(d.magnitude, 10);
-                seg.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
-                Img(seg, Hex("#E9D8A6")).raycastTarget = false;
-            }
             for (int i = 0; i < 12; i++)
             {
                 var def = Levels.All[i];
                 int n = def.Number;
                 bool boss = def.Boss != BossKind.None;
-                float size = boss ? 74 : 62;
-                var node = Button(mapContent, "Niveau " + n, new Vector2(0.5f, 1), pos[i], new Vector2(size, size), Cream, () => a.PickLevel(n));
+                float size = boss ? 50 : 42;
+                var at = MapArt.Towns[i];
+                var node = Button(mapViewport, "Niveau " + n, at, Vector2.zero, new Vector2(size, size), Cream, () => ShowPreview(n));
                 node.GetComponent<Image>().pixelsPerUnitMultiplier = 0.6f;   // pastille ronde
                 var fill = Rect("Pastille", node.transform);
-                fill.offsetMin = new Vector2(4, 4); fill.offsetMax = new Vector2(-4, -4);
+                fill.offsetMin = new Vector2(3, 3); fill.offsetMax = new Vector2(-3, -3);
                 nodeFills[i] = Img(fill, Orange);
                 nodeFills[i].pixelsPerUnitMultiplier = 0.6f;
                 nodeFills[i].raycastTarget = false;
-                Label(node.transform, n.ToString(), boss ? 30 : 26, Night, Vector2.zero);
-                var name = Label(mapContent, def.City, 13, Cream, pos[i] + new Vector2(0, -size / 2 - 12), new Vector2(0.5f, 1));
-                name.rectTransform.sizeDelta = new Vector2(200, 18);
-                nodeBests[i] = Label(mapContent, "", 11, Yellow, pos[i] + new Vector2(0, -size / 2 - 27), new Vector2(0.5f, 1));
-                if (boss) Label(mapContent, "BOSS", 12, Pink, pos[i] + new Vector2(0, size / 2 + 9), new Vector2(0.5f, 1));
+                Label(node.transform, n.ToString(), boss ? 22 : 19, Night, Vector2.zero);
+                var name = Label(mapViewport, def.City, 11, Cream, new Vector2(0, -size / 2 - 8), at);
+                name.rectTransform.sizeDelta = new Vector2(160, 16);
+                nodeBests[i] = Label(mapViewport, "", 10, Yellow, new Vector2(0, -size / 2 - 20), at);
+                if (boss) Label(mapViewport, "BOSS", 11, Pink, new Vector2(0, size / 2 + 7), at);
                 nodes[i] = node.GetComponent<RectTransform>();
             }
 
@@ -92,9 +66,6 @@ namespace PalmStreet.Game
             Label(back.transform, "RETOUR", 20, Night, Vector2.zero);
             BuildStoryHud();
         }
-
-        /// <summary>Pastilles en zigzag le long de la côte, du nord (Anglet) vers le sud puis l'intérieur.</summary>
-        static Vector2 NodePos(int i) => new Vector2(i % 2 == 0 ? 10 : 90, -MapTop - i * NodeStep);
 
         public void ShowMap(Progress p)
         {
@@ -108,15 +79,11 @@ namespace PalmStreet.Game
                 nodes[i].GetComponent<UnityEngine.UI.Button>().interactable = open;
                 nodeBests[i].text = done ? "BEST " + p.Best[i] : open ? "" : "VERROUILLÉ";
             }
-            ScrollTo(next);
-        }
-
-        void ScrollTo(int n)
-        {
-            Canvas.ForceUpdateCanvases();
-            float view = mapViewport.rect.height, content = mapContent.rect.height;
-            float y = -NodePos(n - 1).y - view / 2;
-            mapContent.anchoredPosition = new Vector2(0, Mathf.Clamp(y, 0, Mathf.Max(0, content - view)));
+            int reached = 0;
+            while (reached < 12 && p.IsOpen(reached + 1)) reached++;
+            mapArt.Open = reached;
+            mapArt.Stars = (bool[])p.Stars.Clone();
+            mapArt.SetVerticesDirty();
         }
 
         public bool MapVisible => map.activeSelf;
@@ -125,10 +92,10 @@ namespace PalmStreet.Game
         public Vector3 NodeWorld(int n, out bool visible, out float scale)
         {
             var node = nodes[n - 1];
-            var w = node.TransformPoint(new Vector3(-58, -18, 0));   // à côté de la pastille, pas dessus
+            var w = node.TransformPoint(new Vector3(-34, -12, 0));   // à côté de la pastille, pas dessus
             var local = mapViewport.InverseTransformPoint(w);
             visible = mapViewport.rect.Contains(new Vector2(local.x, local.y));
-            scale = node.lossyScale.x / 0.01f * 0.75f;
+            scale = node.lossyScale.x / 0.01f * 0.5f;
             return w;
         }
 
@@ -153,14 +120,16 @@ namespace PalmStreet.Game
             clearedChip.raycastTarget = false;
             clearedTrick = Label(t, "", 20, Hex("#35F2FF"), new Vector2(0, -4));
             clearedHow = Label(t, "", 14, Cream, new Vector2(0, -28));
+            clearedChallenge = Label(t, "", 15, Yellow, new Vector2(0, -52));
             var nb = Button(t, "Suivant", new Vector2(0.5f, 0.5f), new Vector2(0, -96), new Vector2(250, 54), Orange, a.Next);
             nextLabel = Label(nb.transform, "NIVEAU SUIVANT", 22, Night, Vector2.zero);
             var mb = Button(t, "Carte", new Vector2(0.5f, 0.5f), new Vector2(0, -160), new Vector2(250, 42), new Color(Night.r, Night.g, Night.b, 0.85f), a.Map);
             Label(mb.transform, "CARTE", 18, Cream, Vector2.zero);
         }
 
-        public void ShowCleared(LevelDef def, int score, int best, string trick, Item gift)
+        public void ShowCleared(LevelDef def, int score, int best, string trick, Item gift, string challenge)
         {
+            clearedChallenge.text = challenge;
             cleared.SetActive(true);
             settingsButton.gameObject.SetActive(false);
             bool last = def.Number == Levels.Count;
@@ -175,8 +144,9 @@ namespace PalmStreet.Game
                 clearedChip.color = Wardrobe.ItemColor(gift.Id);
                 clearedChip.rectTransform.anchoredPosition = new Vector2(-clearedGift.preferredWidth / 2 - 10, 30);
             }
+            int k = System.Array.IndexOf(Tuning.TrickNames, trick);
             clearedTrick.text = trick != null ? "NOUVELLE FIGURE : " + trick : "";
-            clearedHow.text = trick != null ? "Saute, puis touche l'écran en l'air" : "";
+            clearedHow.text = trick != null ? "En l'air, glisse le doigt " + Tuning.SwipeWords[Tuning.TrickSwipe[k]] : "";
             nextLabel.text = last ? "MODE INFINI" : "NIVEAU SUIVANT";
         }
 
@@ -187,25 +157,28 @@ namespace PalmStreet.Game
             var back = Rect("Fond", section);
             back.offsetMin = new Vector2(8, 8); back.offsetMax = new Vector2(-8, -126);
             Img(back, new Color(Night.r, Night.g, Night.b, 0.88f)).raycastTarget = false;
-            string[] names = { "OLLIE", "GRIND", "FLIP", "SHOVE-IT", "360°", "360° INVERSÉ" };
-            for (int i = 0; i < names.Length; i++)
+            var names = new System.Collections.Generic.List<string> { "OLLIE", "GRIND", "180 · FAKIE" };
+            names.AddRange(Tuning.TrickNames);
+            for (int i = 0; i < names.Count; i++)
             {
-                int trick = i - 2;   // −2, −1 : ollie et grind, toujours connus
+                int trick = i - 3;   // −3, −2, −1 : ollie, grind et 180, toujours connus
                 var row = Rect("Figure " + names[i], section);
                 row.anchorMin = row.anchorMax = new Vector2(0.5f, 1);
-                row.anchoredPosition = new Vector2(0, -160 - i * 62);
-                row.sizeDelta = new Vector2(320, 52);
+                row.anchoredPosition = new Vector2(0, -150 - i * 40);
+                row.sizeDelta = new Vector2(340, 35);
                 var bg = Img(row, Hex("#3BB273"));
                 bg.raycastTarget = false;
-                Label(row, names[i], 20, Night, new Vector2(-60, 0));
-                var state = Label(row, "", 13, Night, new Vector2(80, 0));
+                Label(row, names[i], 17, Night, new Vector2(-82, 0));
+                var state = Label(row, "", 12, Night, new Vector2(88, 0));
                 refresh.Add(() =>
                 {
                     var p = progress();
                     var def = trick < 0 ? null : System.Array.Find(Levels.All, l => l.Unlocks == trick);
                     bool known = trick < 0 || p.Tricks.Contains(trick);
                     bg.color = known ? Hex("#3BB273") : Hex("#5C6670");
-                    state.text = known ? "CONNUE" : $"NIVEAU {def.Number} · {def.City}";
+                    state.text = !known ? $"NIVEAU {def.Number} · {def.City}"
+                        : trick == -3 ? "TOUCHE" : trick == -2 ? "RAIL · GLISSE : 8 VARIANTES" : trick == -1 ? "TOUCHE À 2 DOIGTS · FIGURES ×1,5"
+                        : "GLISSE " + Tuning.SwipeWords[Tuning.TrickSwipe[trick]].ToUpper();
                     state.color = known ? Night : Cream;
                 });
             }
@@ -230,6 +203,7 @@ namespace PalmStreet.Game
             bubble.anchoredPosition = new Vector2(0, 10);
             bubble.sizeDelta = new Vector2(320, 64);
             Img(bubble, new Color(Night.r, Night.g, Night.b, 0.9f)).raycastTarget = false;
+            challengeHud = Label(t, "", 13, Cream, new Vector2(0, -128), new Vector2(0.5f, 1));
             bubbleText = Label(bubble, "", 16, Cream, Vector2.zero);
             bubbleText.horizontalOverflow = HorizontalWrapMode.Wrap;
             bubbleText.rectTransform.sizeDelta = new Vector2(300, 60);
@@ -247,6 +221,13 @@ namespace PalmStreet.Game
             bool story = run.Mode == GameMode.Story && run.Def != null;
             storyBar.gameObject.SetActive(story && run.Boss == null);
             if (story) storyFill.anchorMax = new Vector2(Mathf.Clamp01(run.Skater.X / run.Def.Finish), 1);
+            challengeHud.gameObject.SetActive(story);
+            if (story)
+            {
+                bool done = run.ChallengeDone(run.Def);
+                challengeHud.text = done ? "DÉFI RÉUSSI : " + run.Def.ChallengeText : $"DÉFI : {run.ChallengeValue(run.Def)} / {run.Def.ChallengeText}";
+                challengeHud.color = done ? Yellow : Cream;
+            }
             bubbleTime += dt;
             bubble.gameObject.SetActive(bubbleTime < 3.5f);
         }

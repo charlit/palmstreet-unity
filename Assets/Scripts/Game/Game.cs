@@ -37,6 +37,8 @@ namespace PalmStreet.Game
         float mapAnimAt;
         float acc, time, menuX, overAt = -1, overShownAt;
         bool paused, instantScenery = true;
+        Vector2 pressAt;      // où le doigt s'est posé en partie : un glissé depuis là fait une figure
+        bool swipeOpen, railTouch;   // railTouch : doigt posé pendant un grind, la sortie attend de savoir si c'est un glissé
         readonly List<RaycastResult> uiHits = new List<RaycastResult>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -54,6 +56,7 @@ namespace PalmStreet.Game
         void Awake()
         {
             Application.targetFrameRate = 60;
+            Progress.UnlockAll = false;   // true : tout ouvert pour tester sur le téléphone (jamais dans une version publique)
             cam = Camera.main;
             cam.orthographic = true;
             var probe = new GameObject("Sonde").AddComponent<SpriteRenderer>();
@@ -83,7 +86,7 @@ namespace PalmStreet.Game
             Haptics.Enabled = PlayerPrefs.GetInt("vibrate", 1) == 1;
             preview = RiderView.Create(Wardrobe.Build(progress), transform, 600);   // au-dessus du canevas (500)
             ToMenu();
-            splash = Child<Splash>("Lancement");   // FR-028 : la planche P. ST. avant l'accueil
+            splash = Child<Splash>("Lancement");   // FR-028 : la planche PST avant l'accueil
             splash.Init(cam, hud.TitleStreet, Leaderboard.SignIn);   // Game Center après l'animation : sa connexion la faisait geler
         }
 
@@ -165,6 +168,7 @@ namespace PalmStreet.Game
             ToMenu();
             hud.ShowMap(progress);
             mapAnimAt = time;
+            if (PlayerPrefs.GetInt("tuto", 0) == 0) { PlayerPrefs.SetInt("tuto", 1); PlayerPrefs.Save(); hud.ShowTutorial(); }   // les gestes, au premier JOUER
         }
 
         // ---------- progression (spec 002), gardée dans PlayerPrefs `progress` ----------
@@ -198,10 +202,15 @@ namespace PalmStreet.Game
         {
             sound.StopMusic();
             var def = Levels.Get(level);
+            bool star = Run.ChallengeDone(def), newStar = star && !progress.Stars[level - 1];
+            progress.Stars[level - 1] |= star;
             var (trick, item) = progress.Clear(level, Run.Score);
             SaveProgress();
+            Leaderboard.Report(Run.Score, level);
             mapFrom = level;
-            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item);
+            string challenge = newStar ? "DÉFI RÉUSSI : " + def.ChallengeText + " · NOUVELLE ÉTOILE"
+                : star ? "DÉFI RÉUSSI : " + def.ChallengeText : $"DÉFI RATÉ : {Run.ChallengeValue(def)} / {def.ChallengeText}";
+            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item, challenge);
         }
 
         public void OpenProfile()
@@ -297,7 +306,33 @@ namespace PalmStreet.Game
             if (down && splash.Running) { splash.Skip(); return; }   // un toucher passe l'animation de lancement
             if (down && !key && OverUi(pos)) down = false;   // les boutons gardent leur toucher
             if (down) Press(pos, key);
-            if (up) Run.Release();
+            if (!paused && Run.Phase == Phase.Playing && (SecondFinger() || kb != null && kb.fKey.wasPressedThisFrame)) { swipeOpen = false; Run.HalfTurn(); }
+            if (swipeOpen && pointer != null && pointer.press.isPressed)
+            {
+                var d = pointer.position.ReadValue() - pressAt;
+                if (d.magnitude > Screen.height * Tuning.SwipeMin) { swipeOpen = railTouch = false; Run.Swipe(d.x, d.y); }
+            }
+            if (up)
+            {
+                if (railTouch && Run.Skater.Rail != null) Run.Press();   // toucher sans glisser sur un rail : OUT!
+                swipeOpen = railTouch = false;
+                Run.Release();
+            }
+        }
+
+        /// <summary>Un deuxième doigt vient de se poser (toucher à 2 doigts : 180, fakie).</summary>
+        static bool SecondFinger()
+        {
+            var ts = Touchscreen.current;
+            if (ts == null) return false;
+            int down = 0; bool began = false;
+            foreach (var t in ts.touches)
+            {
+                if (!t.press.isPressed) continue;
+                down++;
+                if (t.press.wasPressedThisFrame) began = true;
+            }
+            return down >= 2 && began;
         }
 
         bool OverUi(Vector2 screen)
@@ -321,7 +356,8 @@ namespace PalmStreet.Game
                     break;
                 case Phase.Playing:
                     if (paused) SetPaused(false);
-                    else Run.Press();
+                    else if (!key && Run.Skater.Rail != null) { railTouch = swipeOpen = true; pressAt = screen; }   // sur un rail : glisser fait une figure de rail, toucher sort
+                    else { Run.Press(); swipeOpen = !key; pressAt = screen; }   // toucher : ollie ; glisser ensuite : figure
                     break;
                 case Phase.Over:
                     if (level == 0 && overAt < 0 && time - overShownAt > 0.35f) StartEndless(false);   // en histoire : RECOMMENCER ou CARTE
@@ -334,10 +370,14 @@ namespace PalmStreet.Game
             var yellow = Hex("#FFE14D");
             foreach (var e in Run.Events)
             {
-                sound.Play(e.Cue);
+                sound.Play(e.Cue, Run.Combo);
                 switch (e.Cue)   // FR-028 : vibrations courtes sur les moments forts
                 {
-                    case Cue.Trick: case Cue.GrindEnd: case Cue.MegaAir: Haptics.Play(Buzz.Medium); break;
+                    case Cue.Trick:   // léger, plus fort en fakie et au 180, fort sur un long combo
+                        bool fakie = e.Text.StartsWith("FAKIE") || e.Text.StartsWith("180");
+                        Haptics.Play(Run.Combo >= 6 ? Buzz.Heavy : fakie ? Buzz.Medium : Buzz.Light);
+                        break;
+                    case Cue.GrindEnd: case Cue.MegaAir: Haptics.Play(Buzz.Medium); break;
                     case Cue.GrindStart: case Cue.GrindOut: Haptics.Play(Buzz.Light); break;
                     case Cue.Crash: case Cue.Boom: Haptics.Play(Buzz.Heavy); break;
                 }
@@ -350,6 +390,7 @@ namespace PalmStreet.Game
                         break;
                     case Cue.Trick:
                         hud.Float($"+{e.Points} {e.Text}", at, yellow);
+                        if (Run.Combo > 3) hud.Shout(e.Text, Run.Combo - 1);   // Combo a déjà compté cette figure
                         fx.Burst(e.X, e.Y, Hex("#FF4D8D"), 8, 2.5f);
                         break;
                     case Cue.Bolt:
@@ -416,7 +457,7 @@ namespace PalmStreet.Game
             overAt = time + 0.7f;   // on voit d'abord la planche s'échapper
         }
 
-        static string BossName(BossKind k) => k switch { BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER", _ => "LE GRAND BOSS" };
+        public static string BossName(BossKind k) => k switch { BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER", _ => "LE GRAND BOSS" };
         static string BossTip(BossKind k) => k switch
         {
             BossKind.Crab => "Saute-le quand il fonce sur toi !",
@@ -443,6 +484,7 @@ namespace PalmStreet.Game
             FitCamera(menu ? menuX : Run.Skater.X);
             var ground = menu ? menuGround : Run.Ground;
             scenery.MenuSun = menu;
+            scenery.HideSun = menu && !hud.MenuVisible;
             scenery.Draw(menu ? Theme.Anglet : Run.Theme, ground, cam, time, instantScenery);
             instantScenery = false;
 
@@ -456,7 +498,7 @@ namespace PalmStreet.Game
                     float k = mapFrom > 0 && mapFrom != next ? Mathf.Clamp01((time - mapAnimAt - 0.3f) / 1.4f) : 1;
                     if (k >= 1) mapFrom = 0;
                     var from = mapFrom > 0 ? hud.NodeWorld(mapFrom, out _, out _) : to;
-                    preview.Show(visible);
+                    preview.Show(visible && !hud.OverlayOpen);
                     preview.Idle(Vector3.Lerp(from, to, k * k * (3 - 2 * k)), time, k >= 1, scale);
                 }
                 else

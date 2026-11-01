@@ -169,8 +169,8 @@ namespace PalmStreet.Tests
         {
             var r = Story(1);   // aucune figure connue
             Clean(r, 2);
-            r.Press(); Clean(r, 5); r.Press(); Clean(r, 5); r.Press();
-            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick), "un toucher en l'air ne fait rien");
+            r.Press(); Clean(r, 5); r.Press(); Clean(r, 5); r.Swipe(60, 50);
+            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick), "ni toucher ni glissé en l'air ne fait de figure");
             Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Ollie));
         }
 
@@ -178,15 +178,15 @@ namespace PalmStreet.Tests
         {
             var r = Story(1, 0, 2);   // FLIP et 360°
             var names = new System.Collections.Generic.List<string>();
-            for (int k = 0; k < 4; k++)
+            for (int k = 0; k < Tuning.TrickNames.Length; k++)
             {
                 Clean(r, 2);
-                r.Press(); Clean(r, 4); r.Press();
+                r.Press(); Clean(r, 4); RunTests.SwipeFor(r, k);
                 names.AddRange(r.Events.Where(e => e.Cue == Cue.Trick).Select(e => e.Text));
                 r.Events.Clear();
                 while (!r.Skater.Grounded) Clean(r, 1);
             }
-            CollectionAssert.AreEqual(new[] { "FLIP !", "360° !", "FLIP !", "360° !" }, names);
+            CollectionAssert.AreEqual(new[] { "FLIP !", "360° !" }, names, "les autres glissés ne font rien");
         }
 
         [Test] public void Figures_DebloqueesParLesNiveaux()
@@ -195,13 +195,17 @@ namespace PalmStreet.Tests
             Assert.IsEmpty(p.Tricks);
             Assert.AreEqual(0, p.Clear(1, 100).trick, "niveau 1 : FLIP");
             Assert.AreEqual(-1, p.Clear(1, 200).trick, "annoncée une seule fois");
-            Assert.AreEqual(-1, p.Clear(2, 100).trick);
+            Assert.AreEqual(4, p.Clear(2, 100).trick, "niveau 2 : HEELFLIP");
             Assert.AreEqual(1, p.Clear(3, 100).trick, "niveau 3 : SHOVE-IT");
-            p.Clear(4, 1); p.Clear(5, 1);
+            Assert.AreEqual(-1, p.Clear(4, 1).trick);
+            Assert.AreEqual(5, p.Clear(5, 1).trick, "niveau 5 : SHOVE-IT INVERSÉ");
             Assert.AreEqual(2, p.Clear(6, 100).trick, "niveau 6 : 360°");
-            p.Clear(7, 1); p.Clear(8, 1);
+            p.Clear(7, 1);
+            Assert.AreEqual(6, p.Clear(8, 1).trick, "niveau 8 : VARIAL FLIP");
             Assert.AreEqual(3, p.Clear(9, 100).trick, "niveau 9 : 360° INVERSÉ");
-            CollectionAssert.AreEqual(new[] { 0, 1, 2, 3 }, p.Tricks);
+            p.Clear(10, 1);
+            Assert.AreEqual(7, p.Clear(11, 1).trick, "niveau 11 : 360 FLIP");
+            CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 4, 5, 6, 7 }, p.Tricks);
         }
 
         [Test] public void Figures_GrindEtOutSansFigure()
@@ -215,6 +219,80 @@ namespace PalmStreet.Tests
             Assert.AreSame(rail, r.Skater.Rail, "grind sans aucune figure connue");
             r.Press();
             Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.GrindOut));
+        }
+
+        // ---------- défis des villes (une étoile chacun) ----------
+
+        [Test] public void Defis_UnParVilleEtLisible()
+        {
+            for (int n = 1; n <= Levels.Count; n++)
+            {
+                var d = Levels.Get(n);
+                Assert.That(d.Goal, Is.GreaterThan(0), $"défi du niveau {n}");
+                StringAssert.DoesNotContain("{", d.ChallengeText);
+            }
+            Assert.AreEqual("15 éclairs", Levels.Get(1).ChallengeText);
+            Assert.AreEqual("2 figures en fakie", Levels.Get(5).ChallengeText);
+        }
+
+        [Test] public void Defis_Niveau1FaisableSansFigure()
+        {
+            var r = Story(1);   // aucune figure : seulement rouler et ramasser les éclairs
+            for (int i = 0; i < 20000 && r.Phase == Phase.Playing; i++)
+            {
+                r.Obstacles.RemoveAll(o => o.X < r.Skater.X + 60);
+                r.Step();
+            }
+            Assert.AreEqual(Phase.Cleared, r.Phase);
+            Assert.IsTrue(r.ChallengeDone(Levels.Get(1)), $"{r.BoltsTaken} éclairs ramassés sans sauter");
+        }
+
+        [Test] public void Defis_FiguresSurRailEtFakieComptees()
+        {
+            var r = Story(5, 0);
+            Clean(r, 2);
+            var rail = new Obstacle { Kind = ObstacleKind.Rail, X = r.Skater.X + 40, W = 200, H = Tuning.RailHeight };
+            r.Obstacles.Add(rail);
+            r.Press();
+            for (int i = 0; i < 60 && r.Skater.Rail == null; i++) r.Step();
+            Assert.AreSame(rail, r.Skater.Rail);
+            r.Events.Clear();
+            int combo = r.Combo;
+            r.Swipe(0, 60);   // vers le haut pendant le grind : BOARDSLIDE
+            var t = r.Events.Single(e => e.Cue == Cue.Trick);
+            Assert.AreEqual("BOARDSLIDE !", t.Text);
+            Assert.AreEqual(40 * combo, t.Points);
+            r.Swipe(0, 60);
+            Assert.AreEqual(1, r.RailTricks, "chaque variante une fois par rail");
+            r.Swipe(-50, -50);   // en bas à gauche : FEEBLE, enchaîné sur le même rail
+            Assert.AreEqual("FEEBLE !", r.Events.Last(e => e.Cue == Cue.Trick).Text);
+            Assert.AreEqual(2, r.RailTricks);
+            Assert.AreSame(rail, r.Skater.Rail, "le glissé ne fait pas sortir du rail");
+            r.Press();
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.GrindOut), "toucher : sortie OUT! comme avant");
+
+            while (!r.Skater.Grounded) Clean(r, 1);
+            r.HalfTurn();
+            while (!r.Skater.Grounded) Clean(r, 1);
+            r.Press(); Clean(r, 4); RunTests.SwipeFor(r, 0);
+            Assert.AreEqual(1, r.FakieTricks);
+            Assert.AreEqual(2, r.TricksDone, "180 et FLIP");
+            Assert.IsFalse(r.ChallengeDone(Levels.Get(5)), "2 figures en fakie : une seule faite");
+        }
+
+        [Test] public void Rail_HuitVariantesHuitDirections()
+        {
+            CollectionAssert.AreEquivalent(Enumerable.Range(0, 8), Tuning.RailSwipe.Skip(1), "une direction par variante");
+            Assert.AreEqual(1, Run.RailFor(1, 0.1f), "à droite : 50-50");
+            Assert.AreEqual(8, Run.RailFor(1, -1), "en bas à droite : SMITH");
+            Assert.AreEqual(Tuning.RailNames.Length, Tuning.RailPoints.Length);
+        }
+
+        [Test] public void Defis_EtoileGardeeDansLaProgression()
+        {
+            var p = new Progress { Stars = null };
+            p.Repair();
+            Assert.AreEqual(Levels.Count, p.Stars.Length, "ancienne sauvegarde sans étoiles");
         }
 
         // ---------- US2 : un boss différent tous les 3 niveaux ----------

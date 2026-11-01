@@ -13,13 +13,16 @@ namespace PalmStreet.Core
     {
         public bool[] Cleared = new bool[12];
         public int[] Best = new int[12];
+        public bool[] Stars = new bool[12];   // défi de la ville réussi
         public int EndlessBest;
         public List<int> SeenObstacles = new List<int>();
         public string[] Worn = { "start-head", "start-top", "start-legs", "start-shoes", "start-deck" };
         public int Skin, HairStyle, HairColor;
 
-        public bool IsCleared(int n) => Cleared[n - 1];
-        public bool IsOpen(int n) => n == 1 || Cleared[n - 2];
+        /// <summary>Test sur téléphone : tous les niveaux, figures et objets ouverts, sans toucher à la sauvegarde.</summary>
+        public static bool UnlockAll;
+        public bool IsCleared(int n) => UnlockAll || Cleared[n - 1];
+        public bool IsOpen(int n) => UnlockAll || n == 1 || Cleared[n - 2];
 
         /// <summary>Premier niveau ouvert non réussi (12 si tout est réussi).</summary>
         public int NextLevel
@@ -31,7 +34,7 @@ namespace PalmStreet.Core
             }
         }
 
-        /// <summary>Figures connues, dans l'ordre FLIP, SHOVE-IT, 360°, 360° INVERSÉ (1 → FLIP, 3 → SHOVE-IT, 6 → 360°, 9 → 360° INVERSÉ).</summary>
+        /// <summary>Figures connues, dans l'ordre de Tuning.TrickNames (niveaux 1, 2, 3, 5, 6, 8, 9, 11).</summary>
         public List<int> Tricks
         {
             get
@@ -74,6 +77,7 @@ namespace PalmStreet.Core
         {
             if (Cleared == null || Cleared.Length != Levels.Count) Array.Resize(ref Cleared, Levels.Count);
             if (Best == null || Best.Length != Levels.Count) Array.Resize(ref Best, Levels.Count);
+            if (Stars == null || Stars.Length != Levels.Count) Array.Resize(ref Stars, Levels.Count);
             SeenObstacles ??= new List<int>();
             var start = new Progress().Worn;
             if (Worn == null || Worn.Length != start.Length) Worn = start;

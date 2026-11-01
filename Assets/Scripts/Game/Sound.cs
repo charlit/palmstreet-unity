@@ -10,7 +10,7 @@ namespace PalmStreet.Game
     public sealed class Sound : MonoBehaviour
     {
         const int Rate = 22050;
-        AudioSource music, sfx, grind;
+        AudioSource music, sfx, grind, tricks;   // tricks : sa hauteur monte avec le combo
         AudioClip ollie, land, trick, bolt, crash, boom, tooth, hit, banner, start;
         bool muted;
 
@@ -26,6 +26,7 @@ namespace PalmStreet.Game
             music.loop = true; music.volume = 0.45f;
             sfx = gameObject.AddComponent<AudioSource>();
             grind = gameObject.AddComponent<AudioSource>();
+            tricks = gameObject.AddComponent<AudioSource>();
             grind.loop = true; grind.volume = 0.35f;
 
             music.clip = Music();
@@ -42,8 +43,14 @@ namespace PalmStreet.Game
             grind.clip = Make("grind", 0.5f, (t, n) => (Noise(n) * 0.5f + Sine(t, 1830) * 0.25f + Sine(t, 2470) * 0.2f) * (0.7f + 0.3f * Mathf.Sin(t * 2 * Mathf.PI * 18)) * 0.5f);
         }
 
-        public void Play(Cue cue)
+        public void Play(Cue cue, int combo = 1)
         {
+            if (cue == Cue.Trick)
+            {
+                tricks.pitch = 1 + 0.06f * Mathf.Clamp(combo - 2, 0, 10);
+                tricks.PlayOneShot(trick);
+                return;
+            }
             AudioClip c = cue switch
             {
                 Cue.Ollie => ollie, Cue.Land => land, Cue.Trick => trick, Cue.Bolt => bolt, Cue.GrindOut => ollie,

@@ -9,6 +9,9 @@ namespace PalmStreet.Core
     [Flags]
     public enum Allow { None = 0, Rails = 1, BigCones = 2, Hills = 4, Gulls = 8, Pads = 16, Gaps = 32, All = 63 }
 
+    /// <summary>Défi d'une ville : réussi en finissant le niveau avec au moins Goal (rapporte une étoile).</summary>
+    public enum ChallengeKind { Tricks, Fakie, GrindSeconds, Combo, RailTricks, Bolts }
+
     public sealed class LevelDef
     {
         public int Number;
@@ -19,6 +22,19 @@ namespace PalmStreet.Core
         public BossKind Boss;
         public int Unlocks = -1;        // figure débloquée (index de Tuning.TrickNames) ou −1
         public string NewObstacle;      // bulle d'aide au départ, ou null
+        public ChallengeKind Challenge;
+        public int Goal;
+
+        /// <summary>Le défi en clair, ex. « 3 figures en fakie ».</summary>
+        public string ChallengeText => Challenge switch
+        {
+            ChallengeKind.Tricks => $"{Goal} figures",
+            ChallengeKind.Fakie => $"{Goal} figures en fakie",
+            ChallengeKind.GrindSeconds => $"{Goal} s de grind",
+            ChallengeKind.Combo => $"combo x{Goal}",
+            ChallengeKind.Bolts => $"{Goal} éclairs",
+            _ => $"{Goal} figures sur rail",
+        };
     }
 
     /// <summary>Les 12 niveaux du mode histoire (spec 002, data-model.md), un par ville de la côte basque.</summary>
@@ -29,25 +45,25 @@ namespace PalmStreet.Core
 
         public static readonly LevelDef[] All =
         {
-            L(1, "ANGLET", Theme.Anglet, 10500, 2.5f, 3.2f, Allow.None, BossKind.None, 0, null),
-            L(2, "BIARRITZ", Theme.Biarritz, 11000, 2.6f, 3.3f, Base, BossKind.None, -1, "Retombe sur un rail pour grinder"),
-            L(3, "BIDART", Theme.Bidart, 11200, 2.7f, 3.4f, Base, BossKind.Crab, 1, null),
-            L(4, "GUÉTHARY", Theme.Guethary, 12000, 2.8f, 3.5f, Mid, BossKind.None, -1, "Grands plots et bosses : saute plus tôt"),
-            L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, -1, null),
-            L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null),
-            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : garde le doigt appuyé pour t'accroupir"),
-            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, -1, "Tremplin : MÉGA AIR et deux figures"),
-            L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null),
-            L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les"),
-            L(11, "CAMBO-LES-BAINS", Theme.Cambo, 17000, 3.8f, 4.7f, Allow.All, BossKind.None, -1, null),
-            L(12, "BIARRITZ LA NUIT", Theme.BiarritzNuit, 16500, 4.0f, 5.0f, Allow.All, BossKind.Purple, -1, null),
+            L(1, "ANGLET", Theme.Anglet, 10500, 2.5f, 3.2f, Allow.None, BossKind.None, 0, null, ChallengeKind.Bolts, 15),
+            L(2, "BIARRITZ", Theme.Biarritz, 11000, 2.6f, 3.3f, Base, BossKind.None, 4, "Retombe sur un rail pour grinder", ChallengeKind.Tricks, 3),
+            L(3, "BIDART", Theme.Bidart, 11200, 2.7f, 3.4f, Base, BossKind.Crab, 1, null, ChallengeKind.Combo, 4),
+            L(4, "GUÉTHARY", Theme.Guethary, 12000, 2.8f, 3.5f, Mid, BossKind.None, -1, "Grands plots et bosses : saute plus tôt", ChallengeKind.RailTricks, 2),
+            L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, 5, null, ChallengeKind.Fakie, 2),
+            L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null, ChallengeKind.Tricks, 8),
+            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : garde le doigt appuyé pour t'accroupir", ChallengeKind.GrindSeconds, 5),
+            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6),
+            L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null, ChallengeKind.Fakie, 4),
+            L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les", ChallengeKind.RailTricks, 4),
+            L(11, "CAMBO-LES-BAINS", Theme.Cambo, 17000, 3.8f, 4.7f, Allow.All, BossKind.None, 7, null, ChallengeKind.Tricks, 15),
+            L(12, "BIARRITZ LA NUIT", Theme.BiarritzNuit, 16500, 4.0f, 5.0f, Allow.All, BossKind.Purple, -1, null, ChallengeKind.Combo, 10),
         };
 
         public static int Count => All.Length;
 
         public static LevelDef Get(int n) => All[n - 1];
 
-        static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip) =>
-            new LevelDef { Number = n, City = city, Theme = theme, Finish = finish, StartSpeed = start, MaxSpeed = max, Allowed = allowed, Boss = boss, Unlocks = unlocks, NewObstacle = tip };
+        static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip, ChallengeKind challenge, int goal) =>
+            new LevelDef { Number = n, City = city, Theme = theme, Finish = finish, StartSpeed = start, MaxSpeed = max, Allowed = allowed, Boss = boss, Unlocks = unlocks, NewObstacle = tip, Challenge = challenge, Goal = goal };
     }
 }

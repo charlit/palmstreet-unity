@@ -86,8 +86,8 @@ nouvelle figure et montre comment la faire.
 
 **Why this priority**: donne une raison d'avancer dans les niveaux et apprend le jeu pas à pas.
 
-**Independent Test**: installation neuve : toucher en l'air ne fait aucune figure ; réussir le niveau 1 :
-« NOUVELLE FIGURE : FLIP » s'affiche, puis le toucher en l'air fait un FLIP.
+**Independent Test**: installation neuve : glisser en l'air ne fait aucune figure ; réussir le niveau 1 :
+« NOUVELLE FIGURE : FLIP » s'affiche, puis un glissé en haut à droite en l'air fait un FLIP.
 
 **Acceptance Scenarios**:
 
@@ -95,8 +95,8 @@ nouvelle figure et montre comment la faire.
    ne se fait (pas de points de figure).
 2. **Given** le niveau qui débloque une figure, **When** il est réussi pour la première fois, **Then**
    l'écran de réussite annonce la nouvelle figure et la façon de la faire.
-3. **Given** plusieurs figures débloquées, **When** le joueur touche en l'air, **Then** les figures
-   s'enchaînent d'un saut à l'autre parmi celles débloquées seulement.
+3. **Given** plusieurs figures débloquées, **When** le joueur glisse le doigt en l'air, **Then** il
+   fait la figure de cette direction, seulement si elle est débloquée.
 4. **Given** des figures débloquées en mode histoire, **When** le joueur lance le mode infini, **Then**
    il dispose des mêmes figures.
 
@@ -234,13 +234,17 @@ lisible sous la planche, un toucher la passe.
 **Figures à débloquer**
 
 - **FR-013**: Au premier lancement, le skateur MUST savoir faire seulement l'ollie et le grind (avec la
-  sortie de grind OUT!) ; un toucher en l'air ne fait aucune figure tant qu'aucune n'est débloquée.
+  sortie de grind OUT!) ; un toucher fait l'ollie ; un glissé en l'air ne fait aucune figure tant
+  qu'aucune n'est débloquée.
 - **FR-014**: Les figures MUST se débloquer en réussissant pour la première fois : niveau 1 → FLIP,
-  niveau 3 (boss) → SHOVE-IT, niveau 6 (boss) → 360°, niveau 9 (boss) → 360° INVERSÉ.
+  2 → HEELFLIP, 3 (boss) → SHOVE-IT, 5 → SHOVE-IT INVERSÉ, 6 (boss) → 360°, 8 → VARIAL FLIP,
+  9 (boss) → 360° INVERSÉ, 11 → 360 FLIP.
 - **FR-015**: Chaque déblocage MUST être annoncé sur l'écran de réussite (« NOUVELLE FIGURE : … ») avec
-  le geste à faire (sauter, puis toucher en l'air).
-- **FR-016**: Un toucher en l'air MUST faire la figure suivante parmi les seules figures débloquées, dans
-  l'ordre FLIP, SHOVE-IT, 360°, 360° INVERSÉ ; les points des figures restent ceux de la spec 001.
+  le geste à faire (en l'air, glisser le doigt dans sa direction).
+- **FR-016**: En l'air, un glissé du doigt MUST faire la figure de sa direction, si elle est débloquée :
+  en haut à droite FLIP, à droite SHOVE-IT, vers le haut 360°, vers le bas 360° INVERSÉ, en haut à
+  gauche HEELFLIP, à gauche SHOVE-IT INVERSÉ, en bas à droite VARIAL FLIP, en bas à gauche 360 FLIP.
+  Points : ceux de la spec 001 pour les 4 premières, puis 35, 35, 50 et 60.
 - **FR-017**: Le profil MUST montrer les figures connues et celles à débloquer, avec le niveau qui les
   débloque.
 

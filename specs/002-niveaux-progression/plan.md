@@ -111,8 +111,8 @@ directement).
 - **Boss** : à la distance d'arrivée d'un niveau à boss, le boss arrive (sol plat, plus d'obstacles) ;
   sa défaite réussit le niveau. Le boss de 001 devient `BossKind.Purple` ; les autres réutilisent la vie,
   les dents et la barre de vie, avec leurs propres mouvements et projectiles.
-- **Figures** : `Run` reçoit la liste des figures connues ; le toucher en l'air fait la suivante dans cette
-  liste ; aucune figure si la liste est vide. `Progress` déduit la liste des niveaux réussis (FR-014).
+- **Figures** : `Run` reçoit la liste des figures connues ; un glissé en l'air fait la figure de sa direction
+  (`Run.Swipe`, FR-016) si elle est dans la liste ; aucune figure si la liste est vide. `Progress` déduit la liste des niveaux réussis (FR-014).
 - **Mode infini** : vitesse = départ + pente × temps de jeu, plafonnée ; décor qui change toutes les
   4 000 points parmi les villes ouvertes ; boss tous les 15 000 points, tiré parmi ceux déjà rencontrés ;
   tous les types d'obstacles des niveaux ouverts.

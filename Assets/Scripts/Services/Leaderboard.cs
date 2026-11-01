@@ -25,6 +25,12 @@ namespace PalmStreet.Services
             if (ready) Social.ReportScore(score, Id, _ => { });
         }
 
+        /// <summary>Classement d'une ville (palmstreet.ville.1 à 12) : à créer dans App Store Connect avec ces identifiants.</summary>
+        public static void Report(int score, int level)
+        {
+            if (ready) Social.ReportScore(score, "palmstreet.ville." + level, _ => { });
+        }
+
         /// <summary>Ouvre le classement, ou appelle unavailable avec la raison.</summary>
         public static void Show(Action<string> unavailable)
         {

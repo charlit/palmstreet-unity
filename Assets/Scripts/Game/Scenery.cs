@@ -21,14 +21,14 @@ namespace PalmStreet.Game
         readonly float[] weight = new float[ThemeLook.All.Length];
         readonly Paint p = new Paint();
         Transform cameraFixed;
-        Mesh sky, sun, shine, ground;
+        Mesh sky, sun, shine, ground, rain, fog;
 
         /// <summary>Centre et rayon du soleil, en coordonnées monde (pour le raccourci du menu).</summary>
         public Vector3 SunWorld { get; private set; }
         public float SunWorldRadius { get; private set; }
 
         /// <summary>À l'accueil le soleil monte à gauche du titre, où l'on peut le toucher (FR-020).</summary>
-        public bool MenuSun;
+        public bool MenuSun, HideSun;   // HideSun : carte et profil, où il passait coupé sous l'en-tête
         public static readonly Vector2 MenuSunPos = new Vector2(60, 440);   // x : distance au bord gauche
 
         public void Init()
@@ -39,6 +39,8 @@ namespace PalmStreet.Game
             sun = Renderer("Soleil", cameraFixed, -98).GetComponent<MeshFilter>().mesh = new Mesh();
             shine = Renderer("Reflet du soleil", cameraFixed, -92).GetComponent<MeshFilter>().mesh = new Mesh();
             ground = Renderer("Route", transform, 0).GetComponent<MeshFilter>().mesh = new Mesh();
+            fog = Renderer("Brume", cameraFixed, -84).GetComponent<MeshFilter>().mesh = new Mesh();     // devant le décor, derrière la route
+            rain = Renderer("Pluie", cameraFixed, 450).GetComponent<MeshFilter>().mesh = new Mesh();    // devant tout le monde, sous l'interface
 
             var rng = new System.Random(20261030);
             for (int t = 0; t < ThemeLook.All.Length; t++)
@@ -95,10 +97,13 @@ namespace PalmStreet.Game
             float pulse = 1 + Mathf.Sin(time * 1.3f) * 0.03f;
             var glow = C(l => l.Glow);
             p.Clear();
-            p.Glow(sp.x, sp.y, sr * 4.2f * pulse, glow * 0.6f, new Color(glow.r, glow.g, glow.b, 0));
-            p.Glow(sp.x, sp.y, sr * 1.9f, glow, new Color(glow.r, glow.g, glow.b, 0));
-            p.Circle(sp.x, sp.y, sr, C(l => l.Sun), 36);
-            p.Glow(sp.x, sp.y, sr * 0.85f, C(l => l.SunCore), C(l => l.Sun), 36);
+            if (!HideSun)
+            {
+                p.Glow(sp.x, sp.y, sr * 4.2f * pulse, glow * 0.6f, new Color(glow.r, glow.g, glow.b, 0));
+                p.Glow(sp.x, sp.y, sr * 1.9f, glow, new Color(glow.r, glow.g, glow.b, 0));
+                p.Circle(sp.x, sp.y, sr, C(l => l.Sun), 36);
+                p.Glow(sp.x, sp.y, sr * 0.85f, C(l => l.SunCore), C(l => l.Sun), 36);
+            }
             p.Build(sun);
             SunWorld = new Vector3((cx + sp.x) / Ppu, sp.y / Ppu, 0);
             SunWorldRadius = sr / Ppu;
@@ -116,6 +121,29 @@ namespace PalmStreet.Game
                 }
             }
             p.Build(shine);
+
+            // météo des villes : pluie à Espelette, brume à Hendaye et Ascain (en fondu avec le décor)
+            float wet = weight[(int)Theme.Espelette], mist = weight[(int)Theme.Hendaye] + weight[(int)Theme.Ascain];
+            p.Clear();
+            if (wet > 0.01f)
+            {
+                p.Rect(-half - 2, bottom - 2, half * 2 + 4, top - bottom + 4, new Color(0.08f, 0.1f, 0.2f, 0.22f * wet));
+                for (int i = 0; i < 90; i++)
+                {
+                    float x = Mathf.Repeat(i * 73.1f - time * 140, half * 2 + 40) - half - 20;
+                    float y = Mathf.Repeat(i * 151.7f - time * 950, top - bottom + 40) + bottom - 20;
+                    p.Line(x, y, x - 7, y - 26, 1.6f, new Color(0.85f, 0.9f, 1, 0.35f * wet));
+                }
+            }
+            p.Build(rain);
+            p.Clear();
+            if (mist > 0.01f)
+            {
+                var white = new Color(0.95f, 0.93f, 0.97f, 0.5f * mist);
+                p.Gradient(-half - 2, Horizon - 40, half * 2 + 4, 260, white, new Color(white.r, white.g, white.b, 0));
+                p.Rect(-half - 2, bottom - 2, half * 2 + 4, Horizon - 38 - bottom, white);
+            }
+            p.Build(fog);
 
             // plans en parallaxe
             for (int t = 0; t < ThemeLook.All.Length; t++)

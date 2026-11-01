@@ -330,8 +330,45 @@ namespace PalmStreet.Game
             {
                 // nose grind : le nez sur le rail, la queue levée ; le skateur penché sur l'avant, bras en balancier
                 const float nose = -18, up = 4.5f;   // up : la roue avant reste posée sur le rail
-                Pose(0.45f, 26, 115, -45, nose, up, -1, 7);
-                Board(nose, 0, 0, -up);
+                switch (s.GrindStyle)
+                {
+                    case 1:   // 50-50 : planche à plat, les deux trucks sur le rail, bras ouverts
+                        Pose(0.4f, 12, 95, -80);
+                        Board(0);
+                        break;
+                    case 2:   // BOARDSLIDE : planche en travers du rail, on la voit par le dessus, skateur de face
+                        Pose(0.5f, 4, 110, -110);
+                        Board(0, 0, Mathf.PI / 2, 2);
+                        break;
+                    case 3:   // CROOKED : nez sur le rail, planche de biais
+                        Pose(0.5f, 30, 120, -40, nose, up, -1, 8);
+                        Board(nose, 0, 0.7f, -up);
+                        break;
+                    case 4:   // 5-0 : sur le truck arrière, nez levé, penché en arrière
+                        Pose(0.45f, -8, 70, -110, -nose * 0.8f, up, -1, -4);
+                        Board(-nose * 0.8f, 0, 0, -up);
+                        break;
+                    case 5:   // LIPSLIDE : planche en travers, passée par-dessus le rail (l'autre sens du boardslide)
+                        Pose(0.5f, -4, 100, -120);
+                        Board(0, 0, -Mathf.PI / 2, 2);
+                        break;
+                    case 6:   // TAILSLIDE : la queue glisse, planche de biais, nez levé
+                        Pose(0.5f, -6, 80, -100, -nose * 0.7f, up, -1, -3);
+                        Board(-nose * 0.7f, 0, 0.8f, -up);
+                        break;
+                    case 7:   // FEEBLE : truck arrière sur le rail, l'avant passé de l'autre côté, un peu levé
+                        Pose(0.45f, 8, 90, -70, 8, 2);
+                        Board(8, 0, -0.5f, -2);
+                        break;
+                    case 8:   // SMITH : truck arrière sur le rail, le nez plonge du côté du skateur
+                        Pose(0.55f, 20, 110, -60, -10, 0, -1, 4);
+                        Board(-10, 0, 0.45f, 3);
+                        break;
+                    default:   // NOSE GRIND
+                        Pose(0.45f, 26, 115, -45, nose, up, -1, 7);
+                        Board(nose, 0, 0, -up);
+                        break;
+                }
             }
             else if (s.Grounded)
             {
@@ -370,7 +407,32 @@ namespace PalmStreet.Game
                     Board(0);
                     spinAngle = -ease * 360;
                     break;
+                case Tuning.HalfTurn:   // 180 : saut groupé, le skateur tourne sur lui-même (voir le miroir plus bas)
+                    Pose(0.35f + lift * 0.35f, 10, 70 + lift * 30, -70 - lift * 30, 0, lift * 4);
+                    Board(0, 0, 0, lift * 2);
+                    break;
+                case 4:   // HEELFLIP : le flip dans l'autre sens (le dessous apparaît d'abord), bras ouverts
+                    Pose(0.3f + lift * 0.45f, 8 + lift * 8, 95 + lift * 20, -60 - lift * 20, 0, lift * 10);
+                    Board(lift * 14, -p * p * (3 - 2 * p) * Mathf.PI * 2, 0, lift * 8);
+                    break;
+                case 5:   // SHOVE-IT INVERSÉ : la planche tourne à plat dans l'autre sens
+                    Pose(0.3f + lift * 0.35f, 6, 95 + lift * 20, -95 - lift * 15, 0, lift * 5);
+                    Board(0, 0, -p * p * (3 - 2 * p) * Mathf.PI * 2, lift * 2);
+                    break;
+                case 6:   // VARIAL FLIP : un flip et un demi-tour à plat en même temps
+                    Pose(0.35f + lift * 0.45f, 12 + lift * 8, 85 + lift * 25, -90 - lift * 20, 0, lift * 10);
+                    Board(lift * 10, p * p * (3 - 2 * p) * Mathf.PI * 2, p * p * (3 - 2 * p) * Mathf.PI, lift * 9);
+                    break;
+                case 7:   // 360 FLIP : un flip et un tour complet à plat, saut très groupé
+                    Pose(0.45f + lift * 0.45f, 14 + lift * 10, 100 + lift * 20, -100 - lift * 20, 0, lift * 12);
+                    Board(lift * 10, p * p * (3 - 2 * p) * Mathf.PI * 2, p * p * (3 - 2 * p) * Mathf.PI * 2, lift * 10);
+                    break;
             }
+            // fakie : le skateur et sa planche vus en miroir (il regarde en arrière) ; le 180 passe d'un côté à l'autre
+            float face = s.Fakie ? -1 : 1;
+            if (s.Trick == Tuning.HalfTurn) { float c = -Mathf.Cos(Mathf.PI * ease) * face; face = Mathf.Sign(c) * Mathf.Max(Mathf.Abs(c), 0.12f); }
+            if (s.Fakie && (s.Trick == 2 || s.Trick == 3)) spinAngle = -spinAngle;   // les saltos restent arrière / avant pour lui
+            spin.localScale = new Vector3(face, 1, 1);
             spin.rotation = Quaternion.Euler(0, 0, spinAngle);
         }
 
@@ -398,6 +460,7 @@ namespace PalmStreet.Game
             if (air) Ollie(Mathf.Cos(a), out nose, out up);
             spin.localPosition = (feet - transform.position) / scale + W(0, Center + hop * 16);
             spin.localRotation = Quaternion.identity;
+            spin.localScale = Vector3.one;
             Pose(0.15f + hop * 0.4f, 8, -10 + Mathf.Sin(time * 1.7f) * 5 + hop * 60, 18 - hop * 70, nose, up);
             Board(nose, 0, 0, -up);
         }

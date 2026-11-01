@@ -18,7 +18,7 @@ namespace PalmStreet.Tests
 
         static string Dir => System.Environment.GetEnvironmentVariable("PALMSTREET_CAPTURES") ?? Path.Combine(Application.dataPath, "../Temp/Captures");
 
-        [UnityTest]
+        [UnityTest, Timeout(600000)]   // plus de 3 min : une centaine de captures
         public IEnumerator CaptureKeyMoments()
         {
             yield return SceneManager.LoadSceneAsync("Game");
@@ -44,14 +44,23 @@ namespace PalmStreet.Tests
             var saved = game.Progress;
             game.Progress = new Progress();
             game.OpenMap();
+            var hud = Object.FindAnyObjectByType<PalmStreet.Game.Hud>();
+            hud.ShowTutorial();
+            for (int i = 0; i < 30; i++) yield return null;
+            yield return Shot("0-tutoriel");
+            hud.HideTutorial();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("0-carte-neuve");
             var advanced = new Progress();
             for (int n = 1; n <= 5; n++) advanced.Clear(n, 1000 * n);
+            advanced.Stars[0] = advanced.Stars[2] = advanced.Stars[3] = true;
             game.Progress = advanced;
             game.OpenMap();
             for (int i = 0; i < 40; i++) yield return null;
             yield return Shot("0-carte-avancee");
+            hud.ShowPreview(6);
+            yield return null;
+            yield return Shot("0-carte-apercu");
             game.Progress = new Progress();
             game.StartLevel(1);
             yield return Steps(run, 30, false);
@@ -101,6 +110,10 @@ namespace PalmStreet.Tests
             yield return null;
             yield return Shot("0-profil-planches");
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(0);
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(1);
+            yield return null;
+            yield return Shot("0-profil-figures");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(0);
             game.Progress = saved;
             game.ToMenu();
 
@@ -137,15 +150,29 @@ namespace PalmStreet.Tests
             yield return Steps(run, 30, false);
             yield return Shot("3-grind");
             yield return Shot("3-grind-zoom", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            // figures sur rail, sur un long rail posé exprès
+            while (!run.Skater.Grounded || run.Skater.Rail != null) { run.Step(); run.Bolts.Clear(); }
+            run.Obstacles.Clear();
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Rail, X = run.Skater.X + 40, W = 900, H = Tuning.RailHeight });
+            run.Press(); run.Release();
+            for (int i = 0; i < 70 && run.Skater.Rail == null; i++) run.Step();
+            for (int style = 1; style < Tuning.RailNames.Length && run.Skater.Rail != null; style++)
+            {
+                run.Skater.GrindStyle = style;
+                yield return null;
+                yield return Shot($"3-rail-{style}", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            }
+            if (run.Skater.Rail != null) run.Skater.GrindStyle = 0;
 
             yield return Steps(run, 200, true);
-            for (int k = 0; k < 4; k++)   // les 4 figures, saisies à 5 moments
+            for (int k = 0; k < Tuning.TrickNames.Length; k++)   // les figures (glissé dans leur direction), saisies à 5 moments
             {
                 while (!run.Skater.Grounded) { run.Step(); yield return null; }
                 run.Obstacles.Clear(); run.Bolts.Clear();
                 run.Press(); run.Release();
                 yield return Steps(run, 4, false);
-                run.Press(); run.Release();
+                float a = Tuning.TrickSwipe[k] * Mathf.PI / 4;
+                run.Swipe(Mathf.Cos(a), Mathf.Sin(a));
                 Assert.AreEqual(k, run.Skater.Trick, "figure attendue");
                 for (int moment = 1; moment <= 5; moment++)
                 {
@@ -154,6 +181,18 @@ namespace PalmStreet.Tests
                     yield return Shot($"4-figure-{k}-{moment}", new Vector2(run.Skater.X, run.Skater.Y + 30));
                 }
             }
+
+            // 180 à deux doigts : demi-tour en l'air, puis il roule en fakie
+            while (!run.Skater.Grounded) { run.Step(); yield return null; }
+            run.Obstacles.Clear(); run.Bolts.Clear();
+            run.HalfTurn();
+            while (run.Skater.TrickStep < run.Skater.TrickLength / 2) { run.Step(); run.Bolts.Clear(); }
+            yield return Shot("4-fakie-180", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            while (!run.Skater.Grounded) { run.Step(); run.Bolts.Clear(); }
+            yield return Steps(run, 20, false);
+            yield return Shot("4-fakie-roule", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            run.HalfTurn();
+            while (!run.Skater.Grounded) { run.Step(); run.Bolts.Clear(); }
 
             run.Score = 6000;
             yield return Steps(run, 240, true);
