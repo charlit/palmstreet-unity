@@ -10,8 +10,8 @@ using static PalmStreet.Game.Paint;
 namespace PalmStreet.Game
 {
     /// <summary>
-    /// Interface (FR-002, FR-009, FR-014, FR-016, FR-017, FR-021, FR-022, FR-026) : accueil avec le skateur, START,
-    /// PROFIL et TOP 10 ; profil où l'on change la tenue ; score, BEST, combo, bandeaux, barre de vie du boss,
+    /// Interface (FR-002, FR-009, FR-014, FR-016, FR-017, FR-021, FR-022, FR-026) : accueil avec JOUER, MODE INFINI,
+    /// PROFIL et TUTORIEL (TOP 10 en fin de partie infinie) ; profil où l'on change la tenue ; score, BEST, combo, bandeaux, barre de vie du boss,
     /// textes de points ; écran WIPEOUT ; pause ; son.
     /// Le canevas est rendu par la caméra du jeu, en unités proches de l'écran logique de 390 × 620.
     /// </summary>
@@ -19,8 +19,8 @@ namespace PalmStreet.Game
     public sealed class HudActions
     {
         public Action Play, Endless, OpenProfile, CloseProfile, Top10, Mute, ToggleVibrate, OutfitChanged,
-                      OpenSettings, Resume, Quit, Home, Map, Retry, Next;
-        public Action<int> PickLevel;
+                      OpenSettings, AskQuit, Resume, Quit, Home, Map, Retry, Next;
+        public Action<int> PickLevel, Cast;
         public Func<bool> SoundOn, VibrateOn;
         public Func<Progress> Progress;
     }
@@ -33,7 +33,7 @@ namespace PalmStreet.Game
         Sprite round;
         RectTransform safe;
         GameObject menu, game, over, pause, profile;
-        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, toast;
+        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, menuNext, toast;
         RectTransform bossBar, bossFill, bannerRt;
         /// <summary>Le mot STREET du titre de l'accueil (l'animation de lancement grinde dessus).</summary>
         public Text TitleStreet { get; private set; }
@@ -43,7 +43,8 @@ namespace PalmStreet.Game
         Func<Progress> progress;
         Func<bool> soundOn, vibrateOn;
         Action toggleVibrate, mute;
-        RectTransform startButton, settingsButton;
+        RectTransform startButton, settingsButton;   // settingsButton : RÉGLAGES et la croix
+        GameObject quitConfirm, settingsOnly;   // settingsOnly : RÉGLAGES, caché quand la partie est finie (la croix reste)
         GameObject gameSettings;
         Action outfitChanged;
         readonly List<Action> refresh = new List<Action>();
@@ -58,7 +59,7 @@ namespace PalmStreet.Game
             soundOn = a.SoundOn; vibrateOn = a.VibrateOn; toggleVibrate = a.ToggleVibrate; mute = a.Mute;
             progress = a.Progress;
             outfitChanged = a.OutfitChanged;
-            Action openSettings = a.OpenSettings, resume = a.Resume, quit = a.Quit;
+            Action openSettings = a.OpenSettings, askQuit = a.AskQuit, resume = a.Resume, quit = a.Quit;
             font = Font.CreateDynamicFontFromOSFont(new[] { "Avenir Next Condensed", "Futura", "Arial Black", "Roboto Condensed", "Roboto", "Arial" }, 32);
             round = RoundSprite();
 
@@ -88,16 +89,36 @@ namespace PalmStreet.Game
             BuildCleared(a);
             BuildPreview(a.PickLevel);
             BuildShout();
+            BuildSpells(a.Cast);
             BuildTutorial();
 
             pause = Panel("Pause", 0.55f);
             Label(pause.transform, "PAUSE", 54, Cream, new Vector2(0, 40));
             Label(pause.transform, "Touche l'écran pour reprendre", 18, Cream, new Vector2(0, -20));
 
-            // en partie : bouton RÉGLAGES en haut à droite, qui met le jeu en pause
-            var sbtn = Button(safe, "Réglages", new Vector2(1, 1), new Vector2(-52, -30), new Vector2(92, 40), new Color(Night.r, Night.g, Night.b, 0.6f), openSettings);
-            settingsButton = sbtn.GetComponent<RectTransform>();
-            Label(sbtn.transform, "RÉGLAGES", 14, Cream, Vector2.zero);
+            // en partie, en haut à droite : RÉGLAGES et une croix pour quitter (les deux mettent le jeu en pause)
+            settingsButton = Rect("Boutons en partie", safe);
+            settingsButton.anchorMin = settingsButton.anchorMax = settingsButton.pivot = new Vector2(1, 1);
+            settingsButton.anchoredPosition = Vector2.zero;
+            settingsButton.sizeDelta = new Vector2(170, 60);
+            settingsOnly = Button(settingsButton, "Réglages", new Vector2(1, 1), new Vector2(-110, -30), new Vector2(92, 44), new Color(Night.r, Night.g, Night.b, 0.6f), openSettings);
+            Label(settingsOnly.transform, "RÉGLAGES", 14, Cream, Vector2.zero);
+            var xbtn = Button(settingsButton, "Quitter", new Vector2(1, 1), new Vector2(-32, -30), new Vector2(46, 44), new Color(Night.r, Night.g, Night.b, 0.6f), askQuit);
+            Label(xbtn.transform, "X", 22, Cream, Vector2.zero);
+
+            // confirmation avant de quitter : un toucher par erreur ne fait pas perdre la partie
+            quitConfirm = Panel("Quitter la partie ?", 0.7f);
+            quitConfirm.GetComponent<Image>().raycastTarget = true;
+            var qbox = Rect("Fenêtre", quitConfirm.transform);
+            qbox.anchorMin = qbox.anchorMax = new Vector2(0.5f, 0.5f);
+            qbox.sizeDelta = new Vector2(300, 200);
+            Img(qbox, new Color(Night.r, Night.g, Night.b, 0.95f)).raycastTarget = false;
+            Label(qbox, "QUITTER LA PARTIE ?", 24, Cream, new Vector2(0, -40), new Vector2(0.5f, 1));
+            Label(qbox, "Le score de cette partie sera perdu", 14, Cream, new Vector2(0, -74), new Vector2(0.5f, 1));
+            var yes = Button(qbox, "Oui, quitter", new Vector2(0.5f, 0), new Vector2(-72, 46), new Vector2(128, 50), Pink, quit);
+            Label(yes.transform, "QUITTER", 18, Cream, Vector2.zero);
+            var no = Button(qbox, "Non, reprendre", new Vector2(0.5f, 0), new Vector2(72, 46), new Vector2(128, 50), Orange, resume);
+            Label(no.transform, "REPRENDRE", 18, Night, Vector2.zero);
 
             // fenêtre des réglages en partie : son, vibrations, reprendre ou revenir à l'accueil
             gameSettings = Panel("Réglages en partie", 0.7f);
@@ -112,7 +133,7 @@ namespace PalmStreet.Game
             Toggle(page, ref gy, "SON (MUSIQUE ET BRUITAGES)", soundOn, mute);
             Toggle(page, ref gy, "VIBRATIONS", vibrateOn, toggleVibrate);
             var gb = Button(box, "Gestes", new Vector2(0.5f, 0), new Vector2(0, 138), new Vector2(220, 38), new Color(1, 1, 1, 0.12f), () => ShowTutorial());
-            Label(gb.transform, "RAPPEL DES GESTES", 15, Cream, Vector2.zero);
+            Label(gb.transform, "TUTORIEL", 15, Cream, Vector2.zero);
             var rb = Button(box, "Reprendre", new Vector2(0.5f, 0), new Vector2(0, 82), new Vector2(220, 48), Orange, resume);
             Label(rb.transform, "REPRENDRE", 22, Night, Vector2.zero);
             var qb = Button(box, "Accueil", new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(220, 38), new Color(1, 1, 1, 0.12f), quit);
@@ -174,17 +195,23 @@ namespace PalmStreet.Game
             var t = menu.transform;
             Label(t, "PALM", 62, Cream, new Vector2(0, -80), new Vector2(0.5f, 1));
             TitleStreet = Label(t, "STREET", 62, Orange, new Vector2(0, -132), new Vector2(0.5f, 1));
-            Label(t, "S K A T E   R U N", 15, Pink, new Vector2(0, -172), new Vector2(0.5f, 1));
-            menuBest = Label(t, "", 15, Yellow, new Vector2(0, -196), new Vector2(0.5f, 1));
+            Label(t, "TEAM", 40, Pink, new Vector2(0, -178), new Vector2(0.5f, 1));
+            Label(t, "au cœur du Pays basque", 15, Cream, new Vector2(0, -212), new Vector2(0.5f, 1));
+            menuBest = Label(t, "", 15, Yellow, new Vector2(0, -240), new Vector2(0.5f, 1));   // étoiles et record infini
 
-            // spec 002 (FR-001) : plus de grand skateur ni de TOP 10 ; JOUER (histoire) et INFINI
+            // tout ce qui se touche est en bas, sous le pouce (HIG : zone du pouce, cibles d'au moins 44 pt) :
+            // JOUER en grand, puis MODE INFINI, puis une barre PROFIL · TUTORIEL
             startButton = StartButton(t, "JOUER", play);
-            // profil en haut à droite (le bouton son se range à sa gauche sur l'accueil)
-            var pb = Button(t, "PROFIL", new Vector2(1, 1), new Vector2(-58, -30), new Vector2(96, 40), Pink, openProfile);
-            Label(pb.transform, "PROFIL", 16, Cream, Vector2.zero);
-            var eb = Button(t, "INFINI", new Vector2(0.5f, 0), new Vector2(0, 50), new Vector2(180, 42), new Color(1, 1, 1, 0.14f), endless);
-            Label(eb.transform, "MODE INFINI", 18, Yellow, Vector2.zero);
-            Label(t, "Touche : ollie  ·  glisse en l'air : figure  ·  2 doigts : fakie", 12, Cream, new Vector2(0, 22), new Vector2(0.5f, 0));
+            menuNext = Label(t, "", 13, Cream, new Vector2(0, 152), new Vector2(0.5f, 0));   // le niveau que JOUER va proposer
+            var eb = Button(t, "INFINI", new Vector2(0.5f, 0), new Vector2(0, 108), new Vector2(250, 50), Hex("#4A2A6E"), endless);
+            Label(eb.transform, "MODE INFINI", 19, Yellow, Vector2.zero);
+            string[] bar = { "PROFIL", "TUTORIEL" };
+            Action[] barActions = { openProfile, () => ShowTutorial() };
+            for (int i = 0; i < bar.Length; i++)
+            {
+                var b = Button(t, bar[i], new Vector2(0.5f, 0), new Vector2(-64 + i * 128, 38), new Vector2(120, 48), i == 0 ? Pink : Hex("#4A2A6E"), barActions[i]);
+                Label(b.transform, bar[i], 16, Cream, Vector2.zero);
+            }
         }
 
         // ---------- profil : tenue du skateur (FR-026) ----------
@@ -295,6 +322,7 @@ namespace PalmStreet.Game
                 var card = Button(parent, it.Name, new Vector2(0.5f, 1), new Vector2(col == 0 ? -80 : 80, -40 - row * 72), new Vector2(152, 62), Cream, () =>
                 {
                     if (progress().Wear(it.Id)) Changed();
+                    else if (it.Stars > 0) Toast($"Se gagne avec {it.Stars} étoiles (tu en as {progress().TotalStars})");
                     else { var d = Levels.Get(it.Level); Toast($"Se gagne en finissant le niveau {d.Number} · {d.City}"); }
                 });
                 var frame = card.GetComponent<Image>();
@@ -308,6 +336,12 @@ namespace PalmStreet.Game
                 var chipImg = Img(chip, Wardrobe.ItemColor(it.Id));
                 chipImg.pixelsPerUnitMultiplier = 0.6f;
                 chipImg.raycastTarget = false;
+                var dot = Rect("Motif", chip);   // couleur du motif de l'objet
+                dot.anchorMin = dot.anchorMax = new Vector2(0.5f, 0.5f);
+                dot.sizeDelta = new Vector2(14, 14);
+                var dotImg = Img(dot, Wardrobe.ItemDetail(it.Id));
+                dotImg.pixelsPerUnitMultiplier = 0.3f;
+                dotImg.raycastTarget = false;
                 var name = Label(card.transform, it.Name, 12, Cream, new Vector2(22, 8));
                 name.rectTransform.sizeDelta = new Vector2(100, 18);
                 var state = Label(card.transform, "", 10, Yellow, new Vector2(22, -11));
@@ -318,8 +352,9 @@ namespace PalmStreet.Game
                     bool owned = p.Owns(it.Id), worn = p.WornIn(it.Slot) == it.Id;
                     frame.color = worn ? Orange : owned ? new Color(Cream.r, Cream.g, Cream.b, 0.25f) : Hex("#3A3442");
                     chipImg.color = owned ? Wardrobe.ItemColor(it.Id) : Hex("#5C6670");
+                    dotImg.color = owned ? Wardrobe.ItemDetail(it.Id) : Color.clear;
                     name.color = owned ? Cream : new Color(Cream.r, Cream.g, Cream.b, 0.5f);
-                    state.text = worn ? "PORTÉ" : owned ? "" : $"NIVEAU {it.Level} · {Levels.Get(it.Level).City}";
+                    state.text = worn ? "PORTÉ" : owned ? "" : it.Stars > 0 ? $"{it.Stars} ÉTOILES" : $"NIVEAU {it.Level} · {Levels.Get(it.Level).City}";
                     state.color = worn ? Yellow : new Color(Cream.r, Cream.g, Cream.b, 0.6f);
                 });
             }
@@ -384,7 +419,7 @@ namespace PalmStreet.Game
         {
             var root = Rect("START", parent);
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 0);
-            root.anchoredPosition = new Vector2(0, 118);
+            root.anchoredPosition = new Vector2(0, 208);
             root.sizeDelta = new Vector2(250, 68);
             var shadow = Rect("Ombre", root);
             shadow.offsetMin = new Vector2(0, -7); shadow.offsetMax = new Vector2(0, -7);
@@ -455,7 +490,10 @@ namespace PalmStreet.Game
         public void ShowMenu(int bestScore)
         {
             Show(menu);
-            menuBest.text = bestScore > 0 ? "BEST " + bestScore : "";
+            var p = progress();
+            menuBest.text = $"{p.TotalStars}/{Levels.Count * 3} ÉTOILES" + (bestScore > 0 ? "   ·   RECORD INFINI " + bestScore : "");
+            var next = Levels.Get(p.NextLevel);
+            menuNext.text = $"NIVEAU {next.Number} · {next.City}";
         }
 
         public void ShowProfile()
@@ -495,14 +533,16 @@ namespace PalmStreet.Game
             profile.SetActive(g == profile);
             settingsButton.gameObject.SetActive(g == game);   // en partie ; sinon les réglages sont dans PROFIL
             gameSettings.SetActive(false);
+            quitConfirm.SetActive(false);
             over.SetActive(false);
             pause.SetActive(false);
             preview.SetActive(false);
         }
 
-        public void ShowGameSettings(bool on)
+        public void ShowGameSettings(bool on, bool askQuit = false)
         {
-            gameSettings.SetActive(on);
+            gameSettings.SetActive(on && !askQuit);
+            quitConfirm.SetActive(on && askQuit);
             settingsButton.gameObject.SetActive(!on && game.activeSelf);
             if (on) Refresh();
         }
@@ -547,8 +587,10 @@ namespace PalmStreet.Game
         public void Tick(Run run, float dt, float time)
         {
             TickStory(run, dt);
+            if (settingsOnly.activeSelf != (run.Phase == Phase.Playing)) settingsOnly.SetActive(run.Phase == Phase.Playing);
             TickTutorial(time);
             TickShout(dt);
+            TickSpells(run);
             if (menu.activeSelf) startButton.localScale = Vector3.one * (1 + 0.035f * Mathf.Sin(time * 3.2f));
             if (game.activeSelf)
             {

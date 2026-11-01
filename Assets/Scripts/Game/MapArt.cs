@@ -1,3 +1,4 @@
+using PalmStreet.Core;
 using UnityEngine;
 using UnityEngine.UI;
 using static PalmStreet.Game.Paint;
@@ -46,8 +47,8 @@ namespace PalmStreet.Game
 
         /// <summary>Niveaux ouverts : route discrète entre eux, étape vers le dernier en pointillés jaunes.</summary>
         public int Open;
-        /// <summary>Défis réussis : une étoile à côté de la ville.</summary>
-        public bool[] Stars;
+        /// <summary>Étoiles de chaque ville (0 à 3), dessinées à côté de la pastille.</summary>
+        public int[] Stars;
 
         Rect r;
         VertexHelper vh;
@@ -158,7 +159,8 @@ namespace PalmStreet.Game
             }
 
             for (int i = 0; Stars != null && i < Stars.Length; i++)
-                if (Stars[i]) Star(P(Towns[i]) + new Vector2(25, 19), 10, Hex("#FFE14D"));
+                for (int k = 0; k < 3; k++)
+                    Star(P(Towns[i]) + new Vector2((Levels.All[i].Boss != BossKind.None ? 31 : 27) + (k == 1 ? 5 : 0), 13 - k * 13), 6.5f, k < Stars[i] ? Hex("#FFE14D") : Hex("#1B1028", 0.45f));
 
             // liseré autour de la carte
             var cream = Hex("#FFF4E0", 0.8f);

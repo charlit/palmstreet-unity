@@ -82,7 +82,8 @@ namespace PalmStreet.Game
             int reached = 0;
             while (reached < 12 && p.IsOpen(reached + 1)) reached++;
             mapArt.Open = reached;
-            mapArt.Stars = (bool[])p.Stars.Clone();
+            mapArt.Stars = new int[12];
+            for (int i = 0; i < 12; i++) mapArt.Stars[i] = p.StarCount(i + 1);
             mapArt.SetVerticesDirty();
         }
 
@@ -152,37 +153,129 @@ namespace PalmStreet.Game
 
         // ---------- profil : figures connues et à débloquer (FR-017) ----------
 
+        /// <summary>Figure montrée par le skateur du profil (index de Tuning.TrickNames, 8 = 180, ou DemoOllie, DemoGrind, DemoManual).</summary>
+        public int DemoTrick { get; private set; }
+        public const int DemoOllie = 100, DemoGrind = 101, DemoManual = 102;
+        RectTransform trickStage, demoRail;
+        Text demoName, demoHow;
+
         void BuildTricksPage(Transform section)
         {
             var back = Rect("Fond", section);
             back.offsetMin = new Vector2(8, 8); back.offsetMax = new Vector2(-8, -126);
             Img(back, new Color(Night.r, Night.g, Night.b, 0.88f)).raycastTarget = false;
-            var names = new System.Collections.Generic.List<string> { "OLLIE", "GRIND", "180 · FAKIE" };
-            names.AddRange(Tuning.TrickNames);
-            for (int i = 0; i < names.Count; i++)
+
+            // à gauche : le skateur fait la figure choisie, en boucle
+            trickStage = Rect("Démonstration", section);
+            trickStage.anchorMin = trickStage.anchorMax = new Vector2(0.5f, 1);
+            trickStage.anchoredPosition = new Vector2(-104, -262);
+            trickStage.sizeDelta = new Vector2(150, 230);
+            Img(trickStage, new Color(1, 1, 1, 0.07f)).raycastTarget = false;
+            demoRail = Rect("Rail", trickStage);
+            demoRail.anchorMin = demoRail.anchorMax = new Vector2(0.5f, 0.5f);
+            demoRail.anchoredPosition = new Vector2(0, -73);
+            demoRail.sizeDelta = new Vector2(150, 5);
+            Img(demoRail, Hex("#C9CED6")).raycastTarget = false;
+            demoName = Label(section, "", 18, Yellow, new Vector2(-104, -396), new Vector2(0.5f, 1));
+            demoName.rectTransform.sizeDelta = new Vector2(150, 24);
+            demoHow = Label(section, "", 12, Cream, new Vector2(-104, -430), new Vector2(0.5f, 1));
+            demoHow.rectTransform.sizeDelta = new Vector2(150, 44);
+            demoHow.horizontalOverflow = HorizontalWrapMode.Wrap;
+            Sharp(demoHow);
+
+            // à droite : la liste ; toucher une figure la montre
+            var entries = new System.Collections.Generic.List<(string name, int id)>
+                { ("OLLIE", DemoOllie), ("GRIND", DemoGrind), ("MANUAL", DemoManual), ("180 · FAKIE", Tuning.HalfTurn) };
+            for (int k = 0; k < Tuning.TrickNames.Length; k++) entries.Add((Tuning.TrickNames[k], k));
+            var equippedCount = Label(section, "", 13, Yellow, new Vector2(76, -142), new Vector2(0.5f, 1));
+            equippedCount.rectTransform.sizeDelta = new Vector2(200, 18);
+            Sharp(equippedCount);
+            refresh.Add(() => equippedCount.text = $"ÉQUIPÉES : {progress().ActiveTricks.Count}/{Progress.MaxEquipped}  (+ / -)");
+            for (int i = 0; i < entries.Count; i++)
             {
-                int trick = i - 3;   // −3, −2, −1 : ollie, grind et 180, toujours connus
-                var row = Rect("Figure " + names[i], section);
-                row.anchorMin = row.anchorMax = new Vector2(0.5f, 1);
-                row.anchoredPosition = new Vector2(0, -150 - i * 40);
-                row.sizeDelta = new Vector2(340, 35);
-                var bg = Img(row, Hex("#3BB273"));
-                bg.raycastTarget = false;
-                Label(row, names[i], 17, Night, new Vector2(-82, 0));
-                var state = Label(row, "", 12, Night, new Vector2(88, 0));
+                var (name, id) = entries[i];
+                bool air = id < Tuning.TrickNames.Length;   // seules les figures en l'air s'équipent
+                var row = Button(section, "Figure " + name, new Vector2(0.5f, 1), new Vector2(air ? 56 : 76, -168 - i * 36), new Vector2(air ? 156 : 196, 33), Hex("#3BB273"), () => SelectDemo(id));
+                var bg = row.GetComponent<Image>();
+                var title = Label(row.transform, name, 15, Night, new Vector2(0, 7));
+                title.rectTransform.sizeDelta = new Vector2(190, 18);
+                var state = Label(row.transform, "", 11, Night, new Vector2(0, -8));
+                state.rectTransform.sizeDelta = new Vector2(190, 14);
+                Sharp(title); Sharp(state);
+                Image eqBg = null; Text eqText = null;
+                if (air)
+                {
+                    var eq = Button(section, "Équiper " + name, new Vector2(0.5f, 1), new Vector2(156, -168 - i * 36), new Vector2(36, 33), Yellow, () =>
+                    {
+                        var p = progress();
+                        if (!p.ToggleEquip(id)) Toast(p.Tricks.Contains(id) ? "4 figures au plus : retire-en une avec -" : "Pas encore débloquée");
+                        outfitChanged?.Invoke();   // sauvegarde
+                        Refresh();
+                    });
+                    eqBg = eq.GetComponent<Image>();
+                    eqText = Label(eq.transform, "+", 24, Night, Vector2.zero);
+                    Sharp(eqText);
+                }
                 refresh.Add(() =>
                 {
                     var p = progress();
-                    var def = trick < 0 ? null : System.Array.Find(Levels.All, l => l.Unlocks == trick);
-                    bool known = trick < 0 || p.Tricks.Contains(trick);
-                    bg.color = known ? Hex("#3BB273") : Hex("#5C6670");
-                    state.text = !known ? $"NIVEAU {def.Number} · {def.City}"
-                        : trick == -3 ? "TOUCHE" : trick == -2 ? "RAIL · GLISSE : 8 VARIANTES" : trick == -1 ? "TOUCHE À 2 DOIGTS · FIGURES ×1,5"
-                        : "GLISSE " + Tuning.SwipeWords[Tuning.TrickSwipe[trick]].ToUpper();
-                    state.color = known ? Night : Cream;
+                    bool known = !air || p.Tricks.Contains(id), on = air && p.ActiveTricks.Contains(id);
+                    bg.color = DemoTrick == id ? Orange : !known ? Hex("#5C6670") : air && !on ? Hex("#2E7D57") : Hex("#3BB273");
+                    state.text = DemoHow(id, true);
+                    state.color = title.color = known || DemoTrick == id ? Night : Cream;
+                    if (eqBg != null)
+                    {
+                        eqBg.color = on ? Yellow : known ? new Color(1, 1, 1, 0.25f) : new Color(1, 1, 1, 0.08f);
+                        eqText.text = on ? "-" : "+";
+                    }
                 });
             }
+            SelectDemo(0, false);
         }
+
+        /// <summary>Texte net sur petit corps : sans l'ombre portée, qui le faisait paraître flou.</summary>
+        static void Sharp(Text t)
+        {
+            var sh = t.GetComponent<Shadow>();
+            if (sh != null) Destroy(sh);
+        }
+
+        /// <summary>Le geste d'une figure, ou le niveau qui la débloque si elle n'est pas connue (short : pour la liste).</summary>
+        string DemoHow(int id, bool shortText)
+        {
+            switch (id)
+            {
+                case DemoOllie: return "TOUCHE";
+                case DemoGrind: return shortText ? "SUR UN RAIL · GLISSE : 8 GRINDS" : "Retombe sur un rail ; glisse pour changer de grind (50-50, boardslide, smith…)";
+                case DemoManual: return shortText ? "GLISSE VERS LE BAS AVANT LE SOL" : "Juste avant de retomber, glisse vers le bas : il roule sur deux roues";
+                case Tuning.HalfTurn: return shortText ? "2 DOIGTS · FIGURES ×1,5" : "Touche avec 2 doigts : 180, il passe en fakie (figures ×1,5)";
+            }
+            if (progress != null && !progress().Tricks.Contains(id))
+            {
+                var def = System.Array.Find(Levels.All, l => l.Unlocks == id);
+                return $"NIVEAU {def.Number} · {def.City}";
+            }
+            string dir = Tuning.SwipeWords[Tuning.TrickSwipe[id]];
+            return shortText ? "GLISSE " + dir.ToUpper() : "En l'air, glisse le doigt " + dir;
+        }
+
+        void SelectDemo(int id, bool refreshAll = true)
+        {
+            DemoTrick = id;
+            demoName.text = id == DemoOllie ? "OLLIE" : id == DemoGrind ? "GRIND" : id == DemoManual ? "MANUAL" : id == Tuning.HalfTurn ? "180 · FAKIE" : Tuning.TrickNames[id];
+            demoHow.text = DemoHow(id, false);
+            demoRail.gameObject.SetActive(id == DemoGrind);
+            if (refreshAll) foreach (var r in refresh) r();
+        }
+
+        /// <summary>Pieds du skateur de démonstration (profil, onglet FIGURES) et son échelle.</summary>
+        public Vector3 DemoFeet(out float scale)
+        {
+            scale = trickStage.lossyScale.x / 0.01f * 1.7f;
+            return trickStage.TransformPoint(new Vector3(0, -70, 0));
+        }
+
+        public bool DemoVisible => profile.activeSelf && sections[1].page.activeSelf;
 
         // ---------- en partie : progression et bulle d'aide (FR-005, FR-007) ----------
 
@@ -221,7 +314,7 @@ namespace PalmStreet.Game
             bool story = run.Mode == GameMode.Story && run.Def != null;
             storyBar.gameObject.SetActive(story && run.Boss == null);
             if (story) storyFill.anchorMax = new Vector2(Mathf.Clamp01(run.Skater.X / run.Def.Finish), 1);
-            challengeHud.gameObject.SetActive(story);
+            challengeHud.gameObject.SetActive(story && run.Boss == null);   // pendant le boss, sa barre de vie prend la place
             if (story)
             {
                 bool done = run.ChallengeDone(run.Def);

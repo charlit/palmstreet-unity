@@ -24,6 +24,8 @@ namespace PalmStreet.Core
         public string NewObstacle;      // bulle d'aide au départ, ou null
         public ChallengeKind Challenge;
         public int Goal;
+        public string Spot;             // lieu connu de la ville : un grand rail à grinder jusqu'au bout
+        public int ScoreGoal;           // score de la troisième étoile
 
         /// <summary>Le défi en clair, ex. « 3 figures en fakie ».</summary>
         public string ChallengeText => Challenge switch
@@ -45,25 +47,31 @@ namespace PalmStreet.Core
 
         public static readonly LevelDef[] All =
         {
-            L(1, "ANGLET", Theme.Anglet, 10500, 2.5f, 3.2f, Allow.None, BossKind.None, 0, null, ChallengeKind.Bolts, 15),
-            L(2, "BIARRITZ", Theme.Biarritz, 11000, 2.6f, 3.3f, Base, BossKind.None, 4, "Retombe sur un rail pour grinder", ChallengeKind.Tricks, 3),
-            L(3, "BIDART", Theme.Bidart, 11200, 2.7f, 3.4f, Base, BossKind.Crab, 1, null, ChallengeKind.Combo, 4),
-            L(4, "GUÉTHARY", Theme.Guethary, 12000, 2.8f, 3.5f, Mid, BossKind.None, -1, "Grands plots et bosses : saute plus tôt", ChallengeKind.RailTricks, 2),
-            L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, 5, null, ChallengeKind.Fakie, 2),
-            L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null, ChallengeKind.Tricks, 8),
-            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : garde le doigt appuyé pour t'accroupir", ChallengeKind.GrindSeconds, 5),
-            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6),
-            L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null, ChallengeKind.Fakie, 4),
-            L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les", ChallengeKind.RailTricks, 4),
-            L(11, "CAMBO-LES-BAINS", Theme.Cambo, 17000, 3.8f, 4.7f, Allow.All, BossKind.None, 7, null, ChallengeKind.Tricks, 15),
-            L(12, "BIARRITZ LA NUIT", Theme.BiarritzNuit, 16500, 4.0f, 5.0f, Allow.All, BossKind.Purple, -1, null, ChallengeKind.Combo, 10),
+            L(1, "ANGLET", Theme.Anglet, 10500, 2.5f, 3.2f, Allow.None, BossKind.None, 0, null, ChallengeKind.Bolts, 15, "LA BARRE"),
+            L(2, "BIARRITZ", Theme.Biarritz, 11000, 2.6f, 3.3f, Base, BossKind.None, 4, "Retombe sur un rail pour grinder", ChallengeKind.Tricks, 3, "ROCHER DE LA VIERGE"),
+            L(3, "BIDART", Theme.Bidart, 11200, 2.7f, 3.4f, Base, BossKind.Crab, 1, null, ChallengeKind.Combo, 4, "LA CHAPELLE"),
+            L(4, "GUÉTHARY", Theme.Guethary, 12000, 2.8f, 3.5f, Mid, BossKind.None, -1, "Grands plots et bosses : saute plus tôt", ChallengeKind.RailTricks, 2, "LE PORT"),
+            L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, 5, null, ChallengeKind.Fakie, 2, "LA DIGUE"),
+            L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null, ChallengeKind.Tricks, 8, "LES DEUX JUMEAUX"),
+            L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.None, -1, "Mouettes : garde le doigt appuyé pour t'accroupir", ChallengeKind.GrindSeconds, 5, "LES REMPARTS"),
+            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6, "LE FRONTON"),
+            L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null, ChallengeKind.Fakie, 4, "LE CHÂTEAU"),
+            L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les", ChallengeKind.RailTricks, 4, "LE PONT ROMAIN"),
+            L(11, "CAMBO-LES-BAINS", Theme.Cambo, 17000, 3.8f, 4.7f, Allow.All, BossKind.None, 7, null, ChallengeKind.Tricks, 15, "VILLA ARNAGA"),
+            L(12, "BIARRITZ LA NUIT", Theme.BiarritzNuit, 16500, 4.0f, 5.0f, Allow.All, BossKind.Purple, -1, null, ChallengeKind.Combo, 10, "LE CASINO"),
         };
 
         public static int Count => All.Length;
 
         public static LevelDef Get(int n) => All[n - 1];
 
-        static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip, ChallengeKind challenge, int goal) =>
-            new LevelDef { Number = n, City = city, Theme = theme, Finish = finish, StartSpeed = start, MaxSpeed = max, Allowed = allowed, Boss = boss, Unlocks = unlocks, NewObstacle = tip, Challenge = challenge, Goal = goal };
+        static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip, ChallengeKind challenge, int goal, string spot)
+        {
+            float k = Tuning.SpeedScale;   // plus rapide, et plus long d'autant : la durée d'un niveau ne change pas
+            finish *= k; start *= k; max *= k;
+            return new LevelDef { Number = n, City = city, Theme = theme, Finish = finish, StartSpeed = start, MaxSpeed = max, Allowed = allowed, Boss = boss, Unlocks = unlocks, NewObstacle = tip, Challenge = challenge, Goal = goal, Spot = spot,
+                // 3e étoile : 1 point par pas sur tout le niveau, × 1,5 avec figures et grinds (× 1,1 au niveau 1, sans figure)
+                ScoreGoal = (int)Math.Round(finish / ((start + max) / 2) * (n == 1 ? 1.1 : 1.5) / 100) * 100 };
+        }
     }
 }

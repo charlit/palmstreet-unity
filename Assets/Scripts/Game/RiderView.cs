@@ -66,6 +66,7 @@ namespace PalmStreet.Game
                 .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent)
                 .Make("Sweat", torso, order + 4, layer);
             if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 4, layer);   // aile de goéland
+            TopDesign(l).Make("Motif du haut", torso, order + 4, layer);
             var head = Head(l, order + 6, layer);
             head.SetParent(torso, false);
             head.localPosition = W(3.5f, 28);
@@ -144,6 +145,10 @@ namespace PalmStreet.Game
                 case DeckArt.Pepper:
                     for (int i = 0; i < 3; i++) { float x = -12 + i * 12; bottom.Ellipse(x, 0, 5, 2.2f, Hex("#FF3B30"), 12, 0.3f).Capsule(x + 4, 1.5f, x + 6, 2.5f, 1.2f, Hex("#3BB273")); }
                     break;
+                case DeckArt.Gold:   // couronne et liserés blancs
+                    bottom.Capsule(-21, -4.6f, 21, -4.6f, 0.8f, Color.white).Capsule(-21, 4.6f, 21, 4.6f, 0.8f, Color.white)
+                          .Poly(Color.white, -6, -2.5f, 6, -2.5f, 6, 1).Poly(Color.white, -6, 1, -6, 3.5f, -3, 1).Poly(Color.white, -2, 1, 0, 4, 2, 1).Poly(Color.white, 3, 1, 6, 3.5f, 6, 1);
+                    break;
                 case DeckArt.Neon:
                     bottom.Capsule(-20, -3.5f, 20, -3.5f, 1.6f, l.Wheels).Capsule(-20, 3.5f, 20, 3.5f, 1.6f, l.Wheels).Capsule(-14, 0, 14, 0, 1.2f, Color.white);
                     break;
@@ -158,6 +163,52 @@ namespace PalmStreet.Game
             bottomFace.gameObject.SetActive(false);
         }
 
+        /// <summary>Motif de chaque haut, de la ceinture et du bas (spec 002 : chaque objet a son dessin).</summary>
+        static Paint TopDesign(RiderLook l)
+        {
+            var p = new Paint();
+            var dark = Color.Lerp(l.Top, Color.black, 0.25f);
+            bool hoodie = l.TopId.StartsWith("hoodie");
+            if (hoodie)
+            {
+                p.Ellipse(-5.5f, 19.5f, 4.6f, 3.6f, dark, 12);                                  // capuche dans le dos
+                p.Rect(-4, 4.5f, 10, 4, dark);                                                   // poche kangourou
+                p.Line(4.5f, 19, 5, 14.5f, 0.7f, Color.white).Line(6.5f, 18.5f, 7, 14.5f, 0.7f, Color.white);   // cordons
+            }
+            switch (l.TopId)
+            {
+                case "start-top":   // t-shirt : un petit palmier orange sur la poitrine
+                    p.Line(4.5f, 9, 5, 14, 0.9f, Hex("#7A4B2A"));
+                    for (int i = 0; i < 4; i++) { float a = 0.4f + i * 0.75f; p.Line(5, 14, 5 + Mathf.Cos(a) * 3, 14 + Mathf.Sin(a) * 1.6f, 0.9f, Hex("#FF7A1A")); }
+                    break;
+                case "hoodie-ocean":   // vague blanche
+                    p.Curve(new Vector2(-4, 11), new Vector2(0, 15), new Vector2(3, 11), 1.1f, 1.1f, Color.white, 6)
+                     .Curve(new Vector2(3, 11), new Vector2(5.5f, 9), new Vector2(8, 12), 1.1f, 0.6f, Color.white, 5);
+                    break;
+                case "hoodie-purple":   // ciel étoilé
+                    foreach (var (x, y) in new[] { (-3f, 13f), (1f, 16f), (5f, 12f), (2f, 10f), (7f, 15.5f) }) p.Circle(x, y, 0.7f, Hex("#FFE14D"), 6);
+                    break;
+                case "hoodie-basque":   // drapeau basque : croix verte en X, croix blanche
+                    p.Line(-3, 8, 7, 16, 1.4f, Hex("#009B48")).Line(-3, 16, 7, 8, 1.4f, Hex("#009B48"))
+                     .Line(2, 7.5f, 2, 16.5f, 1.4f, Color.white).Line(-3.5f, 12, 7.5f, 12, 1.4f, Color.white);
+                    break;
+                case "hoodie-gold":   // reflets et chaîne
+                    p.Line(-4, 16, 6, 7, 1.6f, new Color(1, 1, 1, 0.45f));
+                    p.Curve(new Vector2(1, 18), new Vector2(4, 12), new Vector2(7, 18), 0.6f, 0.6f, Hex("#FFF4D6"), 6).Circle(4, 13.6f, 1.2f, Hex("#FFF4D6"), 8);
+                    break;
+            }
+            switch (l.LegsId)
+            {
+                case "pants-white":   // tenue des fêtes : ceinture rouge nouée
+                    p.Rect(-7, 1.5f, 14, 3, Hex("#D52B1E")).Poly(Hex("#D52B1E"), -6, 2, -9, -5, -6.5f, -5);
+                    break;
+                case "pants-green":
+                    p.Rect(-6, 2.2f, 12, 1.2f, Hex("#1B1028"));   // ceinture
+                    break;
+            }
+            return p;
+        }
+
         LegRig MakeLeg(string name, int order, string layer, float tint)
         {
             var l = look;
@@ -170,6 +221,24 @@ namespace PalmStreet.Game
                 return t;
             }
             var thigh = new Paint().Capsule(0, 0, 0, -Thigh, l.Shorts ? 9.6f : 8.8f, Tint(l.Pants));
+            switch (l.LegsId)
+            {
+                case "start-legs":   // jean : genou usé et couture
+                    thigh.Rect(-3, -Thigh + 1.5f, 5.5f, 3.5f, Tint(Color.Lerp(l.Pants, Color.white, 0.35f)))
+                         .Line(-3.2f, -Thigh + 3, 2.2f, -Thigh + 3.4f, 0.5f, Tint(Color.white)).Line(3.4f, -1, 3.4f, -Thigh + 1, 0.4f, Tint(Hex("#E9B44C")));
+                    break;
+                case "shorts-surf":   // hibiscus
+                    foreach (var (x, y) in new[] { (-1.5f, -4f), (2f, -9f) })
+                    {
+                        for (int i = 0; i < 5; i++) { float a = i * Mathf.PI * 2 / 5; thigh.Circle(x + Mathf.Cos(a) * 1.4f, y + Mathf.Sin(a) * 1.4f, 1.1f, Tint(Hex("#FF4D8D")), 8); }
+                        thigh.Circle(x, y, 0.7f, Tint(Hex("#FFE14D")), 6);
+                    }
+                    break;
+                case "pants-green":   // cargo : grande poche à rabat
+                    thigh.Rect(-3.2f, -Thigh * 0.7f, 6, 5.5f, Tint(Color.Lerp(l.Pants, Color.black, 0.25f)))
+                         .Rect(-3.4f, -Thigh * 0.7f + 4, 6.4f, 1.6f, Tint(Color.Lerp(l.Pants, Color.black, 0.4f)));
+                    break;
+            }
             var shin = new Paint();
             if (l.Shorts) shin.Capsule(0, 0, 0, -Shin, 6, Tint(l.Skin)).Rect(-3.3f, -Shin + 0.5f, 6.6f, 3.5f, Tint(l.Accent));   // chaussettes
             else shin.Capsule(0, 0, 0, -Shin + 1, 8, Tint(l.Pants)).Rect(-4.2f, -Shin, 8.4f, 2.2f, Tint(Color.Lerp(l.Pants, Color.black, 0.25f)));
@@ -178,6 +247,18 @@ namespace PalmStreet.Game
                 .Ellipse(3, -1.4f, 6.8f, 2.9f, Tint(l.Shoes), 16)
                 .Rect(-3.8f, -4, 13.6f, 1.8f, Tint(Hex("#F4F1EA")))
                 .Line(2, 0.4f, 6.5f, -0.6f, 0.8f, Tint(Color.Lerp(l.Shoes, Color.white, 0.6f)));
+            switch (l.ShoesId)
+            {
+                case "start-shoes": shoe.Ellipse(8, -2, 2.4f, 1.7f, Tint(Hex("#C9CED6")), 10); break;                     // bout gris
+                case "shoes-yellow":                                                                                          // bande noire, semelle noire
+                    shoe.Curve(new Vector2(-1, -2.5f), new Vector2(3, 0.5f), new Vector2(7, -2.6f), 1, 1, Tint(Hex("#1B1028")), 6)
+                        .Rect(-3.8f, -4, 13.6f, 1.8f, Tint(Hex("#1B1028")));
+                    break;
+                case "shoes-pink":                                                                                            // lacets blancs, bande violette
+                    for (int i = 0; i < 3; i++) shoe.Circle(1.5f + i * 2, 0.6f - i * 0.5f, 0.55f, Tint(Color.white), 6);
+                    shoe.Rect(-3, -2.8f, 11, 0.9f, Tint(Hex("#7B2CBF")));
+                    break;
+            }
             return new LegRig { Thigh = Part("cuisse", thigh, order), Shin = Part("tibia", shin, order), Shoe = Part("chaussure", shoe, order + 1) };
         }
 
@@ -187,7 +268,10 @@ namespace PalmStreet.Game
             t.SetParent(parent, false);
             var l = look;
             Color Tint(Color c) => Color.Lerp(Color.black, c, tint);
-            new Paint().Capsule(0, 0, 0, -10, 5.8f, Tint(l.Top)).Capsule(0, -10, 0, -15, 4.6f, Tint(l.Skin)).Make(name, t, order, layer);
+            if (l.TopId == "start-top")   // t-shirt : manches courtes
+                new Paint().Capsule(0, -4, 0, -15, 4.6f, Tint(l.Skin)).Capsule(0, 0, 0, -4.5f, 6.2f, Tint(l.Top)).Make(name, t, order, layer);
+            else new Paint().Capsule(0, 0, 0, -10, 5.8f, Tint(l.Top)).Capsule(0, -10, 0, -15, 4.6f, Tint(l.Skin))
+                .Rect(-2.9f, -10.5f, 5.8f, 1.6f, Tint(Color.Lerp(l.Top, Color.black, 0.25f))).Make(name, t, order, layer);   // poignet du sweat
             return t;
         }
 
@@ -216,6 +300,10 @@ namespace PalmStreet.Game
                 case Hat.Cap:
                     p.Dome(0, 1.2f, 8.4f, 8, l.HatColor, 14);
                     p.Capsule(-7, 2.2f, -13, 1.2f, 3, l.HatColor);   // visière à l'envers
+                    p.Circle(0, 9.3f, 1.3f, Color.Lerp(l.HatColor, Color.black, 0.3f), 8);   // bouton
+                    if (l.HeadId == "cap-gold")   // étoile blanche devant
+                        for (int i = 0; i < 5; i++) { float a = Mathf.PI / 2 + i * Mathf.PI * 2 / 5; p.Line(4.2f, 4.6f, 4.2f + Mathf.Cos(a) * 2.2f, 4.6f + Mathf.Sin(a) * 2.2f, 0.9f, Color.white); }
+                    else p.Rect(2.5f, 3.2f, 3.6f, 2.6f, Color.white).Rect(3.2f, 3.8f, 2.2f, 1.4f, l.HatColor);   // petit « P »
                     break;
                 case Hat.Beanie:
                     p.Dome(0, 1, 8.2f, 9.5f, l.HatColor, 14);
@@ -223,9 +311,10 @@ namespace PalmStreet.Game
                     p.Rect(-8.4f, 0, 16.8f, 3.4f, Color.Lerp(l.HatColor, Color.white, 0.25f));
                     p.Circle(0, 11, 3, Color.white, 10);
                     break;
-                case Hat.Band:
+                case Hat.Band:   // bandana à pois blancs
                     p.Rect(-8, 2, 16, 3, l.HatColor);
                     p.Capsule(-8, 3.5f, -12, 0, 2.4f, l.HatColor);
+                    for (int i = 0; i < 4; i++) p.Circle(-5 + i * 3.5f, 3.5f, 0.5f, Color.white, 6);
                     break;
             }
             p.Circle(4.2f, 0.5f, 1.2f, Hex("#1B1028"), 8);           // œil
@@ -375,9 +464,23 @@ namespace PalmStreet.Game
                 // rouler : petit balancement, et une poussée de temps en temps sur le plat
                 float cycle = Mathf.Repeat(time, 2.6f), push = cycle < 0.7f && speedFactor < 1.05f && !s.Ducking ? cycle / 0.7f : -1;
                 float squash = Mathf.Max(0, 1 - (time - landedAt) / 0.2f) * 0.6f;   // genoux qui amortissent la retombée
-                if (s.Ducking) Pose(1, 32, 55, 15);
-                else Pose(0.15f + squash + Mathf.Sin(time * 2.4f) * 0.04f, 10 + Mathf.Max(0, Mathf.Sin(push * Mathf.PI)) * 12, -14 + Mathf.Sin(time * 2.4f) * 6, 22, 0, 0, push);
-                Board(0);
+                if (s.Manual)   // manual : sur les roues arrière, penché en arrière, bras en balancier
+                {
+                    float nose = 13 + Mathf.Sin(time * 9) * 2, up = Mathf.Sin(nose * Mathf.Deg2Rad) * 22;
+                    Pose(0.35f, -6, 75 + Mathf.Sin(time * 9) * 10, -100, nose, up);
+                    Board(nose, 0, 0, -up);
+                }
+                else
+                {
+                    if (s.Ducking) Pose(1, 32, 55, 15);
+                    else if (s.Wobble > 0)   // BAIL : il titube, bras en moulinet
+                    {
+                        float w = s.Wobble / 30f, a = Mathf.Sin(time * 22) * w;
+                        Pose(0.5f + squash, 10 + a * 25, 130 + a * 50, 120 - a * 50);
+                    }
+                    else Pose(0.15f + squash + Mathf.Sin(time * 2.4f) * 0.04f, 10 + Mathf.Max(0, Mathf.Sin(push * Mathf.PI)) * 12, -14 + Mathf.Sin(time * 2.4f) * 6, 22, 0, 0, push);
+                    Board(0);
+                }
             }
             else
             {
@@ -446,6 +549,43 @@ namespace PalmStreet.Game
             float k = Mathf.Clamp01((rise - 0.1f) / 0.6f);
             nose = rise > 0.1f ? 32 * k * k * (3 - 2 * k) : rise < -0.5f ? -8 * (-0.5f - rise) / 0.5f : 0;
             up = Mathf.Max(0, Mathf.Sin(nose * Mathf.Deg2Rad) * 22);   // la queue reste en bas, le centre monte
+        }
+
+        Skater demo;
+        readonly Obstacle demoRail = new Obstacle { Kind = ObstacleKind.Rail };
+
+        /// <summary>
+        /// Démonstration d'une figure en boucle (profil, onglet FIGURES) : roule, saute et fait la figure, retombe.
+        /// id : index de Tuning.TrickNames, Tuning.HalfTurn (180), ou Hud.DemoOllie / DemoGrind / DemoManual.
+        /// </summary>
+        public void Demo(int id, Vector3 feet, float time, float scale)
+        {
+            if (crashed) Reset();
+            transform.localScale = Vector3.one * scale;
+            var s = demo ??= new Skater();
+            const float cycle = 1.6f;
+            int loop = (int)(time / cycle);
+            float steps = (Mathf.Repeat(time, cycle) - 0.3f) * 60, h = 0;   // pas depuis le décollage
+            s.X = time * 160;
+            s.Rail = null; s.Manual = false; s.Ducking = false; s.Wobble = 0; s.GrindStyle = 0; s.Trick = -1; s.Grounded = true; s.Vy = 0;
+            s.Fakie = false;
+            if (id == Hud.DemoGrind) { s.Rail = demoRail; s.Grounded = false; s.GrindStyle = (int)(time / 0.9f) % Tuning.RailNames.Length; }
+            else if (id == Hud.DemoManual) s.Manual = true;
+            else
+            {
+                bool air = steps >= 0 && steps < 38;   // un ollie dure 38 pas
+                if (air)
+                {
+                    s.Grounded = false;
+                    s.Vy = Tuning.OllieSpeed - Tuning.Gravity * steps;
+                    h = Tuning.OllieSpeed * steps - Tuning.Gravity / 2 * steps * steps;
+                    if (id != Hud.DemoOllie && steps >= 3) { s.Trick = id; s.TrickStep = (int)(steps - 3); s.TrickLength = 30; }
+                }
+                if (id == Tuning.HalfTurn) s.Fakie = (loop % 2 == 1) != steps >= 3;   // un 180 par boucle : à l'endroit, puis en fakie
+            }
+            var at = feet + W(0, h * 0.55f) * scale;   // saut un peu réduit pour tenir dans le cadre
+            Ride(s, at, 0, time, 0.9f);
+            spin.localPosition = (at - transform.position) / scale + W(0, Center);
         }
 
         /// <summary>Pose d'accueil : debout sur la planche, qui respire ; le skateur choisi fait des petits ollies.</summary>

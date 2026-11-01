@@ -44,6 +44,7 @@ namespace PalmStreet.Game
         }
 
         Pool cones, bolts, teeth, shadows, rails, gulls, pads;
+        Pool[] spells;   // vague, tornade, éclair, boule de feu
         Transform boss, bossWingL, bossWingR, bossPupil, bossShadow;
         static readonly Color Shadow = new Color(0.05f, 0.02f, 0.08f, 0.35f);
 
@@ -93,6 +94,25 @@ namespace PalmStreet.Game
                 mr.GetComponent<MeshFilter>().sharedMesh = toothMesh;
                 return mr.transform;
             });
+
+            var spellMeshes = new[]
+            {
+                new Paint().Ellipse(0, 9, 16, 9, Hex("#2E86DE"), 18).Ellipse(5, 13, 9, 6, Hex("#7FC8F8"), 14).Ellipse(9, 15, 5, 3.5f, Color.white, 10).Build(),   // vague
+                Tornado(),
+                Bolt(),
+                new Paint().Glow(0, 0, 22, Hex("#FF5E1A", 0.7f), Hex("#FF5E1A", 0), 20).Circle(0, 0, 10, Hex("#FF8C1A"), 18).Circle(2, 2, 5, Hex("#FFE14D"), 12).Build(),   // boule de feu
+            };
+            spells = new Pool[4];
+            for (int k = 0; k < 4; k++)
+            {
+                var mesh = spellMeshes[k];
+                spells[k] = new Pool(() =>
+                {
+                    var mr = Renderer("Sort", transform, 17);
+                    mr.GetComponent<MeshFilter>().sharedMesh = mesh;
+                    return mr.transform;
+                });
+            }
 
             var shadowMesh = new Paint().Glow(0, 0, 1, Shadow, new Color(Shadow.r, Shadow.g, Shadow.b, 0), 20).Build();
             shadows = new Pool(() =>
@@ -299,6 +319,7 @@ namespace PalmStreet.Game
             bool showFinish = run.Mode == GameMode.Story && run.Def != null && run.Def.Boss == BossKind.None && run.Phase != Phase.Menu;
             finish.gameObject.SetActive(showFinish);
             if (showFinish) finish.position = W(run.Def.Finish, run.Ground.Floor(run.Def.Finish));
+            foreach (var sp in spells) sp.Begin();
             cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin();
             var g = run.Ground;
             foreach (var o in run.Obstacles)
@@ -368,6 +389,14 @@ namespace PalmStreet.Game
             {
                 foreach (var tooth in boss_.Teeth)
                 {
+                    if (tooth.Spell >= 0)
+                    {
+                        var sp = spells[tooth.Spell].Get(tooth, out _);
+                        sp.position = W(tooth.X, tooth.Y);
+                        sp.rotation = Quaternion.identity;
+                        sp.localScale = tooth.Spell == 1 ? new Vector3(1 + Mathf.Sin(time * 30) * 0.12f, 1, 1) : Vector3.one;
+                        continue;
+                    }
                     var t = teeth.Get(tooth, out _);
                     t.position = W(tooth.X, tooth.Y);
                     t.rotation = Quaternion.Euler(0, 0, -time * 720 + tooth.X);
@@ -417,6 +446,7 @@ namespace PalmStreet.Game
                 bossShadow.localScale = new Vector3(50, 9, 1) * Mathf.Lerp(1, 0.5f, lift / 160) * (1 - enter);
             }
 
+            foreach (var sp in spells) sp.End();
             cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End();
         }
 
@@ -464,6 +494,27 @@ namespace PalmStreet.Game
                     break;
             }
             p.Build(mesh);
+        }
+
+        /// <summary>Tornade : anneaux gris de plus en plus larges vers le haut.</summary>
+        static Mesh Tornado()
+        {
+            var p = new Paint();
+            for (int i = 0; i < 7; i++) p.Ellipse((i % 2) * 2 - 1, i * 10 + 4, 5 + i * 3.2f, 3.4f, Hex(i % 2 == 0 ? "#B8C0CC" : "#8E9AAF", 0.9f), 14);
+            return p.Build();
+        }
+
+        /// <summary>Éclair : zigzag jaune du ciel jusqu'au boss (origine en bas).</summary>
+        static Mesh Bolt()
+        {
+            var p = new Paint();
+            float[] xs = { 0, 10, -6, 12, -4, 8 };
+            for (int i = 0; i + 1 < xs.Length; i++)
+            {
+                p.Line(xs[i], i * 60, xs[i + 1], (i + 1) * 60, 9, Hex("#FFE14D", 0.5f));
+                p.Line(xs[i], i * 60, xs[i + 1], (i + 1) * 60, 4, Color.white);
+            }
+            return p.Build();
         }
     }
 }

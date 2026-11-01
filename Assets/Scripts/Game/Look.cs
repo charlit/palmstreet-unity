@@ -96,7 +96,7 @@ namespace PalmStreet.Game
     }
 
     public enum Hat { None, Cap, Beanie, Band }
-    public enum DeckArt { Wood, Crab, Pepper, Neon }
+    public enum DeckArt { Wood, Crab, Pepper, Neon, Gold }
 
     /// <summary>Apparence du skateur, telle que le moteur de dessin l'utilise.</summary>
     public sealed class RiderLook
@@ -105,6 +105,7 @@ namespace PalmStreet.Game
         public Hat Hat;
         public bool Curly, Shorts, Stripes, Logo;
         public DeckArt Art;
+        public string HeadId = "", TopId = "", LegsId = "", ShoesId = "";   // motif propre à chaque objet (RiderView)
     }
 
     /// <summary>
@@ -116,6 +117,26 @@ namespace PalmStreet.Game
         public static readonly Color[] Skins = { Hex("#F6D2B3"), Hex("#E8B48A"), Hex("#C68B59"), Hex("#8D5524"), Hex("#5C3317") };
         public static readonly Color[] Hairs = { Hex("#E8C26A"), Hex("#B5502A"), Hex("#7A4B2A"), Hex("#3B2412"), Hex("#141414") };
         public static readonly string[] HairStyles = { "COURTS", "BOUCLES" };
+
+        /// <summary>Couleur du motif d'un objet (petite pastille dans celle du profil), ou transparent s'il est uni.</summary>
+        public static Color ItemDetail(string id) => id switch
+        {
+            "cap-red" or "band-red" or "beanie-stripes" or "start-legs" => Color.white,
+            "cap-gold" or "deck-gold" or "hoodie-gold" => Color.white,
+            "start-top" => Hex("#FF7A1A"),
+            "hoodie-ocean" => Color.white,
+            "hoodie-gull" => Hex("#9AA3B5"),
+            "hoodie-purple" => Hex("#FFE14D"),
+            "hoodie-basque" => Hex("#009B48"),
+            "shorts-surf" => Hex("#FF4D8D"),
+            "pants-green" => Hex("#1B4332"),
+            "pants-white" => Hex("#D52B1E"),
+            "shoes-yellow" => Hex("#1B1028"),
+            "shoes-pink" => Color.white,
+            "deck-crab" or "deck-neon" => Hex("#35F2FF"),
+            "deck-pepper" => Hex("#3BB273"),
+            _ => Color.clear,
+        };
 
         /// <summary>Couleur principale d'un objet (pastille du profil).</summary>
         public static Color ItemColor(string id) => id switch
@@ -137,6 +158,12 @@ namespace PalmStreet.Game
             "deck-crab" => Hex("#E0452B"),
             "deck-pepper" => Hex("#C1121F"),
             "deck-neon" => Hex("#FF2BD6"),
+            "cap-gold" => Hex("#E9B824"),
+            "hoodie-basque" => Hex("#D52B1E"),
+            "shoes-pink" => Hex("#FF4D8D"),
+            "pants-white" => Hex("#F4F1EA"),
+            "deck-gold" => Hex("#E9B824"),
+            "hoodie-gold" => Hex("#E9B824"),
             _ => Color.gray,
         };
 
@@ -148,18 +175,19 @@ namespace PalmStreet.Game
                 Skin = Skins[Mathf.Clamp(p.Skin, 0, Skins.Length - 1)],
                 Hair = Hairs[Mathf.Clamp(p.HairColor, 0, Hairs.Length - 1)],
                 Curly = p.HairStyle == 1,
-                Hat = head == "cap-red" ? Hat.Cap : head == "beanie-stripes" ? Hat.Beanie : head == "band-red" ? Hat.Band : Hat.None,
+                Hat = head == "cap-red" || head == "cap-gold" ? Hat.Cap : head == "beanie-stripes" ? Hat.Beanie : head == "band-red" ? Hat.Band : Hat.None,
                 HatColor = ItemColor(head),
                 Stripes = head == "beanie-stripes",
                 Top = ItemColor(top),
-                Accent = top == "start-top" ? Hex("#C9CED6") : top == "hoodie-purple" ? Hex("#C77DFF") : top == "hoodie-gull" ? Hex("#9AA3B5") : Color.white,
+                Accent = top == "start-top" ? Hex("#C9CED6") : top == "hoodie-basque" ? Hex("#009B48") : top == "hoodie-gold" ? Hex("#FFF4D6") : top == "hoodie-purple" ? Hex("#C77DFF") : top == "hoodie-gull" ? Hex("#9AA3B5") : Color.white,
                 Logo = top == "hoodie-gull",
                 Pants = ItemColor(legs),
                 Shorts = legs == "shorts-surf",
                 Shoes = ItemColor(shoes),
                 Deck = ItemColor(deck),
-                Wheels = deck == "deck-crab" ? Color.white : deck == "deck-pepper" ? Hex("#3BB273") : deck == "deck-neon" ? Hex("#35F2FF") : Hex("#FFF4D6"),
-                Art = deck == "deck-crab" ? DeckArt.Crab : deck == "deck-pepper" ? DeckArt.Pepper : deck == "deck-neon" ? DeckArt.Neon : DeckArt.Wood,
+                Wheels = deck == "deck-crab" || deck == "deck-gold" ? Color.white : deck == "deck-pepper" ? Hex("#3BB273") : deck == "deck-neon" ? Hex("#35F2FF") : Hex("#FFF4D6"),
+                Art = deck == "deck-crab" ? DeckArt.Crab : deck == "deck-pepper" ? DeckArt.Pepper : deck == "deck-neon" ? DeckArt.Neon : deck == "deck-gold" ? DeckArt.Gold : DeckArt.Wood,
+                HeadId = head, TopId = top, LegsId = legs, ShoesId = shoes,
             };
             return l;
         }

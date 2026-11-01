@@ -19,6 +19,8 @@ namespace PalmStreet.Core
         // départ : une rampe à descendre, de 45 % à 155 % de la vitesse, puis retour en douceur à 100 %
         public const float StartRampTop = 110, StartRampLength = 360, StartRampFrom = 0.45f, StartRampTo = 1.55f;
         public const float StartRampDecay = 0.004f, StartRunOut = 700;
+        // mode infini : la rampe donne un boost (accélération qui s'emballe, ×2,3 en bas) qui retombe lentement
+        public const float EndlessRampTo = 2.3f, EndlessRampDecay = 0.0015f, EndlessRunOut = 1600;
 
         // FR-006 saut et accroupi
         public const float OllieSpeed = 9.6f, Gravity = 0.5f;
@@ -41,6 +43,9 @@ namespace PalmStreet.Core
         public static readonly string[] RailNames = { "NOSE GRIND", "50-50", "BOARDSLIDE", "CROOKED", "5-0", "LIPSLIDE", "TAILSLIDE", "FEEBLE", "SMITH" };
         public static readonly int[] RailPoints = { 0, 30, 40, 40, 30, 45, 45, 50, 50 };
         public static readonly int[] RailSwipe = { -1, 0, 2, 6, 1, 3, 4, 5, 7 };   // direction de chaque variante (comme TrickSwipe)
+        // manual : glissé vers le bas juste avant de retomber (ou après la figure du saut) ; roule sur deux roues
+        public const int ManualMax = 150, ManualPoints = 15;   // 2,5 s au plus ; points au départ, puis 1 de plus par pas
+        public const int SpotPoints = 150;                     // spot d'une ville grindé jusqu'au bout
         public const int HalfTurn = 8, HalfTurnPoints = 25;   // le 180 (toucher à 2 doigts) : pas une figure à débloquer
         public const float FakieBonus = 1.5f;         // figures faites en fakie
         public const float SwipeMin = 0.05f;          // longueur d'un glissé, en part de la hauteur de l'écran
@@ -55,9 +60,13 @@ namespace PalmStreet.Core
         public const int ThemeCycle = 20000, MilestoneEvery = 5000;
 
         // FR-017 à FR-019 boss
-        public const int BossAt = 15000, BossHp = 8000, ToothDamage = 100, BossBonus = 5000;
-        public const int ToothEvery = 22;             // 0,37 s
-        public const int BossFlyEvery = 600;          // 10 s
+        public const int BossAt = 15000, BossHp = 5000, ToothDamage = 250, BossBonus = 5000;   // ToothDamage : dent lancée par une figure
+        public const float ToothSpeed = 9;
+        public const int BossFlyEvery = 180;          // 3 s au sol entre deux envols
+        // sorts débloqués en battant les boss (crabe, goéland, sanglier, violet) ; temps de recharge en pas
+        public static readonly string[] SpellNames = { "VAGUE", "TORNADE", "FOUDRE", "BOULE DE FEU" };
+        public static readonly int[] SpellDamage = { 800, 700, 1000, 900 };
+        public static readonly int[] SpellCooldown = { 360, 420, 720, 480 };
         public const int BossDrops = 4;
         public const float AfterBossFlat = 2500;
 
@@ -69,7 +78,10 @@ namespace PalmStreet.Core
         public const int MegaAirPoints = 50;
 
         // Mode infini (spec 002, FR-018, FR-019)
-        public const float EndlessStart = 1.7f, EndlessSlopePerSecond = 0.012f, EndlessMax = 5.5f;
+        /// <summary>Tout le jeu va 35 % plus vite qu'au départ ; les niveaux s'allongent d'autant (même durée).</summary>
+        public const float SpeedScale = 1.35f;
+        public const float BossSpeedBoost = 1.2f;   // pendant un boss, il roule encore plus vite
+        public const float EndlessStart = 1.7f * SpeedScale, EndlessSlopePerSecond = 0.012f * SpeedScale, EndlessMax = 5.5f * SpeedScale;
         public const int EndlessThemeEvery = 4000;
 
         // Skateur (choix) : position à l'écran et boîte de collision

@@ -76,11 +76,11 @@ namespace PalmStreet.Game
             {
                 Play = OpenMap, Endless = () => StartEndless(false), OpenProfile = OpenProfile, CloseProfile = ToMenu,
                 Top10 = () => Leaderboard.Show(hud.Toast), Mute = ToggleMute, ToggleVibrate = ToggleVibrate, OutfitChanged = OutfitChanged,
-                OpenSettings = () => OpenGameSettings(true), Resume = () => OpenGameSettings(false),
-                Quit = () => { if (level > 0) OpenMap(); else ToMenu(); },
+                OpenSettings = () => OpenGameSettings(true), AskQuit = () => { if (Run.Phase == Phase.Playing) OpenGameSettings(true, true); else QuitRun(); },   // partie perdue : on sort tout de suite Resume = () => OpenGameSettings(false),
+                Quit = QuitRun,
                 Home = ToMenu, Map = OpenMap, Retry = () => StartLevel(level),
                 Next = () => { if (level >= Levels.Count) StartEndless(false); else StartLevel(level + 1); },
-                PickLevel = StartLevel, SoundOn = () => !sound.Muted, VibrateOn = () => Haptics.Enabled, Progress = () => progress,
+                PickLevel = StartLevel, Cast = i => Run.Cast(i), SoundOn = () => !sound.Muted, VibrateOn = () => Haptics.Enabled, Progress = () => progress,
             });
             sound.Muted = PlayerPrefs.GetInt("mute", 0) == 1;
             Haptics.Enabled = PlayerPrefs.GetInt("vibrate", 1) == 1;
@@ -113,7 +113,7 @@ namespace PalmStreet.Game
             level = n;
             Run.Best = progress.Best[n - 1];
             var def = Levels.Get(n);
-            Run.StartLevel(def, progress.Tricks);
+            Run.StartLevel(def, progress.ActiveTricks);   // les 4 figures équipées
             BeginRun();
             hud.Banner($"NIVEAU {n}", def.City, Hex("#FFE14D"));
         }
@@ -133,7 +133,7 @@ namespace PalmStreet.Game
                 allowed |= d.Allowed;
                 if (d.Boss != BossKind.None && progress.IsCleared(d.Number)) bosses.Add(d.Boss);
             }
-            Run.StartEndless(cities, bosses, progress.Tricks, allowed, boss);
+            Run.StartEndless(cities, bosses, progress.ActiveTricks, allowed, boss);
             BeginRun();
         }
 
@@ -142,11 +142,14 @@ namespace PalmStreet.Game
             if (rider != null) Destroy(rider.gameObject);
             rider = RiderView.Create(Wardrobe.Build(progress), transform, 20);
             hud.ShowGame();
+            Run.Spells = progress.Spells;   // sorts gagnés sur les boss
             sound.StartRun();
             paused = false; acc = 0; overAt = -1;
             instantScenery = true;
             preview.Show(false);
         }
+
+        void QuitRun() { if (level > 0) OpenMap(); else ToMenu(); }
 
         public void ToMenu()
         {
@@ -202,15 +205,23 @@ namespace PalmStreet.Game
         {
             sound.StopMusic();
             var def = Levels.Get(level);
-            bool star = Run.ChallengeDone(def), newStar = star && !progress.Stars[level - 1];
+            // 3 étoiles par ville : niveau fini, défi, score ; les étoiles débloquent des objets
+            int starsBefore = progress.TotalStars, cityBefore = progress.StarCount(level);
+            bool star = Run.ChallengeDone(def), scoreStar = Run.Score >= def.ScoreGoal;
+            if (def.Boss != BossKind.None && !progress.Cleared[level - 1]) hud.Toast("NOUVEAU SORT : " + Tuning.SpellNames[(int)def.Boss - 1]);
             progress.Stars[level - 1] |= star;
+            progress.ScoreStars[level - 1] |= scoreStar;
             var (trick, item) = progress.Clear(level, Run.Score);
+            var starItems = new List<Item>(Items.ForStars(starsBefore, progress.TotalStars));
+            if (item == null && starItems.Count > 0) { item = starItems[0]; starItems.RemoveAt(0); }
+            foreach (var extra in starItems) hud.Toast("NOUVEAU : " + extra.Name);
             SaveProgress();
             Leaderboard.Report(Run.Score, level);
             mapFrom = level;
-            string challenge = newStar ? "DÉFI RÉUSSI : " + def.ChallengeText + " · NOUVELLE ÉTOILE"
-                : star ? "DÉFI RÉUSSI : " + def.ChallengeText : $"DÉFI RATÉ : {Run.ChallengeValue(def)} / {def.ChallengeText}";
-            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item, challenge);
+            int city = progress.StarCount(level);
+            string stars = $"ÉTOILES {city}/3" + (city > cityBefore ? $" (+{city - cityBefore})" : "")
+                + $"  ·  défi {(star ? "réussi" : $"{Run.ChallengeValue(def)}/{def.Goal}")}  ·  score {(scoreStar ? "atteint" : "visé " + def.ScoreGoal)}";
+            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item, stars);
         }
 
         public void OpenProfile()
@@ -232,13 +243,13 @@ namespace PalmStreet.Game
         [System.Serializable] sealed class OldOutfit { public int Head, HairColor, Skin; }
 
         /// <summary>Bouton RÉGLAGES en partie : pause, son et vibrations ; REPRENDRE relance.</summary>
-        public void OpenGameSettings(bool open)
+        public void OpenGameSettings(bool open, bool askQuit = false)
         {
             if (Run.Phase != Phase.Playing) return;
             paused = open;
             sound.Pause(open);
             acc = 0;
-            hud.ShowGameSettings(open);
+            hud.ShowGameSettings(open, askQuit);
         }
 
         void ToggleVibrate()
@@ -377,7 +388,8 @@ namespace PalmStreet.Game
                         bool fakie = e.Text.StartsWith("FAKIE") || e.Text.StartsWith("180");
                         Haptics.Play(Run.Combo >= 6 ? Buzz.Heavy : fakie ? Buzz.Medium : Buzz.Light);
                         break;
-                    case Cue.GrindEnd: case Cue.MegaAir: Haptics.Play(Buzz.Medium); break;
+                    case Cue.GrindEnd: case Cue.MegaAir: case Cue.Bail: Haptics.Play(Buzz.Medium); break;
+                    case Cue.Spot: case Cue.Boost: Haptics.Play(Buzz.Heavy); break;
                     case Cue.GrindStart: case Cue.GrindOut: Haptics.Play(Buzz.Light); break;
                     case Cue.Crash: case Cue.Boom: Haptics.Play(Buzz.Heavy); break;
                 }
@@ -412,7 +424,26 @@ namespace PalmStreet.Game
                         break;
                     case Cue.BossHit:
                         props.BossHit();
-                        fx.Burst(e.X, e.Y, Color.white, 4, 2, 4);
+                        fx.Burst(e.X, e.Y, e.Text != null ? yellow : Color.white, e.Text != null ? 14 : 4, e.Text != null ? 4 : 2, 4);
+                        if (e.Text != null) hud.Float(e.Text + " !", at, yellow);   // un sort qui touche
+                        break;
+                    case Cue.Spell:
+                        Haptics.Play(Buzz.Medium);
+                        break;
+                    case Cue.Bail:
+                        hud.Float("BAIL ! combo perdu", at, Hex("#FF4D4D"));
+                        fx.Puff(e.X, Run.Skater.Y, DustColor());
+                        break;
+                    case Cue.Boost:
+                        hud.Banner("BOOST !", null, Hex("#FF7A1A"));
+                        fx.Burst(e.X, e.Y + 10, Hex("#FFE14D"), 18, 5);
+                        break;
+                    case Cue.SpotAhead:
+                        hud.Tip($"SPOT : {e.Text}\ngrinde-le jusqu'au bout");
+                        break;
+                    case Cue.Spot:
+                        hud.Banner("SPOT !", $"{e.Text}  +{e.Points}", yellow);
+                        fx.Burst(e.X, e.Y, yellow, 16, 4);
                         break;
                     case Cue.MegaAir:
                         hud.Float($"+{e.Points} {e.Text}", at, Hex("#35F2FF"));
@@ -503,9 +534,18 @@ namespace PalmStreet.Game
                 }
                 else
                 {
-                    var feet = hud.PreviewFeet(out float scale);
-                    preview.Show(hud.PreviewVisible);   // profil, onglet TENUE
-                    preview.Idle(feet, time, true, scale);
+                    if (hud.DemoVisible)   // profil, onglet FIGURES : la figure choisie, en boucle
+                    {
+                        var at = hud.DemoFeet(out float s);
+                        preview.Show(true);
+                        preview.Demo(hud.DemoTrick, at, time, s);
+                    }
+                    else
+                    {
+                        var feet = hud.PreviewFeet(out float scale);
+                        preview.Show(hud.PreviewVisible);   // profil, onglet TENUE
+                        preview.Idle(feet, time, true, scale);
+                    }
                 }
             }
             else

@@ -54,6 +54,7 @@ namespace PalmStreet.Tests
             var advanced = new Progress();
             for (int n = 1; n <= 5; n++) advanced.Clear(n, 1000 * n);
             advanced.Stars[0] = advanced.Stars[2] = advanced.Stars[3] = true;
+            advanced.ScoreStars[0] = advanced.ScoreStars[3] = true;
             game.Progress = advanced;
             game.OpenMap();
             for (int i = 0; i < 40; i++) yield return null;
@@ -85,14 +86,24 @@ namespace PalmStreet.Tests
             {
                 game.StartLevel(n);
                 run.Skater.X = Levels.Get(n).Finish - 2;
-                for (int i = 0; i < 200; i++) { run.Obstacles.RemoveAll(o => !o.Falling); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                for (int i = 0; i < 200; i++) { run.Obstacles.RemoveAll(o => !o.Falling || o.X < run.Skater.X + 30); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }   // les plots tombés trop près sont retirés : il ne chute pas avant la photo
                 yield return Shot($"0-boss-{n}");
                 for (int i = 0; i < 900 && !(run.Boss.State == BossState.Rising && run.Boss.Timer > 25) && !(run.Boss.State == BossState.Air && run.Boss.Drops > 1); i++)
                 {
-                    run.Obstacles.RemoveAll(o => !o.Falling && o.X < run.Skater.X + 40); run.Step(); run.Phase = Phase.Playing;
+                    run.Obstacles.RemoveAll(o => o.X < run.Skater.X + 40); run.Step(); run.Phase = Phase.Playing;
                     if (i % 4 == 0) yield return null;
                 }
                 yield return Shot($"0-boss-{n}-attaque");
+                if (n == 3 || n == 12)   // sorts et dent lancés pendant le combat, boutons de sorts à droite
+                {
+                    run.Boss.Hp = 100000;
+                    for (int i = 0; i < 200 && run.Boss.State != BossState.Ground; i++) { run.Obstacles.RemoveAll(o => !o.Falling); run.Step(); run.Phase = Phase.Playing; }
+                    run.Cast(0); run.Cast(1); run.Cast(3);
+                    for (int i = 0; i < 14; i++) { run.Obstacles.RemoveAll(o => !o.Falling); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                    run.Cast(2);
+                    yield return null;
+                    yield return Shot($"0-boss-{n}-sorts");
+                }
             }
             // profil : tenue de départ, puis après 6 niveaux avec des objets portés
             game.Progress = new Progress();
@@ -106,12 +117,25 @@ namespace PalmStreet.Tests
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("0-profil-six");
+            var all = new Progress();
+            for (int n = 1; n <= 12; n++) { all.Clear(n, 1); all.Stars[n - 1] = all.ScoreStars[n - 1] = true; }
+            foreach (var id in new[] { "cap-gold", "hoodie-basque", "pants-white", "shoes-pink", "deck-gold" }) all.Wear(id);
+            game.Progress = all;
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("0-profil-etoiles");
+            foreach (var id in new[] { "band-red", "hoodie-ocean", "shorts-surf", "shoes-yellow", "deck-gold" }) all.Wear(id);
+            game.Progress = all;
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("0-profil-tenue2");
+            game.Progress = six;
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
             yield return null;
             yield return Shot("0-profil-planches");
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(0);
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(1);
-            yield return null;
+            for (int i = 0; i < 40; i++) yield return null;   // le skateur de démonstration est en plein FLIP
             yield return Shot("0-profil-figures");
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(0);
             game.Progress = saved;
@@ -163,6 +187,17 @@ namespace PalmStreet.Tests
                 yield return Shot($"3-rail-{style}", new Vector2(run.Skater.X, run.Skater.Y + 30));
             }
             if (run.Skater.Rail != null) run.Skater.GrindStyle = 0;
+            // manual et BAIL, au sol (sans obstacle : il ne doit pas chuter avant)
+            run.Obstacles.Clear();
+            for (int i = 0; i < 600 && (!run.Skater.Grounded || run.Skater.Rail != null); i++) { run.Step(); run.Bolts.Clear(); run.Obstacles.Clear(); }
+            run.Phase = Phase.Playing;
+            run.Skater.Manual = true; run.Skater.ManualSteps = 0;
+            yield return Steps(run, 10, false);
+            yield return Shot("3-manual", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            run.Skater.Manual = false; run.Skater.Wobble = 22;
+            yield return null;
+            yield return Shot("3-bail", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            run.Skater.Wobble = 0;
 
             yield return Steps(run, 200, true);
             for (int k = 0; k < Tuning.TrickNames.Length; k++)   // les figures (glissé dans leur direction), saisies à 5 moments

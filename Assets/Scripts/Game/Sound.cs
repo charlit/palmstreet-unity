@@ -54,7 +54,7 @@ namespace PalmStreet.Game
             AudioClip c = cue switch
             {
                 Cue.Ollie => ollie, Cue.Land => land, Cue.Trick => trick, Cue.Bolt => bolt, Cue.GrindOut => ollie,
-                Cue.GrindEnd => trick, Cue.Crash => crash, Cue.Boom => boom, Cue.Tooth => tooth, Cue.BossHit => hit,
+                Cue.GrindEnd => trick, Cue.Bail => land, Cue.Spot => banner, Cue.Boost => banner, Cue.Spell => boom, Cue.Crash => crash, Cue.Boom => boom, Cue.Tooth => tooth, Cue.BossHit => hit,
                 Cue.FullSpeed => banner, Cue.BossIn => banner, Cue.BossFly => trick, Cue.MegaAir => trick, _ => null,
             };
             if (c != null) sfx.PlayOneShot(c, cue == Cue.Tooth ? 0.6f : 1);

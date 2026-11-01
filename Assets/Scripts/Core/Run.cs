@@ -8,7 +8,7 @@ namespace PalmStreet.Core
     /// <summary>Les décors : une ville par niveau, dans l'ordre de la carte (spec 002, FR-002).</summary>
     public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit }
     public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier }
-    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle }
+    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Bail, Boost, Spell, Spot, SpotAhead, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle }
 
     public sealed class Obstacle
     {
@@ -19,6 +19,7 @@ namespace PalmStreet.Core
         public bool Falling, Used;   // Used : tremplin déjà pris
         public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail;
         public float Top => Y + H;
+        public string Spot;     // nom du spot de la ville (grand rail), ou null
     }
 
     public sealed class Bolt { public float X, Y; }
@@ -39,6 +40,9 @@ namespace PalmStreet.Core
         public Obstacle Rail;           // rail en cours de grind
         public int GrindStyle;          // index de Tuning.RailNames ; repart à 0 sur chaque rail
         public int RailUsed;            // variantes déjà faites sur ce rail (un bit par variante)
+        public bool Manual, ManualQueued;   // manual en cours ; demandé pour la retombée
+        public int ManualSteps;
+        public int Wobble;              // pas restants de déséquilibre après un BAIL (pour l'affichage)
         public int Trick = -1, TrickStep, TrickLength = 24;   // TrickLength : durée de l'animation, finie avant la retombée
         public float Height => Ducking ? Tuning.DuckHeight : Tuning.SkaterHeight;
     }
@@ -55,7 +59,11 @@ namespace PalmStreet.Core
         public Phase Phase = Phase.Menu;
         public int Score, Best, Combo = 1, ComboTimer, StepCount, NextBossScore;
         // pour les défis des villes
-        public int TricksDone, FakieTricks, GrindSteps, RailTricks, BoltsTaken, MaxCombo = 1;
+        public int TricksDone, FakieTricks, GrindSteps, RailTricks, BoltsTaken, MaxCombo = 1, Spots, Bails;
+        bool spotPlaced, boosted;
+        /// <summary>Sorts connus (index de Tuning.SpellNames) et leur recharge restante, en pas.</summary>
+        public List<int> Spells = new List<int> { 0, 1, 2, 3 };
+        public readonly int[] SpellCooldown = new int[4];
         public GameMode Mode = GameMode.Endless;
         public LevelDef Def;                                  // niveau en cours (histoire)
         public List<int> Tricks = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7 };   // figures connues (spec 002, FR-013)
@@ -133,7 +141,8 @@ namespace PalmStreet.Core
             Score = 0;
             milestone = 0;
             Combo = 1; ComboTimer = 0; StepCount = 0; NewBest = false;
-            TricksDone = FakieTricks = GrindSteps = RailTricks = BoltsTaken = 0; MaxCombo = 1;
+            TricksDone = FakieTricks = GrindSteps = RailTricks = BoltsTaken = Spots = Bails = 0; MaxCombo = 1; spotPlaced = boosted = false;
+            Array.Clear(SpellCooldown, 0, SpellCooldown.Length);
             Skater.Y = Ground.Height(0);   // en haut de la rampe de départ, s'il y en a une
             Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; speedFactor = StartRamp ? Tuning.StartRampFrom : 1; CurrentSpeed = Speed * speedFactor;
             nextObstacleX = StartRamp ? Math.Max(SpawnAhead, Tuning.StartRampLength + 150) : SpawnAhead;   // rien sur la rampe
@@ -161,7 +170,7 @@ namespace PalmStreet.Core
             }
             else if (sk.Grounded)
             {
-                sk.Grounded = false; sk.Ducking = false;
+                sk.Grounded = false; sk.Ducking = false; sk.Manual = false;   // un ollie depuis un manual garde le combo
                 sk.Vy = Tuning.OllieSpeed;
                 Add(Cue.Ollie);
             }
@@ -173,6 +182,12 @@ namespace PalmStreet.Core
             var sk = Skater;
             if (sk.Rail != null) { RailTrick(dx, dy); return; }
             int k = TrickFor(dx, dy);
+            // vers le bas trop près du sol pour finir une figure, ou après la figure du saut : manual à la retombée
+            if (Phase == Phase.Playing && !sk.Grounded && Tuning.TrickSwipe[k] == 6 && (sk.TricksLeft <= 0 || StepsToLand() - 2 < 10))
+            {
+                sk.ManualQueued = true;
+                return;
+            }
             if (Phase == Phase.Playing && !sk.Grounded && sk.Rail == null && sk.TricksLeft > 0 && sk.Trick < 0 && Tricks.Contains(k)) Trick(k);
         }
 
@@ -186,6 +201,7 @@ namespace PalmStreet.Core
             sk.Fakie = !sk.Fakie;
             Animate(Tuning.HalfTurn);
             TricksDone++;
+            Shoot(1);
             AddPoints(Cue.Trick, Tuning.HalfTurnPoints * Combo, sk.Fakie ? "180 FAKIE !" : "180 !");
             Combo++; ComboTimer = 0;
         }
@@ -199,6 +215,7 @@ namespace PalmStreet.Core
             sk.GrindStyle = style;
             sk.RailUsed |= 1 << style;
             RailTricks++;
+            Shoot(1);
             AddPoints(Cue.Trick, Tuning.RailPoints[sk.GrindStyle] * Combo, Tuning.RailNames[sk.GrindStyle] + " !");
             Combo++; ComboTimer = 0;
         }
@@ -242,6 +259,7 @@ namespace PalmStreet.Core
             bool fakie = Skater.Fakie;
             TricksDone++;
             if (fakie) FakieTricks++;
+            Shoot(fakie ? Tuning.FakieBonus : 1);
             AddPoints(Cue.Trick, (int)(Tuning.TrickPoints[k] * Combo * (fakie ? Tuning.FakieBonus : 1)), (fakie ? "FAKIE " : "") + Tuning.TrickNames[k] + " !");
             Combo++; ComboTimer = 0;
         }
@@ -250,10 +268,37 @@ namespace PalmStreet.Core
         {
             var sk = Skater;
             sk.Trick = k; sk.TrickStep = 0; sk.TricksLeft--;
-            // pas restants avant de retomber au niveau du sol actuel : y(n) = Y + (Vy - 0,25) n - 0,25 n²
+            sk.TrickLength = (int)Math.Max(10, Math.Min(24, StepsToLand() - 2));   // trop tard : la figure ne finit pas, BAIL à la retombée
+        }
+
+        /// <summary>Pas restants avant de retomber au niveau du sol actuel : y(n) = Y + (Vy − g/2) n − g/2 n².</summary>
+        float StepsToLand()
+        {
+            var sk = Skater;
             float b = sk.Vy - Tuning.Gravity / 2, drop = Math.Max(0, sk.Y - Ground.Height(sk.X));
-            float n = (b + (float)Math.Sqrt(b * b + 4 * (Tuning.Gravity / 2) * drop)) / Tuning.Gravity;
-            sk.TrickLength = (int)Math.Max(10, Math.Min(24, n - 2));
+            return (b + (float)Math.Sqrt(b * b + 4 * (Tuning.Gravity / 2) * drop)) / Tuning.Gravity;
+        }
+
+        /// <summary>Retombée (sol ou rail) : une figure pas finie fait perdre le combo ; un manual demandé démarre.</summary>
+        void Landed(bool onRail)
+        {
+            var sk = Skater;
+            if (sk.Trick >= 0)
+            {
+                Combo = 1; Bails++; sk.Wobble = 30;
+                sk.ManualQueued = false;
+                Add(Cue.Bail, "BAIL !", null, sk.Y + Tuning.SkaterHeight);
+                return;
+            }
+            if (sk.ManualQueued && !onRail)
+            {
+                sk.Manual = true; sk.ManualSteps = 0;
+                TricksDone++;
+                Shoot(1);
+                AddPoints(Cue.Trick, Tuning.ManualPoints * Combo, "MANUAL !");
+                Combo++; ComboTimer = 0;
+            }
+            sk.ManualQueued = false;
         }
 
         // ---------- un pas de simulation ----------
@@ -267,17 +312,24 @@ namespace PalmStreet.Core
             if (holding && ++holdSteps >= Tuning.DuckAfter && sk.Grounded) sk.Ducking = true;
 
             Speed = Mode == GameMode.Story ? StorySpeed(Def, sk.X) : EndlessSpeed(StepCount);
+            if (Boss != null) Speed *= Tuning.BossSpeedBoost;
             if (StartRamp && sk.X < Tuning.StartRampLength)
             {
-                // rampe de départ : la vitesse monte avec la hauteur descendue, même en l'air
+                // rampe de départ : la vitesse monte avec la hauteur descendue, même en l'air ;
+                // en infini, boost : elle monte de plus en plus vite et bien plus haut
                 float down = 1 - Ground.Height(sk.X) / Tuning.StartRampTop;
-                speedFactor = Tuning.StartRampFrom + (Tuning.StartRampTo - Tuning.StartRampFrom) * down;
+                bool endless = Mode == GameMode.Endless;
+                float to = endless ? Tuning.EndlessRampTo : Tuning.StartRampTo;
+                speedFactor = Tuning.StartRampFrom + (to - Tuning.StartRampFrom) * (endless ? down * down : down);
+                if (endless && !boosted && down > 0.92f) { boosted = true; Add(Cue.Boost, "BOOST !"); }
             }
             else if (sk.Grounded)
             {
                 float target = Ground.SpeedFactor(sk.X);
                 // après la rampe, l'élan retombe peu à peu à la vitesse du niveau au lieu de couper net
-                if (StartRamp && sk.X < Tuning.StartRampLength + Tuning.StartRunOut) target = Math.Max(target, speedFactor - Tuning.StartRampDecay);
+                bool endlessRun = Mode == GameMode.Endless;
+                float runOut = endlessRun ? Tuning.EndlessRunOut : Tuning.StartRunOut, decay = endlessRun ? Tuning.EndlessRampDecay : Tuning.StartRampDecay;
+                if (StartRamp && sk.X < Tuning.StartRampLength + runOut) target = Math.Max(target, speedFactor - decay);
                 speedFactor = target;
             }
             CurrentSpeed = Speed * speedFactor;
@@ -289,6 +341,7 @@ namespace PalmStreet.Core
             if (Phase != Phase.Playing) return;   // chute pendant le mouvement (bord d'un trou)
             if (sk.Trick >= 0 && ++sk.TrickStep > sk.TrickLength) sk.Trick = -1;
             MaxCombo = Math.Max(MaxCombo, Combo);
+            if (sk.Wobble > 0) sk.Wobble--;
             if (sk.Rail == null && ++ComboTimer >= Tuning.ComboTimeout) Combo = 1;   // FR-014
 
             FallingCones();
@@ -323,12 +376,19 @@ namespace PalmStreet.Core
                     sk.Rail = null;
                     AddPoints(Cue.GrindEnd, Tuning.GrindBonus * Combo, "GRIND!");
                     Combo++;
+                    if (r.Spot != null) { Spots++; AddPoints(Cue.Spot, Tuning.SpotPoints * Combo, r.Spot); }
                 }
                 return;
             }
             if (sk.Grounded)
             {
+                if (sk.Manual)   // sur deux roues : le combo tient, 1 point de plus par pas, 2,5 s au plus
+                {
+                    Score += 1; ComboTimer = 0;
+                    if (++sk.ManualSteps >= Tuning.ManualMax) sk.Manual = false;
+                }
                 if (!Ground.IsGap(sk.X)) { sk.Y = Ground.Height(sk.X); return; }
+                sk.Manual = false;
                 sk.Grounded = false; sk.Vy = 0;   // FR-030 : la route s'arrête, il tombe
             }
 
@@ -338,6 +398,7 @@ namespace PalmStreet.Core
                 foreach (var o in Obstacles)
                     if (o.IsRail && OverlapsX(o.X, o.X + o.W) && sk.Y <= o.Top && prevY >= o.Top - 8)
                     {
+                        Landed(true);
                         sk.Rail = o; sk.Y = o.Top; sk.Vy = 0; sk.TricksLeft = 1; sk.Trick = -1; sk.GrindStyle = 0; sk.RailUsed = 0;
                         Add(Cue.GrindStart);
                         return;
@@ -346,6 +407,7 @@ namespace PalmStreet.Core
             if (sk.Y <= g)
             {
                 if (prevY < g - 2) { Crash(); return; }   // arrivé par le côté : il heurte le bord du trou
+                Landed(false);
                 sk.Y = g; sk.Vy = 0; sk.Grounded = true; sk.TricksLeft = 1; sk.Trick = -1;
                 if (holding && holdSteps >= Tuning.DuckAfter) sk.Ducking = true;
                 Add(Cue.Land);
@@ -452,6 +514,7 @@ namespace PalmStreet.Core
         {
             float x = nextObstacleX;
             if (Ground.InDescentStart(x, out float after)) x = after;
+            if (Mode == GameMode.Story && Def.Spot != null && !spotPlaced && x >= Def.Finish * 0.45f && PlaceSpot(x)) return;
             // jamais d'obstacle juste avant, sur ou juste après un trou : on le pose bien après
             for (var hole = Ground.GapIn(x - 150, x + 150); hole != null; hole = Ground.GapIn(x - 150, x + 150)) x = hole.Value.X1 + 160;   // plus loin que la marge de 150, sinon on retrouve le même trou
             if ((Has(Allow.Gulls) || Has(Allow.Pads)) && !bigRailPending && PlaceNeon(x)) return;
@@ -480,6 +543,20 @@ namespace PalmStreet.Core
         }
 
         /// <summary>Début (+10) du prochain plat assez long dans les 600 unités, ou null.</summary>
+        /// <summary>Le spot de la ville : un grand rail à son nom, annoncé ; le grinder jusqu'au bout rapporte un bonus.</summary>
+        bool PlaceSpot(float x)
+        {
+            float len = Tuning.RailLength * Tuning.BigRailFactor;
+            var at = NextFlat(x, len + 20);
+            if (at == null || Ground.GapIn(at.Value - 150, at.Value + len + 150) != null) return false;
+            spotPlaced = true;
+            var o = new Obstacle { Kind = ObstacleKind.BigRail, X = at.Value, W = len, H = Tuning.RailHeight, Spot = Def.Spot };
+            Obstacles.Add(o);
+            Add(Cue.SpotAhead, Def.Spot);
+            nextObstacleX = o.X + len + 300 + Speed * 40;
+            return true;
+        }
+
         float? NextFlat(float x, float len)
         {
             Ground.EnsureUpTo(x + 600 + len);
@@ -613,30 +690,64 @@ namespace PalmStreet.Core
             }
             if (b.State == BossState.Arriving) return;
 
-            // FR-018 : une dent toutes les 0,37 s, droit sur le boss
-            if (++b.ToothTimer >= Tuning.ToothEvery)
-            {
-                b.ToothTimer = 0;
-                b.Teeth.Add(new Tooth { X = Skater.X + 14, Y = Skater.Y + 40 });
-                Add(Cue.Tooth);
-            }
+            // tirs : droit devant, ils touchent le boss s'ils passent dans sa zone (il faut viser la bonne hauteur)
+            for (int k = 0; k < SpellCooldown.Length; k++) if (SpellCooldown[k] > 0) SpellCooldown[k]--;
             if (b.State == BossState.Dying) return;
-            float tx = b.X, ty = Ground.Floor(b.X) + b.Lift + b.Height / 2;
+            float floor = Ground.Floor(b.X), x0 = b.X - b.HitWidth / 2, x1 = b.X + b.HitWidth / 2, y0 = floor + b.Lift, y1 = y0 + b.Height;
             for (int i = b.Teeth.Count - 1; i >= 0; i--)
             {
                 var t = b.Teeth[i];
-                float dx = tx - t.X, dy = ty - t.Y, d = (float)Math.Sqrt(dx * dx + dy * dy);
-                if (d < 30)
+                if (t.Spell == 2) { if (--t.Life <= 0) b.Teeth.RemoveAt(i); continue; }   // éclair : dégâts déjà faits, il reste un instant à l'écran
+                t.X += CurrentSpeed + t.Vx;
+                t.Y += t.Vy;
+                if (t.Spell == 0) t.Y = Ground.Floor(t.X) + 8;   // la vague roule au sol
+                float r = t.Spell < 0 ? 10 : 18, top = t.Spell == 1 ? 70 : 0;   // la tornade est haute
+                bool hit = t.X + r > x0 && t.X - r < x1 && t.Y + top + r > y0 && t.Y - r < y1 && (t.Spell != 0 || b.Lift < 30);
+                if (hit)
                 {
                     b.Teeth.RemoveAt(i);
-                    b.Hp -= Tuning.ToothDamage;
-                    Add(Cue.BossHit, null, t.X, t.Y);
+                    b.Hp -= t.Damage;
+                    Add(Cue.BossHit, t.Spell >= 0 ? Tuning.SpellNames[t.Spell] : null, t.X, t.Y);
                     if (b.Hp <= 0) { Defeat(b); return; }
                     continue;
                 }
-                t.X += CurrentSpeed + dx / d * 9;
-                t.Y += dy / d * 9;
+                if (--t.Life <= 0 || t.X > b.X + 400 || t.Y > floor + 500) b.Teeth.RemoveAt(i);
             }
+        }
+
+        /// <summary>Pendant un boss, une figure lance une dent droit devant, à hauteur du skateur.</summary>
+        void Shoot(float power)
+        {
+            var b = Boss;
+            if (b == null || b.State == BossState.Arriving || b.State == BossState.Dying) return;
+            var sk = Skater;
+            b.Teeth.Add(new Tooth { X = sk.X + 14, Y = sk.Y + 20, Vx = Tuning.ToothSpeed, Damage = (int)(Tuning.ToothDamage * power) });
+            Add(Cue.Tooth);
+        }
+
+        /// <summary>Lance un sort débloqué (bouton pendant le boss) ; faux s'il n'est pas prêt.</summary>
+        public bool Cast(int spell)
+        {
+            var b = Boss;
+            if (Phase != Phase.Playing || b == null || b.State == BossState.Arriving || b.State == BossState.Dying) return false;
+            if (!Spells.Contains(spell) || SpellCooldown[spell] > 0) return false;
+            SpellCooldown[spell] = Tuning.SpellCooldown[spell];
+            var sk = Skater;
+            int dmg = Tuning.SpellDamage[spell];
+            switch (spell)
+            {
+                case 0: b.Teeth.Add(new Tooth { Spell = 0, X = sk.X + 20, Y = Ground.Floor(sk.X) + 8, Vx = 7, Damage = dmg }); break;            // vague au sol
+                case 1: b.Teeth.Add(new Tooth { Spell = 1, X = sk.X + 20, Y = Ground.Floor(sk.X), Vx = 6, Vy = 1.6f, Damage = dmg }); break;     // tornade qui monte
+                case 2:   // foudre : frappe le boss où qu'il soit
+                    b.Teeth.Add(new Tooth { Spell = 2, X = b.X, Y = Ground.Floor(b.X) + b.Lift + b.Height, Life = 14 });
+                    b.Hp -= dmg;
+                    Add(Cue.BossHit, Tuning.SpellNames[2], b.X, Ground.Floor(b.X) + b.Lift + b.Height / 2);
+                    break;
+                default: b.Teeth.Add(new Tooth { Spell = 3, X = sk.X + 16, Y = sk.Y + 26, Vx = 11, Damage = dmg }); break;                       // boule de feu droit devant
+            }
+            Add(Cue.Spell, Tuning.SpellNames[spell]);
+            if (b.Hp <= 0) Defeat(b);
+            return true;
         }
 
         /// <summary>Crabe, Goéland, Sanglier (spec 002, FR-011) : attaques au ras du sol ou à hauteur de tête.</summary>
@@ -650,6 +761,9 @@ namespace PalmStreet.Core
                     if (b.Timer >= Boss.ArriveSteps) b.Next(BossState.Ground);
                     break;
                 case BossState.Ground:
+                    // entre deux attaques, il ne tient pas en place : le goéland plonge et remonte, les autres bondissent
+                    if (gull) { float w = (float)Math.Sin(Math.PI * 3 * b.Timer / b.AttackEvery); b.Lift = Boss.FlyHeight - 90 * w * w; }
+                    else { int h = b.Timer % Boss.HopEvery; b.Lift = h < Boss.HopSteps ? (float)Math.Sin(Math.PI * h / Boss.HopSteps) * Boss.HopHeight : 0; }
                     if (gull && (b.Timer == 100 || b.Timer == 160 || b.Timer == 220)) DropThing(b, ObstacleKind.DroppedCone, 18, 16);   // coquillages
                     if (b.Kind == BossKind.Boar && (b.Timer == 120 || b.Timer == 220)) DropThing(b, ObstacleKind.Barrier, 30, 22);   // barrières
                     if (b.Timer >= b.AttackEvery) { b.Next(BossState.Rising); Add(Cue.BossFly); }

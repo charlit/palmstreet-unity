@@ -37,9 +37,10 @@ namespace PalmStreet.Tests
         [Test] public void Fr003_VitesseMonteAvecLeScore()
         {
             // spec 002 (FR-018) remplace la vitesse par score de 001 : en infini, elle monte avec le temps
-            Assert.AreEqual(1.7f, Run.EndlessSpeed(0), 1e-4);
-            Assert.AreEqual(1.7f + 0.012f * 120, Run.EndlessSpeed(7200), 1e-3);
-            Assert.AreEqual(5.5f, Run.EndlessSpeed(10000000), 1e-4);
+            float k = Tuning.SpeedScale;   // tout le jeu va plus vite d'autant
+            Assert.AreEqual(1.7f * k, Run.EndlessSpeed(0), 1e-4);
+            Assert.AreEqual((1.7f + 0.012f * 120) * k, Run.EndlessSpeed(7200), 1e-3);
+            Assert.AreEqual(5.5f * k, Run.EndlessSpeed(10000000), 1e-4);
         }
 
         [Test] public void Fr004_UnPointParPas()
@@ -97,7 +98,7 @@ namespace PalmStreet.Tests
             Clear(r, 5);
             r.Press();
             Clear(r, 1);   // le toucher fait un ollie ; on attend la retombée en gardant le doigt
-            while (!r.Skater.Grounded) Clear(r, 1);
+            LevelTests.Land(r);
             Assert.IsTrue(r.Skater.Ducking);
             r.Release();
             Assert.IsFalse(r.Skater.Ducking);
@@ -167,7 +168,7 @@ namespace PalmStreet.Tests
                 Assert.AreEqual(Tuning.TrickNames[k] + " !", t.Text);
                 Clear(r, 3); SwipeFor(r, (k + 1) % Tuning.TrickNames.Length);
                 Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick), "une seule figure par saut");
-                while (!r.Skater.Grounded) Clear(r, 1);
+                LevelTests.Land(r);
             }
         }
 
@@ -214,7 +215,7 @@ namespace PalmStreet.Tests
             Assert.IsTrue(r.Skater.Fakie);
             r.HalfTurn();
             Assert.AreEqual(1, r.Events.Count(e => e.Cue == Cue.Trick), "un seul 180 par saut");
-            while (!r.Skater.Grounded) Clear(r, 1);
+            LevelTests.Land(r);
             Assert.IsTrue(r.Skater.Fakie, "il reste en fakie après la retombée");
 
             r.Events.Clear();
@@ -224,7 +225,7 @@ namespace PalmStreet.Tests
             var flip = r.Events.Single(e => e.Cue == Cue.Trick);
             Assert.AreEqual("FAKIE FLIP !", flip.Text);
             Assert.AreEqual((int)(30 * combo * 1.5f), flip.Points, "figures ×1,5 en fakie");
-            while (!r.Skater.Grounded) Clear(r, 1);
+            LevelTests.Land(r);
 
             r.Events.Clear();
             r.HalfTurn();
@@ -258,7 +259,7 @@ namespace PalmStreet.Tests
             var r = OnRail(out var rail);
             int combo = r.Combo, score = r.Score;
             int steps = 0;
-            while (r.Skater.Rail != null) { r.Step(); steps++; }
+            while (r.Skater.Rail != null && steps < 2000) { r.Step(); steps++; }
             var end = r.Events.Single(e => e.Cue == Cue.GrindEnd);
             Assert.AreEqual(20 * combo, end.Points);
             Assert.AreEqual("GRIND!", end.Text);
@@ -276,7 +277,7 @@ namespace PalmStreet.Tests
             Assert.AreEqual(score + 15, r.Score);
             Assert.AreEqual("OUT!", r.Events.Single(e => e.Cue == Cue.GrindOut).Text);
             float y0 = r.Skater.Y, top = 0;
-            while (r.Skater.Vy > 0 || top == 0) { r.Step(); top = System.Math.Max(top, r.Skater.Y - y0); }
+            for (int g = 0; g < 400 && (r.Skater.Vy > 0 || top == 0); g++) { r.Step(); top = System.Math.Max(top, r.Skater.Y - y0); }
             Assert.AreEqual(87.4f * 0.85f, top, 2f, "85 % de la hauteur d'un ollie (87,4 en pas de 1/60 s)");
         }
 
@@ -336,7 +337,7 @@ namespace PalmStreet.Tests
             var r = NewRun(14998);
             Clear(r, 3);
             Assert.IsNotNull(r.Boss);
-            Assert.AreEqual(8000, r.Boss.Hp);
+            Assert.AreEqual(Tuning.BossHp, r.Boss.Hp);
             Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.BossIn && e.Text == "BOSS !"));
             int count = r.Obstacles.Count;
             for (int i = 0; i < 400; i++) { r.Step(); if (r.Phase != Phase.Playing) { r.Phase = Phase.Playing; } }
@@ -344,24 +345,53 @@ namespace PalmStreet.Tests
             Assert.IsTrue(r.Ground.IsFlat(r.Skater.X + Run.SpawnAhead + 300, r.Skater.X + 3000), "sol plat");
         }
 
-        [Test] public void Fr018_DentsEtEnvol()
+        [Test] public void Fr018_LesFiguresTirentDroitDevantEtLeBossSEnvoleSouvent()
         {
             var r = new Run(7) { StartRamp = false };
             r.Start(bossNow: true);
-            int teeth = 0, drops = 0, hp = 0;
-            for (int i = 0; i < Boss.ArriveSteps + 600 + 400; i++)
+            int drops = 0, flights = 0;
+            for (int i = 0; i < Boss.ArriveSteps + 600; i++)
             {
-                r.Obstacles.RemoveAll(o => !o.Falling && o.Kind == ObstacleKind.DroppedCone && o.X < r.Skater.X + 40);
+                r.Obstacles.RemoveAll(o => o.Kind == ObstacleKind.DroppedCone);
                 r.Step();
                 r.Phase = Phase.Playing;
-                teeth += r.Events.Count(e => e.Cue == Cue.Tooth);
+                Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Tooth), "plus de tir automatique");
                 drops += r.Events.Count(e => e.Cue == Cue.ConeDrop);
-                hp = r.Boss.Hp;
+                flights += r.Events.Count(e => e.Cue == Cue.BossFly);
                 r.Events.Clear();
             }
-            Assert.AreEqual((600 + 400) / Tuning.ToothEvery, teeth, 1);
-            Assert.AreEqual(4, drops, "le boss s'envole à 10 s et lâche 4 plots");
-            Assert.AreEqual(8000 - 100 * (teeth - 2), hp, 300, "100 de dégâts par dent arrivée");
+            Assert.That(flights, Is.GreaterThanOrEqualTo(2), "s'envole toutes les 6 s environ");
+            Assert.That(drops, Is.GreaterThanOrEqualTo(4));
+
+            // au sol, une figure envoie une dent droit devant qui touche le boss posé
+            for (int g = 0; g < 2000 && r.Boss.State != BossState.Ground; g++) { r.Obstacles.Clear(); r.Step(); r.Phase = Phase.Playing; }
+            int hp = r.Boss.Hp;
+            r.Obstacles.Clear();
+            r.Press(); Clear(r, 3); SwipeFor(r, 0);
+            Assert.AreEqual(1, r.Boss.Teeth.Count);
+            for (int i = 0; i < 60 && r.Boss.Teeth.Count > 0; i++) { r.Obstacles.Clear(); r.Step(); }
+            Assert.AreEqual(hp - Tuning.ToothDamage, r.Boss.Hp, "une dent qui arrive à hauteur du boss le touche");
+        }
+
+        [Test] public void Sorts_DebloquesParLesBossEtRecharge()
+        {
+            var p = new Progress();
+            Assert.IsEmpty(p.Spells);
+            p.Clear(3, 1); p.Clear(9, 1);
+            CollectionAssert.AreEqual(new[] { 0, 2 }, p.Spells, "crabe → VAGUE, sanglier → FOUDRE");
+
+            var r = new Run(7) { StartRamp = false };
+            r.Start(bossNow: true);
+            r.Spells = new System.Collections.Generic.List<int> { 2 };
+            Assert.IsFalse(r.Cast(2), "pas pendant l'arrivée du boss");
+            for (int i = 0; i < Boss.ArriveSteps + 2; i++) { r.Obstacles.Clear(); r.Step(); }
+            int hp = r.Boss.Hp;
+            Assert.IsTrue(r.Cast(2));
+            Assert.AreEqual(hp - Tuning.SpellDamage[2], r.Boss.Hp, "la foudre frappe le boss où qu'il soit");
+            Assert.IsFalse(r.Cast(2), "en recharge");
+            Assert.IsFalse(r.Cast(0), "VAGUE pas débloquée");
+            for (int i = 0; i < Tuning.SpellCooldown[2]; i++) { r.Obstacles.Clear(); r.Step(); r.Phase = Phase.Playing; }
+            Assert.IsTrue(r.Cast(2), "rechargé");
         }
 
         [Test] public void Fr019_BossBattu()
@@ -371,7 +401,7 @@ namespace PalmStreet.Tests
             r.Step();
             r.Boss.Hp = 100;
             int guard = 0;
-            while (!r.Events.Any(e => e.Cue == Cue.Boom) && guard++ < 1000) { r.Events.Clear(); r.Step(); }
+            while (!r.Events.Any(e => e.Cue == Cue.Boom) && guard++ < 1000) { r.Events.Clear(); r.Step(); r.Cast(2); }   // la foudre l'achève
             var boom = r.Events.Single(e => e.Cue == Cue.Boom);
             Assert.AreEqual(5000, boom.Points);
             var nose = r.Obstacles.Single(o => o.Kind == ObstacleKind.NoseRail);
@@ -437,7 +467,7 @@ namespace PalmStreet.Tests
             Assert.That(fall.Skater.X, Is.InRange(100f, 200f));
 
             var jump = NeonWithGap(100, 180);   // il saute juste avant le bord : il passe
-            while (jump.Skater.X < 100 - 25) { jump.Bolts.Clear(); jump.Step(); }
+            for (int s = 0; s < 2000 && jump.Skater.X < 100 - 25; s++) { jump.Bolts.Clear(); jump.Step(); }
             jump.Press(); jump.Release();
             for (int i = 0; i < 120; i++) { jump.Bolts.Clear(); jump.Obstacles.Clear(); jump.Step(); }
             Assert.AreEqual(Phase.Playing, jump.Phase);
@@ -453,9 +483,10 @@ namespace PalmStreet.Tests
 
             r = NeonWithGap(5000, 5100);
             r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + 60, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
-            r.Press(); r.Release(); while (!r.Skater.Grounded) r.Step();   // on attend d'être au sol
+            r.Press(); r.Release(); LevelTests.Land(r);   // on attend d'être au sol
             r.Obstacles.Clear();
-            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + 60, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
+            // assez loin pour qu'il ait le temps de sauter, retomber et s'accroupir (le doigt maintenu)
+            r.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = r.Skater.X + r.CurrentSpeed * 62, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Tuning.GullHeight });
             r.Press();   // maintenu : il s'accroupit
             for (int i = 0; i < 12; i++) r.Step();
             r.Events.Clear();
@@ -473,7 +504,7 @@ namespace PalmStreet.Tests
             var mega = r.Events.Single(e => e.Cue == Cue.MegaAir);
             Assert.AreEqual(Tuning.MegaAirPoints, mega.Points);
             SwipeFor(r, 0);
-            while (r.Skater.Trick >= 0) r.Step();
+            for (int g = 0; g < 400 && r.Skater.Trick >= 0; g++) r.Step();
             SwipeFor(r, 1);
             Assert.AreEqual(2, r.Events.Count(e => e.Cue == Cue.Trick), "deux figures pendant un méga air");
             SwipeFor(r, 2);

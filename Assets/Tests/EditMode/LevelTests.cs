@@ -13,6 +13,13 @@ namespace PalmStreet.Tests
             for (int i = 0; i < steps && r.Phase == Phase.Playing; i++) { r.Obstacles.Clear(); r.Bolts.Clear(); r.Step(); }
         }
 
+        /// <summary>Avance jusqu'à la retombée ; échoue (au lieu de boucler) si le skateur a chuté.</summary>
+        internal static void Land(Run r)
+        {
+            for (int i = 0; i < 400 && !r.Skater.Grounded && r.Phase == Phase.Playing; i++) { r.Obstacles.Clear(); r.Bolts.Clear(); r.Step(); }
+            Assert.IsTrue(r.Skater.Grounded, $"retombée attendue (phase {r.Phase})");
+        }
+
         static Run Story(int n, params int[] tricks)
         {
             var r = new Run(5) { StartRamp = false };
@@ -94,7 +101,7 @@ namespace PalmStreet.Tests
             Assert.AreEqual(0, r.Ground.Height(r.Skater.X + 1), 1e-3);
             Clean(r, 20);
             Assert.That(r.CurrentSpeed / r.Speed, Is.GreaterThan(1.2f), "l'élan ne coupe pas net");
-            while (r.Skater.X < Tuning.StartRampLength + Tuning.StartRunOut) Clean(r, 1);
+            for (int i = 0; i < 5000 && r.Skater.X < Tuning.StartRampLength + Tuning.StartRunOut && r.Phase == Phase.Playing; i++) Clean(r, 1);
             Clean(r, 1);
             Assert.AreEqual(r.Ground.SpeedFactor(r.Skater.X), r.CurrentSpeed / r.Speed, 1e-3, "puis la vitesse normale du niveau");
         }
@@ -127,7 +134,7 @@ namespace PalmStreet.Tests
             hills = gaps = false;
             for (int i = 0; i < 8000 && r.Phase == Phase.Playing; i++)
             {
-                foreach (var o in r.Obstacles) kinds.Add(o.Kind);
+                foreach (var o in r.Obstacles) if (o.Spot == null) kinds.Add(o.Kind);   // le spot de la ville est à part
                 foreach (var s in r.Ground.Segments) { hills |= s.Kind == SlopeKind.Up; gaps |= s.Kind == SlopeKind.Gap; }
                 r.Obstacles.RemoveAll(o => o.X < r.Skater.X + 60);
                 r.Bolts.Clear();
@@ -184,7 +191,7 @@ namespace PalmStreet.Tests
                 r.Press(); Clean(r, 4); RunTests.SwipeFor(r, k);
                 names.AddRange(r.Events.Where(e => e.Cue == Cue.Trick).Select(e => e.Text));
                 r.Events.Clear();
-                while (!r.Skater.Grounded) Clean(r, 1);
+                Land(r);
             }
             CollectionAssert.AreEqual(new[] { "FLIP !", "360° !" }, names, "les autres glissés ne font rien");
         }
@@ -271,9 +278,9 @@ namespace PalmStreet.Tests
             r.Press();
             Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.GrindOut), "toucher : sortie OUT! comme avant");
 
-            while (!r.Skater.Grounded) Clean(r, 1);
+            Land(r);
             r.HalfTurn();
-            while (!r.Skater.Grounded) Clean(r, 1);
+            Land(r);
             r.Press(); Clean(r, 4); RunTests.SwipeFor(r, 0);
             Assert.AreEqual(1, r.FakieTricks);
             Assert.AreEqual(2, r.TricksDone, "180 et FLIP");
@@ -286,6 +293,131 @@ namespace PalmStreet.Tests
             Assert.AreEqual(1, Run.RailFor(1, 0.1f), "à droite : 50-50");
             Assert.AreEqual(8, Run.RailFor(1, -1), "en bas à droite : SMITH");
             Assert.AreEqual(Tuning.RailNames.Length, Tuning.RailPoints.Length);
+        }
+
+        // ---------- atterrissage, manual, spots, étoiles ----------
+
+        [Test] public void Bail_FigureTropTardFaitPerdreLeCombo()
+        {
+            var r = Story(5, 0);
+            Clean(r, 2);
+            r.Press(); Clean(r, 5); RunTests.SwipeFor(r, 0);   // FLIP tôt : il finit, combo x2
+            Land(r);
+            Assert.AreEqual(2, r.Combo);
+            Assert.AreEqual(0, r.Bails);
+            r.Press(); Clean(r, 30); RunTests.SwipeFor(r, 0);  // FLIP 8 pas avant le sol : il ne finit pas
+            Land(r);
+            Assert.AreEqual(1, r.Bails);
+            Assert.AreEqual(1, r.Combo, "BAIL : combo perdu");
+            Assert.AreEqual(Phase.Playing, r.Phase, "pas de chute");
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.Bail));
+        }
+
+        [Test] public void Manual_GlisseVersLeBasAvantLaRetombee()
+        {
+            var r = Story(5, 0, 3);
+            Clean(r, 2);
+            r.Press(); Clean(r, 5); RunTests.SwipeFor(r, 0);   // FLIP
+            Clean(r, 3);
+            r.Swipe(0, -60);                                     // vers le bas après la figure : manual demandé
+            Assert.IsFalse(r.Events.Any(e => e.Text == "360° INVERSÉ !"));
+            Land(r);
+            Assert.IsTrue(r.Skater.Manual);
+            Assert.IsTrue(r.Events.Any(e => e.Text == "MANUAL !"));
+            int combo = r.Combo;
+            Clean(r, Tuning.ComboTimeout + 5);
+            Assert.AreEqual(combo, r.Combo, "le manual garde le combo");
+            Clean(r, Tuning.ManualMax);
+            Assert.IsFalse(r.Skater.Manual, "2,5 s au plus");
+
+            r.Press(); Clean(r, 31);
+            r.Swipe(0, -60);                                     // tard, sans figure : manual plutôt que 360° INVERSÉ
+            Assert.IsFalse(r.Events.Any(e => e.Text == "360° INVERSÉ !"));
+            Land(r);
+            Assert.IsTrue(r.Skater.Manual);
+            r.Press();
+            Assert.IsFalse(r.Skater.Manual, "un ollie sort du manual");
+        }
+
+        [Test] public void Spot_UnParVilleGrindeJusquAuBout()
+        {
+            Assert.IsTrue(Levels.All.All(d => !string.IsNullOrEmpty(d.Spot)));
+            Assert.AreEqual("ROCHER DE LA VIERGE", Levels.Get(2).Spot);
+            var r = Story(2);
+            Obstacle spot = null;
+            for (int i = 0; i < 20000 && r.Phase == Phase.Playing && spot == null; i++)
+            {
+                r.Obstacles.RemoveAll(o => o.Spot == null && o.X < r.Skater.X + 60);
+                r.Step();
+                spot = r.Obstacles.Find(o => o.Spot != null);
+            }
+            Assert.IsNotNull(spot, "le spot apparaît au milieu du niveau");
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.SpotAhead && e.Text == "ROCHER DE LA VIERGE"));
+            r.Skater.X = spot.X + 10; r.Skater.Rail = spot; r.Skater.Y = spot.Top; r.Skater.Grounded = false;
+            for (int i = 0; i < 2000 && r.Skater.Rail != null; i++) r.Step();
+            Assert.AreEqual(1, r.Spots);
+            Assert.AreEqual("ROCHER DE LA VIERGE", r.Events.Single(e => e.Cue == Cue.Spot).Text);
+        }
+
+        [Test] public void Etoiles_TroisParVilleEtObjetsAGagner()
+        {
+            var p = new Progress();
+            Assert.AreEqual(0, p.TotalStars);
+            Assert.IsFalse(p.Owns("cap-gold"));
+            for (int n = 1; n <= 3; n++) { p.Clear(n, 1); p.Stars[n - 1] = true; }
+            Assert.AreEqual(2, p.StarCount(1));
+            Assert.AreEqual(6, p.TotalStars);
+            Assert.IsTrue(p.Owns("cap-gold"), "6 étoiles : casquette dorée");
+            Assert.IsFalse(p.Owns("hoodie-basque"));
+            CollectionAssert.AreEqual(new[] { "cap-gold" }, Items.ForStars(5, 6).Select(i => i.Id));
+            for (int n = 1; n <= 12; n++)
+            {
+                Assert.That(Levels.Get(n).ScoreGoal, Is.GreaterThan(1000), $"score visé du niveau {n}");
+                p.Clear(n, 1); p.Stars[n - 1] = p.ScoreStars[n - 1] = true;
+            }
+            Assert.AreEqual(36, p.TotalStars);
+            Assert.IsTrue(Items.All.Where(i => i.Stars > 0).All(i => p.Owns(i.Id)));
+        }
+
+        [Test] public void Infini_RampeDeDepartAvecBoost()
+        {
+            var r = new Run(5);
+            r.Start();   // infini, avec la rampe de départ
+            float peak = 0, prev = 0, prevGain = 0;
+            bool accelerates = true;
+            for (int i = 0; i < 400 && r.Skater.X < Tuning.StartRampLength; i++)
+            {
+                r.Obstacles.Clear(); r.Bolts.Clear(); r.Step();
+                float f = r.CurrentSpeed / r.Speed;
+                if (i > 3 && f - prev < prevGain - 0.01f) accelerates = false;   // la vitesse gagnée par pas grandit
+                prevGain = f - prev; prev = f; peak = System.Math.Max(peak, f);
+            }
+            Assert.IsTrue(accelerates, "boost : l'accélération s'emballe dans la descente");
+            Assert.That(peak, Is.GreaterThan(2.1f));
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.Boost));
+            for (int i = 0; i < 200; i++) { r.Obstacles.Clear(); r.Bolts.Clear(); r.Step(); }
+            Assert.That(r.CurrentSpeed / r.Speed, Is.GreaterThan(1.6f), "l'élan dure");
+        }
+
+        [Test] public void Figures_QuatreEquipeesAuPlus()
+        {
+            var p = new Progress();
+            Assert.IsEmpty(p.ActiveTricks);
+            foreach (int n in new[] { 1, 2, 3, 5, 6 }) p.Clear(n, 1);   // FLIP, HEELFLIP, SHOVE-IT, SHOVE-IT INVERSÉ, 360°
+            CollectionAssert.AreEqual(new[] { 0, 1, 2, 4 }, p.ActiveTricks, "sans choix : les 4 premières connues");
+            Assert.IsFalse(p.ToggleEquip(5), "déjà 4 équipées");
+            Assert.IsTrue(p.ToggleEquip(1), "retirer SHOVE-IT");
+            Assert.IsTrue(p.ToggleEquip(5));
+            CollectionAssert.AreEquivalent(new[] { 0, 2, 4, 5 }, p.ActiveTricks);
+            Assert.IsFalse(p.ToggleEquip(7), "360 FLIP pas encore débloqué");
+            p.ToggleEquip(0);
+            p.Clear(8, 1);   // VARIAL FLIP débloqué : une place est libre, il s'y met
+            CollectionAssert.AreEquivalent(new[] { 2, 4, 5, 6 }, p.ActiveTricks);
+
+            var r = Story(9, p.ActiveTricks.ToArray());
+            Clean(r, 2);
+            r.Press(); Clean(r, 4); RunTests.SwipeFor(r, 0);
+            Assert.IsFalse(r.Events.Any(e => e.Cue == Cue.Trick), "FLIP connu mais pas équipé : rien");
         }
 
         [Test] public void Defis_EtoileGardeeDansLaProgression()
@@ -308,7 +440,7 @@ namespace PalmStreet.Tests
 
         [Test] public void Boss_ArriveALaFinDuNiveau()
         {
-            foreach (var (n, kind, hp) in new[] { (3, BossKind.Crab, 4000), (6, BossKind.Gull, 6000), (9, BossKind.Boar, 7000), (12, BossKind.Purple, 8000) })
+            foreach (var (n, kind, hp) in new[] { (3, BossKind.Crab, 2500), (6, BossKind.Gull, 3000), (9, BossKind.Boar, 3500), (12, BossKind.Purple, 5000) })
             {
                 var r = AtBoss(n);
                 Assert.IsNotNull(r.Boss, $"boss du niveau {n}");
@@ -330,6 +462,7 @@ namespace PalmStreet.Tests
                 r.Obstacles.Clear();
                 if (r.Boss != null && r.Boss.State == BossState.Rising && r.Skater.Grounded) r.Press();   // saute le crabe
                 r.Step();
+                r.Cast(0);   // VAGUE au sol : le crabe posé la prend
             }
             all.AddRange(r.Events);
             Assert.IsTrue(all.Any(e => e.Cue == Cue.Boom));
@@ -469,7 +602,7 @@ namespace PalmStreet.Tests
             var kinds = new System.Collections.Generic.HashSet<ObstacleKind>();
             for (int i = 0; i < 6000; i++)
             {
-                foreach (var o in r.Obstacles) kinds.Add(o.Kind);
+                foreach (var o in r.Obstacles) if (o.Spot == null) kinds.Add(o.Kind);   // le spot de la ville est à part
                 r.Obstacles.RemoveAll(o => o.X < r.Skater.X + 60);
                 r.Step(); r.Phase = Phase.Playing;
             }
