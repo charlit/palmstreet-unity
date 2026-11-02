@@ -35,7 +35,7 @@ namespace PalmStreet.Core
             Kind = kind;
             MaxHp = Hp = kind switch
             {
-                BossKind.Pilier => 3000, BossKind.Crab => 4000, BossKind.Gull => 5000, BossKind.Talonneur => 5500, BossKind.Boar => 6000,
+                BossKind.Pilier => 3000, BossKind.Crab => 4000, BossKind.Gull => 5000, BossKind.Talonneur => 5500, BossKind.Pelotari => 5800, BossKind.Boar => 6000,
                 _ => Tuning.BossHp,
             };
         }
@@ -54,14 +54,14 @@ namespace PalmStreet.Core
         /// <summary>Boss de rugby (spec 004) : trottine, puis passe, chandelle et plaquage, chacun annoncé par une pose.</summary>
         public bool IsRugby => Kind == BossKind.Pilier || Kind == BossKind.Talonneur;
         public int Attack;   // attaque en cours (rugby) : 0 passe, 1 chandelle, 2 plaquage
-        public bool Windup => IsRugby && State == BossState.Rising && Timer < Tuning.RugbyWindup;
+        public bool Windup => (IsRugby || Kind == BossKind.Pelotari) && State == BossState.Rising && Timer < Tuning.RugbyWindup;
         public bool Tackling => IsRugby && Attack == 2 && State == BossState.Rising && Timer >= Tuning.RugbyWindup;
 
         /// <summary>Zone touchée par les tirs (largeur ; la hauteur est Height, depuis Lift).</summary>
-        public float HitWidth => Kind == BossKind.Purple ? Size : IsRugby ? 40 : Body.w;
+        public float HitWidth => Kind == BossKind.Purple ? Size : IsRugby || Kind == BossKind.Pelotari ? 40 : Body.w;
 
         /// <summary>Taille dessinée (et cible des dents).</summary>
-        public float Height => Kind switch { BossKind.Crab => 28, BossKind.Gull => 28, BossKind.Boar => 34, BossKind.Pilier or BossKind.Talonneur => Tackling ? 20 : 60, _ => Size };
+        public float Height => Kind switch { BossKind.Crab => 28, BossKind.Gull => 28, BossKind.Boar => 34, BossKind.Pilier or BossKind.Talonneur => Tackling ? 20 : 60, BossKind.Pelotari => 60, _ => Size };
 
         /// <summary>Pas entre deux attaques, durée de l'aller et du retour.</summary>
         public int AttackEvery => Kind == BossKind.Crab ? 200 : 240;   // il attaque souvent ; entre deux, il saute (Hop)

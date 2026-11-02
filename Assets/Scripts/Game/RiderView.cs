@@ -522,6 +522,7 @@ namespace PalmStreet.Game
         void Board(float tilt, float flip = 0, float shove = 0, float drop = 0)
         {
             board.localPosition = W(0, DeckY - Center - drop);
+            board.localRotation = Quaternion.identity;
             float sx = Mathf.Cos(shove), sx2 = Mathf.Sign(sx) * Mathf.Max(Mathf.Abs(sx), 0.24f);
             float cy = Mathf.Cos(flip), sy = Mathf.Sin(flip);
             deck.localRotation = Quaternion.Euler(0, 0, tilt);
@@ -547,6 +548,49 @@ namespace PalmStreet.Game
         /// <summary>Pose en partie, d'après l'état du skateur. feet : position monde des pieds.</summary>
         float duck, lastTime, drawY = float.NaN;   // duck : 0 debout → 1 baissé, en douceur ; drawY : hauteur des pieds affichée
 
+        /// <summary>
+        /// Spec 005, planche en main : il court à pied ; bouclier levé, la planche est tenue debout devant lui (grip vers
+        /// le boss) ; sinon il la porte sous le bras ; en boomerang, elle tourne là où le Core l'a placée.
+        /// </summary>
+        void OnFoot(Skater s, float time)
+        {
+            float run = time * 13, step = Mathf.Sin(run);
+            float crouch = s.Ducking && s.Grounded ? 1 : s.Shield ? 0.35f : 0.15f;
+            body.localPosition = W(0, -Center);
+            float bob = s.Grounded ? Mathf.Abs(Mathf.Cos(run)) * 1.5f : 0;
+            var hip = new Vector2(-1, Ankle + 25 * (1 - 0.5f * crouch) + bob);
+            // pieds : course en ciseaux au sol, repliés en l'air
+            Vector2 back = s.Grounded ? new Vector2(-4 - 9 * step, Mathf.Max(0, step) * 7) : new Vector2(-7, 12);
+            Vector2 front = s.Grounded ? new Vector2(4 + 9 * step, Mathf.Max(0, -step) * 7) : new Vector2(6, 10);
+            Solve(legB, hip + new Vector2(-1, 0), back, 0);
+            Solve(legF, hip + new Vector2(1, 0), front, 0);
+            torso.localPosition = W(hip.x, hip.y - 1);
+            torso.localRotation = Quaternion.Euler(0, 0, s.Shield ? -4 : -14);
+            Board(0);
+            if (s.Board != null)
+            {
+                armF.localRotation = Quaternion.Euler(0, 0, 100);   // le bras qui vient de lancer
+                armB.localRotation = Quaternion.Euler(0, 0, -40 + step * 30);
+                board.position = W(s.Board.X, s.Board.Y);
+                board.rotation = Quaternion.Euler(0, 0, -time * 900);
+                return;
+            }
+            if (s.Shield)
+            {
+                armF.localRotation = Quaternion.Euler(0, 0, 80);
+                armB.localRotation = Quaternion.Euler(0, 0, 70);
+                board.localPosition = W(17, hip.y + 14 - Center);
+                board.localRotation = Quaternion.Euler(0, 0, 90);   // debout devant lui, comme un bouclier
+            }
+            else
+            {
+                armF.localRotation = Quaternion.Euler(0, 0, 20 + step * 25);
+                armB.localRotation = Quaternion.Euler(0, 0, -25);
+                board.localPosition = W(-2, hip.y + 4 - Center);
+                board.localRotation = Quaternion.Euler(0, 0, 72);   // sous le bras
+            }
+        }
+
         public void Ride(Skater s, Vector3 feet, float slope, float time, float speedFactor)
         {
             if (crashed) Reset();
@@ -562,6 +606,7 @@ namespace PalmStreet.Game
             if (current > 180) current -= 360;
             float spinAngle = Mathf.Lerp(current, tilt, 0.35f);
             Wheels(s.X);
+            if (s.OnFoot) { spin.localRotation = Quaternion.identity; OnFoot(s, time); return; }
             bool airborne = !s.Grounded && s.Rail == null;
             if (wasAirborne && !airborne) landedAt = time;
             wasAirborne = airborne;

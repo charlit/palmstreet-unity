@@ -424,6 +424,7 @@ namespace PalmStreet.Game
                         hud.Banner("FULL SPEED", ThemeLook.Of(Run.Theme).Name, yellow);
                         break;
                     case Cue.BossIn:
+                        boomerangTip = false;
                         hud.Banner(BossName(Run.Boss?.Kind ?? BossKind.Purple), BossTip(Run.Boss?.Kind ?? BossKind.Purple), Hex("#FF4D8D"));
                         break;
                     case Cue.BossHit:
@@ -433,6 +434,21 @@ namespace PalmStreet.Game
                         break;
                     case Cue.Spell:
                         Haptics.Play(Buzz.Medium);
+                        break;
+                    case Cue.Parry:   // spec 005 : parade, la pelote repart vers le Pelotari
+                        Haptics.Play(Buzz.Heavy);
+                        hud.Float("PARADE !", at, yellow);
+                        fx.Burst(e.X, e.Y, Color.white, 10, 3);
+                        if (!boomerangTip) { boomerangTip = true; hud.Tip("GLISSE VERS LE BOSS : BOOMERANG"); }
+                        break;
+                    case Cue.Block:
+                        Haptics.Play(Buzz.Light);
+                        fx.Burst(e.X, e.Y, Color.white, 5, 2);
+                        if (!boomerangTip) { boomerangTip = true; hud.Tip("GLISSE VERS LE BOSS : BOOMERANG"); }
+                        break;
+                    case Cue.Boomerang:
+                        Haptics.Play(Buzz.Light);
+                        boomerangTip = true;
                         break;
                     case Cue.Bail:
                         hud.Float("BAIL ! combo perdu", at, Hex("#FF4D4D"));
@@ -492,8 +508,11 @@ namespace PalmStreet.Game
             overAt = time + 0.7f;   // on voit d'abord la planche s'échapper
         }
 
+        bool boomerangTip;   // bulle « GLISSE VERS LE BOSS : BOOMERANG », une fois par combat contre le Pelotari
+
         public static string BossName(BossKind k) => k switch
         {
+            BossKind.Pelotari => "LE PELOTARI",
             BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER",
             BossKind.Pilier => "LE PILIER", BossKind.Talonneur => "LE TALONNEUR", _ => "LE GRAND BOSS",
         };
@@ -503,6 +522,7 @@ namespace PalmStreet.Game
             BossKind.Gull => "Glisse vers le bas quand il pique !",
             BossKind.Boar => "Saute ses charges et ses barrières !",
             BossKind.Pilier or BossKind.Talonneur => "Passe : baisse-toi. Chandelle et plaquage : saute !",
+            BossKind.Pelotari => "MAINTIENS LE DOIGT : BOUCLIER",
             _ => "Saute ses plots !",
         };
 

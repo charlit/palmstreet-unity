@@ -83,6 +83,15 @@ namespace PalmStreet.Core
         public const float PassSpeed = 4;               // vitesse du ballon vers le skateur (en plus du défilement)
         public const int ChandelleFlight = 60;          // pas de vol de la chandelle
         public const float ChandelleLand = 140, ChandelleBounce = 26, ChandelleRoll = 3, BallGravity = 0.25f;
+
+        // LE PELOTARI et le mode « planche en main » (spec 005)
+        public const int PelotaAttackEvery = 130;
+        public const float PelotaThrowSpeed = 5, PelotaFlySpeed = 3.2f, PelotaBounce = 22, PelotaSize = 12;
+        public const int ParryWindow = 9;               // 0,15 s : bouclier levé juste avant l'impact = parade (clarification 3)
+        public const int TapSteps = 10;                 // à pied : doigt posé moins de 0,17 s = saut
+        public const int ParryDamage = 700, BoomerangDamage = 450;
+        public const float BoomerangSpeed = 6;          // en plus du défilement, à l'aller comme au retour
+        public const int BoomerangOut = 40;
         public const float PadWidth = 40, PadHeight = 6, PadJump = 13.5f;
         public const int MegaAirPoints = 50;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PalmStreet.Core
 {
-    public enum BossKind { None, Crab, Gull, Boar, Purple, Pilier, Talonneur }   // les boss de rugby (spec 004) à la fin : les index des sorts ne bougent pas
+    public enum BossKind { None, Crab, Gull, Boar, Purple, Pilier, Talonneur, Pelotari }   // les boss de rugby (spec 004) à la fin : les index des sorts ne bougent pas
 
     /// <summary>Types d'obstacles qu'un niveau peut contenir (spec 002, FR-007).</summary>
     [Flags]
@@ -55,7 +55,7 @@ namespace PalmStreet.Core
             L(5, "SAINT-JEAN-DE-LUZ", Theme.SaintJeanDeLuz, 13000, 2.9f, 3.6f, Mid, BossKind.None, 5, null, ChallengeKind.Fakie, 2, "LA DIGUE"),
             L(6, "HENDAYE", Theme.Hendaye, 12400, 3.0f, 3.7f, Mid, BossKind.Gull, 2, null, ChallengeKind.Tricks, 8, "LES DEUX JUMEAUX"),
             L(7, "BAYONNE", Theme.Bayonne, 14000, 3.1f, 3.9f, Mid | Allow.Gulls, BossKind.Talonneur, -1, null, ChallengeKind.GrindSeconds, 5, "LES REMPARTS"),
-            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.None, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6, "LE FRONTON"),
+            L(8, "ARCANGUES", Theme.Arcangues, 15000, 3.2f, 4.1f, Mid | Allow.Gulls | Allow.Pads, BossKind.Pelotari, 6, "Tremplin : MÉGA AIR et deux figures", ChallengeKind.Combo, 6, "LE FRONTON"),
             L(9, "ESPELETTE", Theme.Espelette, 14000, 3.4f, 4.3f, Mid | Allow.Gulls | Allow.Pads, BossKind.Boar, 3, null, ChallengeKind.Fakie, 4, "LE CHÂTEAU"),
             L(10, "ASCAIN", Theme.Ascain, 16000, 3.6f, 4.5f, Allow.All, BossKind.None, -1, "Trous dans la route : saute-les", ChallengeKind.RailTricks, 4, "LE PONT ROMAIN"),
             L(11, "CAMBO-LES-BAINS", Theme.Cambo, 17000, 3.8f, 4.7f, Allow.All, BossKind.None, 7, null, ChallengeKind.Tricks, 15, "VILLA ARNAGA"),

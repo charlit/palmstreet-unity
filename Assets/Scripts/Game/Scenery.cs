@@ -415,6 +415,25 @@ namespace PalmStreet.Game
             p.Ellipse(x + 6, 120, 34, 3, new Color(1, 1, 1, 0.35f), 16);                                     // écume au pied
         }
 
+        /// <summary>Fronton d'Arcangues (spec 005) : mur ocre au sommet en arc, liseré rouge, lignes rouges, bande de métal.</summary>
+        static void Fronton(Paint p, float x0)
+        {
+            Color ocre = Hex("#C9A46A"), shade = Hex("#B08B54"), red = Hex("#B8202E"), metal = Hex("#8A949E");
+            const float w = 220, h = 100, arch = 42;
+            float cx = x0 + w / 2;
+            p.Rect(x0, -10, w, h + 10, ocre);
+            p.Dome(cx, h, w / 2, arch, ocre, 24);
+            p.Rect(x0, -10, 14, h + 10, shade);                                                        // ombre du pilier
+            for (int i = 0; i < 24; i++)                                                                // liseré rouge qui suit l'arc
+            {
+                float a0 = Mathf.PI * i / 24, a1 = Mathf.PI * (i + 1) / 24;
+                p.Line(cx + Mathf.Cos(a0) * (w / 2 - 6), h + Mathf.Sin(a0) * (arch - 6), cx + Mathf.Cos(a1) * (w / 2 - 6), h + Mathf.Sin(a1) * (arch - 6), 2.4f, red);
+            }
+            p.Rect(x0 + 6, h - 2, 2.4f, 4, red).Rect(x0 + w - 8.4f, h - 2, 2.4f, 4, red);
+            p.Rect(x0, 62, w, 2.6f, red).Rect(x0, 16, w, 2.6f, red);                                    // lignes rouges du jeu
+            p.Rect(x0, -10, w, 14, metal).Rect(x0, 2, w, 1.6f, Hex("#C9CED6"));                        // bande de métal
+        }
+
         /// <summary>Hôtel du Palais : palace brique et pierre, trois pavillons aux toits d'ardoise très pentus, terrasse.</summary>
         static void Palais(Paint p, float x0)
         {
@@ -526,12 +545,10 @@ namespace PalmStreet.Game
                     House(p, 112, 48, 38, 22, l.Mid, lit, true);
                     p.Rect(250, -10, 70, 80, l.Mid);                                   // nef
                     p.Poly(l.Mid, 246, 70, 285, 98, 324, 70);
-                    p.Rect(318, -10, 26, 150, l.Mid);                                  // clocher
-                    p.Poly(l.Mid, 316, 140, 331, 172, 346, 140);
-                    p.Rect(328, 112, 6, 12, lit);
-                    p.Rect(420, -10, 110, 70, l.Mid);                                  // fronton
-                    p.Dome(475, 70, 55, 26, l.Mid, 16);
-                    House(p, 560, 56, 44, 24, l.Mid, lit, true);
+                    p.Rect(318, -10, 26, 180, l.Mid);                                  // clocher (spec 005 : plus haut)
+                    p.Poly(l.Mid, 314, 170, 331, 214, 348, 170);
+                    p.Rect(322, 142, 18, 14, lit).Rect(330, 142, 2, 14, l.Mid);        // abat-son éclairé
+                    Fronton(p, 380);
                     break;
             }
             return p;
@@ -575,13 +592,16 @@ namespace PalmStreet.Game
                     p.Rect(0, 17, Tile, 9, Hex("#35F2FF", 0.15f));
                     break;
                 default:
+                    // platanes taillés (spec 005) : tronc tacheté, moignons de branches, couronne plate et compacte
+                    var bark = Color.Lerp(l.Near, Color.white, 0.25f);
                     for (int i = 0; i < 4; i++)
                     {
-                        float x = 60 + i * 160 + R(r, -20, 20), h = R(r, 60, 120);
-                        p.Rect(x - 3, -10, 6, h * 0.6f, l.Near);
-                        p.Circle(x, h * 0.7f, h * 0.32f, l.Near, 16);
-                        p.Circle(x - h * 0.18f, h * 0.55f, h * 0.22f, l.Near, 14);
-                        p.Circle(x + h * 0.2f, h * 0.58f, h * 0.24f, l.Near, 14);
+                        float x = 60 + i * 160 + R(r, -20, 20), h = R(r, 80, 120);
+                        p.Rect(x - 4, -10, 8, h * 0.72f, l.Near);
+                        for (int k = 0; k < 4; k++) p.Ellipse(x + R(r, -2, 2), R(r, 0, h * 0.6f), 2.2f, 3, bark, 8);
+                        p.Line(x, h * 0.62f, x - 16, h * 0.8f, 4, l.Near).Line(x, h * 0.62f, x + 16, h * 0.8f, 4, l.Near).Line(x, h * 0.66f, x, h * 0.86f, 4, l.Near);
+                        p.Circle(x - 16, h * 0.82f, 4, l.Near, 10).Circle(x + 16, h * 0.82f, 4, l.Near, 10);   // moignons taillés
+                        p.Ellipse(x, h * 0.92f, h * 0.42f, h * 0.13f, l.Near, 18);
                     }
                     for (float x = 0; x < Tile; x += 40) p.Rect(x, -10, 3, 26, l.Near);
                     p.Rect(0, 12, Tile, 3, l.Near);

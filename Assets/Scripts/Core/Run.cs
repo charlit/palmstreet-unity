@@ -7,8 +7,8 @@ namespace PalmStreet.Core
     public enum GameMode { Story, Endless }
     /// <summary>Les décors : une ville par niveau, dans l'ordre de la carte (spec 002, FR-002).</summary>
     public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit }
-    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier, Ball }
-    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Bail, Boost, Spell, Spot, SpotAhead, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle }
+    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier, Ball, Pelote }
+    public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Bail, Boost, Spell, Spot, SpotAhead, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle, Parry, Block, Boomerang }
 
     public sealed class Obstacle
     {
@@ -18,8 +18,9 @@ namespace PalmStreet.Core
         public float Vx, Vy;         // Vx : vitesse propre (ballons)
         public int Bounces = -1;     // chandelle : rebonds restants ; −1 : vole en ligne droite
         public bool Falling, Used;   // Used : tremplin déjà pris
+        public bool FromBoss, Reflected;   // pelote lancée par le Pelotari ; renvoyée par une parade (spec 005)
         public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail;
-        public bool IsFlying => Kind == ObstacleKind.Gull || Kind == ObstacleKind.Ball;
+        public bool IsFlying => Kind == ObstacleKind.Gull || Kind == ObstacleKind.Ball || Kind == ObstacleKind.Pelote;
         public float Top => Y + H;
         public string Spot;     // nom du spot de la ville (grand rail), ou null
     }
@@ -34,10 +35,20 @@ namespace PalmStreet.Core
         public string Text;
     }
 
+    /// <summary>Planche lancée en boomerang (spec 005) : elle file vers le boss, puis revient dans la main.</summary>
+    public sealed class Boomerang
+    {
+        public float X, Y;
+        public bool Returning, HitBoss;
+        public int Steps;
+    }
+
     public sealed class Skater
     {
         public float X, Y, Vy;          // Y : hauteur des pieds
         public bool Grounded = true, Ducking, Fakie;   // Fakie : roule à l'envers, la queue devant
+        public bool OnFoot, Shield;     // spec 005 : à pied, planche en main ; bouclier levé
+        public Boomerang Board;         // planche lancée en boomerang, ou null
         public int TricksLeft = 1;      // figures encore possibles dans ce saut (2 après un tremplin)
         public Obstacle Rail;           // rail en cours de grind
         public int GrindStyle;          // index de Tuning.RailNames ; repart à 0 sur chaque rail
@@ -159,11 +170,23 @@ namespace PalmStreet.Core
 
         // ---------- touchers ----------
 
+        /// <summary>Spec 005 : pendant le combat contre le Pelotari, le skateur est à pied, la planche à la main.</summary>
+        public bool OnFoot => Boss != null && Boss.Kind == BossKind.Pelotari && Boss.State != BossState.Dying;
+        public bool ShieldUp => Skater.Shield;
+        int shieldSince;
+        bool swiped;   // swiped : ce doigt a déjà glissé (pas de saut au relâché)
+
         public void Press()
         {
             if (Phase != Phase.Playing) return;
             holding = true; holdSteps = 0;
             var sk = Skater;
+            if (OnFoot)   // doigt posé : bouclier tout de suite (pas d'ollie) ; le saut part au relâché d'un toucher bref
+            {
+                swiped = false;
+                if (sk.Board == null && !sk.Shield) { sk.Shield = true; shieldSince = StepCount; }
+                return;
+            }
             if (sk.Rail != null)
             {
                 // FR-012 : sortie de grind
@@ -185,6 +208,19 @@ namespace PalmStreet.Core
         public void Swipe(float dx, float dy)
         {
             var sk = Skater;
+            if (OnFoot)   // à pied : vers le bas, se baisser ; vers le boss, boomerang ; pas de figure
+            {
+                if (Phase != Phase.Playing) return;
+                sk.Shield = false;
+                swiped = true;
+                if (dy < 0 && -dy > Math.Abs(dx)) { if (sk.Grounded) { sk.Ducking = true; holdSteps = Math.Max(holdSteps, Tuning.DuckAfter); } }
+                else if (dx > 0 && dx > Math.Abs(dy) && sk.Board == null)
+                {
+                    sk.Board = new Boomerang { X = sk.X + 10, Y = sk.Y + 30 };
+                    Add(Cue.Boomerang);
+                }
+                return;
+            }
             if (sk.Rail != null) { RailTrick(dx, dy); return; }
             int k = TrickFor(dx, dy);
             // vers le bas tout de suite après avoir posé le doigt : il se baisse au lieu de sauter (oiseaux, goéland)
@@ -278,8 +314,15 @@ namespace PalmStreet.Core
 
         public void Release()
         {
+            var sk = Skater;
+            if (OnFoot && Phase == Phase.Playing && holding && !swiped && holdSteps < Tuning.TapSteps && sk.Grounded && !sk.Ducking)
+            {
+                sk.Grounded = false; sk.Vy = Tuning.OllieSpeed;   // toucher bref à pied : saut
+                Add(Cue.Ollie);
+            }
             holding = false;
-            Skater.Ducking = false;
+            sk.Ducking = false;
+            sk.Shield = false;
         }
 
         void Trick(int k)
@@ -338,7 +381,8 @@ namespace PalmStreet.Core
             StepCount++;
             Score += 1;   // FR-004
             var sk = Skater;
-            if (holding && ++holdSteps >= Tuning.DuckAfter && sk.Grounded) sk.Ducking = true;
+            if (holding) holdSteps++;
+            if (holding && holdSteps >= Tuning.DuckAfter && sk.Grounded && !OnFoot) sk.Ducking = true;   // à pied, le doigt maintenu est le bouclier
 
             Speed = Mode == GameMode.Story ? StorySpeed(Def, sk.X) : EndlessSpeed(StepCount);
             if (Boss != null) Speed *= Tuning.BossSpeedBoost;
@@ -386,6 +430,8 @@ namespace PalmStreet.Core
                 StartBoss(Bosses.Count > 0 ? Bosses[rng.Next(Bosses.Count)] : BossKind.Crab);
             Spawn();
             Collect();
+            UpdateFoot();
+            if (Phase != Phase.Playing) return;   // boss battu par la parade ou le boomerang
             Collide();
             Milestones();
             Cleanup();
@@ -459,7 +505,7 @@ namespace PalmStreet.Core
             }
             foreach (var o in Obstacles)
             {
-                if (o == sk.Rail) continue;
+                if (o == sk.Rail || o.Reflected) continue;
                 if (o.Kind == ObstacleKind.Pad)
                 {
                     // FR-032 : tremplin néon, saut géant et deux figures possibles
@@ -475,8 +521,65 @@ namespace PalmStreet.Core
                 }
                 float x0 = o.X, x1 = o.X + o.W, y1 = o.Top;
                 if (!o.IsRail) { x0 += o.W * 0.2f; x1 -= o.W * 0.2f; y1 = o.Y + o.H * 0.85f; }   // un plot est pointu
-                if (OverlapsX(x0, x1) && sk.Y < y1 && top > o.Y) { Crash(); return; }
+                if (OverlapsX(x0, x1) && sk.Y < y1 && top > o.Y)
+                {
+                    // spec 005 : le bouclier arrête le lancer (pas le rebond) ; levé juste avant l'impact, il le renvoie
+                    if (o.FromBoss && o.Bounces < 0 && sk.Shield && Boss != null)
+                    {
+                        if (StepCount - shieldSince <= Tuning.ParryWindow)
+                        {
+                            o.Reflected = true;
+                            o.Vx = CurrentSpeed + 8;
+                            Add(Cue.Parry, "PARADE !", o.X, o.Y);
+                        }
+                        else { o.Used = true; Add(Cue.Block, null, o.X, o.Y); }
+                        continue;
+                    }
+                    Crash(); return;
+                }
             }
+        }
+
+        /// <summary>
+        /// Mode planche en main (spec 005) : pelotes parées qui reviennent sur le boss, boomerang (aller, coup, retour),
+        /// pelotes bloquées retirées. Hors du combat, le skateur remonte sur sa planche.
+        /// </summary>
+        void UpdateFoot()
+        {
+            var sk = Skater;
+            bool foot = OnFoot;
+            if (!foot) { sk.OnFoot = false; sk.Shield = false; sk.Board = null; return; }
+            sk.OnFoot = true;
+            Obstacles.RemoveAll(o => o.Used && o.Kind == ObstacleKind.Pelote);   // bloquées par le bouclier
+            var b = Boss;
+            float bx0 = b.X - b.HitWidth / 2, bx1 = b.X + b.HitWidth / 2, by0 = Ground.Floor(b.X) + b.Lift, by1 = by0 + b.Height;
+            for (int i = Obstacles.Count - 1; i >= 0; i--)
+            {
+                var o = Obstacles[i];
+                if (!o.Reflected) continue;
+                if (o.X + o.W > bx0 && o.X < bx1 && o.Y + o.H > by0 && o.Y < by1)
+                {
+                    Obstacles.RemoveAt(i);
+                    b.Hp -= Tuning.ParryDamage;
+                    Add(Cue.BossHit, null, o.X, o.Y);
+                    if (b.Hp <= 0) { Defeat(b); return; }
+                }
+                else if (o.X > b.X + 300) Obstacles.RemoveAt(i);
+            }
+            var m = sk.Board;
+            if (m == null) return;
+            m.Steps++;
+            m.X += CurrentSpeed + (m.Returning ? -Tuning.BoomerangSpeed : Tuning.BoomerangSpeed);
+            if (!m.HitBoss && m.X > bx0 && m.X < bx1 && m.Y > by0 && m.Y < by1)
+            {
+                m.HitBoss = true; m.Returning = true;
+                b.Hp -= Tuning.BoomerangDamage;
+                Add(Cue.BossHit, null, m.X, m.Y);
+                if (b.Hp <= 0) { Defeat(b); return; }
+            }
+            if (m.Steps >= Tuning.BoomerangOut) m.Returning = true;
+            m.Y += (sk.Y + 30 - m.Y) * 0.1f;   // il revient à hauteur de la main
+            if (m.Returning && m.X <= sk.X + 10) sk.Board = null;   // rattrapée
         }
 
         void Clear()
@@ -607,7 +710,12 @@ namespace PalmStreet.Core
                 // spec 004 : à Biarritz, des ballons de rugby volent aussi (seulement des ballons au niveau 2)
                 bool biarritz = Theme == Theme.Biarritz || Theme == Theme.BiarritzNuit;
                 bool ball = biarritz && (Theme == Theme.Biarritz || rng.NextDouble() < 0.5);
-                o = new Obstacle { Kind = ball ? ObstacleKind.Ball : ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
+                // spec 005 : à l'intérieur (Arcangues, Espelette, Ascain, Cambo), des pelotes basques, deux fois plus rapides
+                bool inland = Theme == Theme.Arcangues || Theme == Theme.Espelette || Theme == Theme.Ascain || Theme == Theme.Cambo;
+                if (inland && rng.NextDouble() < 0.5)
+                    o = new Obstacle { Kind = ObstacleKind.Pelote, X = gx, W = Tuning.PelotaSize, H = Tuning.PelotaSize, Y = Ground.Floor(gx) + Tuning.GullHeight, Vx = -Tuning.PelotaFlySpeed };
+                else
+                    o = new Obstacle { Kind = ball ? ObstacleKind.Ball : ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
             }
             else if (r >= Tuning.FlyingRate && r < 0.45 && Has(Allow.Pads))
             {
@@ -667,7 +775,7 @@ namespace PalmStreet.Core
         {
             foreach (var o in Obstacles)
             {
-                if (o.Kind == ObstacleKind.Ball && (o.Vx != 0 || o.Bounces >= 0)) { MoveBall(o); continue; }
+                if ((o.Kind == ObstacleKind.Ball || o.Kind == ObstacleKind.Pelote) && (o.Vx != 0 || o.Bounces >= 0)) { MoveBall(o); continue; }
                 if (!o.Falling) continue;
                 o.Vy -= Tuning.Gravity;
                 o.Y += o.Vy;
@@ -698,6 +806,7 @@ namespace PalmStreet.Core
                 return;
             }
             if (b.IsRugby) UpdateRugby(b);
+            else if (b.Kind == BossKind.Pelotari) UpdatePelotari(b);
             else if (b.Kind != BossKind.Purple) UpdateBeast(b);
             else switch (b.State)
             {
@@ -869,6 +978,41 @@ namespace PalmStreet.Core
             b.X = Skater.X + b.Offset;
         }
 
+        /// <summary>
+        /// LE PELOTARI (spec 005) : il prend son élan, puis lance (pelote à hauteur de tête : bouclier ou se baisser) ou
+        /// fait rebondir la pelote au sol vers le skateur (sauter), en alternance ; chaque attaque est annoncée.
+        /// </summary>
+        void UpdatePelotari(Boss b)
+        {
+            int w = Tuning.RugbyWindup;
+            b.Lift = 0;
+            b.Offset = Boss.Distance;
+            switch (b.State)
+            {
+                case BossState.Arriving:
+                    if (b.Timer >= Boss.ArriveSteps) b.Next(BossState.Ground);
+                    break;
+                case BossState.Ground:
+                    if (b.Timer >= Tuning.PelotaAttackEvery) { b.Next(BossState.Rising); Add(Cue.BossFly); }
+                    break;
+                case BossState.Rising:
+                    if (b.Timer == w) ThrowPelote(b, b.Attack == 1);
+                    if (b.Timer >= w + 24) { b.Attack = 1 - b.Attack; b.Next(BossState.Ground); }
+                    break;
+            }
+            b.X = Skater.X + b.Offset;
+        }
+
+        void ThrowPelote(Boss b, bool rebond)
+        {
+            float s = Tuning.PelotaSize, floor = Ground.Floor(b.X);
+            var o = new Obstacle { Kind = ObstacleKind.Pelote, W = s, H = s, X = b.X - 30, FromBoss = true, Vx = CurrentSpeed - Tuning.PelotaThrowSpeed };
+            if (rebond) { o.Y = floor + 36; o.Vy = -1; o.Bounces = 6; }   // vers le sol, puis de petits bonds jusqu'au skateur
+            else o.Y = floor + Tuning.GullHeight;
+            Obstacles.Add(o);
+            Add(Cue.ConeDrop, null, o.X, o.Y);
+        }
+
         /// <summary>Passe (droite, à hauteur de tête) ou chandelle (en cloche, retombe devant le skateur puis rebondit vers lui).</summary>
         void ThrowBall(Boss b, bool chandelle)
         {
@@ -904,8 +1048,9 @@ namespace PalmStreet.Core
             o.Y = g;
             if (o.Bounces == 0) { o.Vy = 0; return; }   // il roule
             o.Bounces--;
-            o.Vx = CurrentSpeed - Tuning.ChandelleRoll;   // il revient vers le skateur
-            o.Vy = (float)Math.Sqrt(2 * Tuning.BallGravity * Tuning.ChandelleBounce);
+            bool pelote = o.Kind == ObstacleKind.Pelote;   // la pelote garde sa vitesse ; le ballon de chandelle revient vers le skateur
+            if (!pelote) o.Vx = CurrentSpeed - Tuning.ChandelleRoll;
+            o.Vy = (float)Math.Sqrt(2 * Tuning.BallGravity * (pelote ? Tuning.PelotaBounce : Tuning.ChandelleBounce));
         }
 
         void DropThing(Boss b, ObstacleKind kind, float w, float h)

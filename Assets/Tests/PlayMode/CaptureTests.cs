@@ -148,6 +148,50 @@ namespace PalmStreet.Tests
                     yield return Shot($"004-boss-{n}-attaque-{attack}");
                 }
             }
+            // spec 005 : Arcangues (fronton, clocher, platanes), pelote volante, combat planche en main
+            game.StartLevel(8);
+            yield return Steps(run, 160, true);
+            run.Obstacles.RemoveAll(o => !o.IsRail);
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Pelote, X = run.Skater.X + 160, W = Tuning.PelotaSize, H = Tuning.PelotaSize, Y = run.Ground.Floor(run.Skater.X + 160) + Tuning.GullHeight, Vx = -Tuning.PelotaFlySpeed });
+            for (int i = 0; i < 4; i++) yield return null;
+            yield return Shot("005-arcangues");
+            run.Skater.X = Levels.Get(8).Finish - 2;
+            for (int i = 0; i < 200 && (run.Boss == null || run.Boss.State != BossState.Ground); i++) { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Pelote); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+            run.Boss.Hp = 100000;
+            yield return Shot("005-pelotari-a-pied");
+            for (int attack = 0; attack < 2; attack++)
+            {
+                for (int i = 0; i < 600 && !(run.Boss.Attack == attack && run.Boss.State == BossState.Rising && run.Boss.Timer >= Tuning.RugbyWindup - 6); i++)
+                { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Pelote || o.X < run.Skater.X + 30); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                yield return Shot($"005-pelotari-annonce-{attack}");
+            }
+            // bouclier levé, puis parade : la pelote repart vers le boss
+            for (int i = 0; i < 600 && !(run.Boss.Attack == 0 && run.Boss.State == BossState.Rising); i++) { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Pelote || o.X < run.Skater.X + 30); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+            run.Press();
+            for (int i = 0; i < 20; i++) { run.Step(); run.Phase = Phase.Playing; yield return null; }
+            yield return Shot("005-bouclier", new Vector2(run.Skater.X + 40, run.Skater.Y + 30));
+            run.Release();
+            bool parried = false;
+            for (int i = 0; i < 400 && !parried; i++)
+            {
+                var pel = run.Obstacles.Find(o => o.Kind == ObstacleKind.Pelote && o.FromBoss && !o.Reflected && o.Bounces < 0);
+                if (pel != null && pel.X - run.Skater.X < 40 && !run.Skater.Shield) run.Press();
+                run.Obstacles.RemoveAll(o => o.Kind == ObstacleKind.Pelote && o.Bounces >= 0);
+                run.Step(); run.Phase = Phase.Playing;
+                parried = run.Obstacles.Exists(o => o.Reflected);
+                if (i % 2 == 0) yield return null;
+            }
+            for (int i = 0; i < 6; i++) { run.Step(); run.Phase = Phase.Playing; yield return null; }
+            yield return Shot("005-parade");
+            run.Release();
+            run.Swipe(1, 0);
+            for (int i = 0; i < 18; i++) { run.Obstacles.RemoveAll(o => o.Kind == ObstacleKind.Pelote); run.Step(); run.Phase = Phase.Playing; yield return null; }
+            yield return Shot("005-boomerang");
+            run.Boss.Hp = 10;
+            run.Spells = new System.Collections.Generic.List<int> { 2 };
+            run.Cast(2);
+            for (int i = 0; i < 200 && run.Phase == Phase.Playing; i++) { run.Obstacles.Clear(); run.Step(); if (i % 3 == 0) yield return null; }
+
             game.StartLevel(12);
             yield return Steps(run, 140, true);
             run.Obstacles.RemoveAll(o => !o.IsRail);

@@ -37,7 +37,7 @@ namespace PalmStreet.Tests
                 var d = Levels.Get(n);
                 Assert.AreEqual(n, d.Number);
                 Assert.AreEqual((Theme)(n - 1), d.Theme, "un décor par ville, dans l'ordre de la carte");
-                Assert.AreEqual(n % 3 == 0 || n == 2 || n == 7, d.Boss != BossKind.None, "boss aux niveaux 2, 3, 6, 7, 9, 12 (spec 004 : rugby aux 2 et 7)");
+                Assert.AreEqual(n % 3 == 0 || n == 2 || n == 7 || n == 8, d.Boss != BossKind.None, "boss aux niveaux 2, 3, 6, 7, 8, 9, 12 (rugby aux 2 et 7, Pelotari au 8)");
                 float seconds = d.Finish / ((d.StartSpeed + d.MaxSpeed) / 2) / 60;
                 Assert.That(seconds, Is.InRange(60f, 90f), $"durée du niveau {n} (SC-002)");
                 if (n > 1)

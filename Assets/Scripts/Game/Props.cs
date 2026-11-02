@@ -43,8 +43,9 @@ namespace PalmStreet.Game
             }
         }
 
-        Pool cones, bolts, teeth, shadows, rails, gulls, pads, balls;
+        Pool cones, bolts, teeth, shadows, rails, gulls, pads, balls, pelotes;
         RugbyView pilier, talonneur;   // boss de rugby (spec 004)
+        PelotariView pelotari;         // spec 005
         Pool[] spells;   // vague, tornade, éclair, boule de feu
         Transform boss, bossWingL, bossWingR, bossPupil, bossShadow;
         static readonly Color Shadow = new Color(0.05f, 0.02f, 0.08f, 0.35f);
@@ -162,6 +163,15 @@ namespace PalmStreet.Game
                 return t;
             });
 
+            // pelote basque (spec 005) : petite balle cousue et traits de vitesse
+            pelotes = new Pool(() =>
+            {
+                var t = new GameObject("Pelote").transform;
+                t.SetParent(transform, false);
+                PelotariView.PelotaPaint(true).Make("Pelote", t, 16);
+                return t;
+            });
+
             // ballon de rugby (spec 004) : passe et chandelle du boss, ballons volants de Biarritz ; il tourne
             balls = new Pool(() =>
             {
@@ -255,6 +265,8 @@ namespace PalmStreet.Game
             talonneur = new RugbyView(transform, true, 6);
             pilier.Root.gameObject.SetActive(false);
             talonneur.Root.gameObject.SetActive(false);
+            pelotari = new PelotariView(transform, 6);
+            pelotari.Root.gameObject.SetActive(false);
             var red = Hex("#E0452B"); var dark = Hex("#9E2A18"); var white = Hex("#FFFDF5"); var ink = Hex("#1B1028");
             // crabe : carapace, yeux sur pédoncules, pinces qui claquent, pattes
             crab = new GameObject("Crabe").transform; crab.SetParent(transform, false);
@@ -341,7 +353,7 @@ namespace PalmStreet.Game
             finish.gameObject.SetActive(showFinish);
             if (showFinish) finish.position = W(run.Def.Finish, run.Ground.Floor(run.Def.Finish));
             foreach (var sp in spells) sp.Begin();
-            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin(); balls.Begin();
+            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin(); balls.Begin(); pelotes.Begin();
             var g = run.Ground;
             foreach (var o in run.Obstacles)
             {
@@ -351,6 +363,14 @@ namespace PalmStreet.Game
                     if (fresh) BuildRail(t.GetComponent<MeshFilter>().sharedMesh, o);
                     t.position = W(o.X, o.Y);
                     ShadowAt(o, o.X + o.W / 2, o.Y, o.W + 16, 0);
+                    continue;
+                }
+                if (o.Kind == ObstacleKind.Pelote)
+                {
+                    var pt = pelotes.Get(o, out _);
+                    pt.position = W(o.X + o.W / 2, o.Y + o.H / 2);
+                    pt.localScale = new Vector3(o.Reflected ? -1 : 1, 1, 1);   // traits de vitesse derrière, dans le sens du vol
+                    ShadowAt(o, o.X + o.W / 2, g.Floor(o.X + o.W / 2), 12, o.Y - g.Floor(o.X + o.W / 2));
                     continue;
                 }
                 if (o.Kind == ObstacleKind.Ball)
@@ -416,6 +436,7 @@ namespace PalmStreet.Game
             boss.gameObject.SetActive(kind == BossKind.Purple);
             pilier.Root.gameObject.SetActive(kind == BossKind.Pilier);
             talonneur.Root.gameObject.SetActive(kind == BossKind.Talonneur);
+            pelotari.Root.gameObject.SetActive(kind == BossKind.Pelotari);
             bossShadow.gameObject.SetActive(boss_ != null);
             if (boss_ != null)
             {
@@ -448,8 +469,10 @@ namespace PalmStreet.Game
                 if (boss_.IsRugby)   // pantin : posé par les pieds, la pose dit l'attaque
                     (kind == BossKind.Pilier ? pilier : talonneur).Pose(boss_, new Vector2(boss_.X + enter * enter * 320, gy + boss_.Lift), time, scale * (1 + hitPunch * 0.08f));
                 var body = kind == BossKind.Crab ? crab : kind == BossKind.Gull ? gullBoss : kind == BossKind.Boar ? boar : boss;
+                if (kind == BossKind.Pelotari) pelotari.Pose(boss_, new Vector2(boss_.X + enter * enter * 320, gy), time, scale * (1 + hitPunch * 0.08f));
                 if (boss_.IsRugby) body = (kind == BossKind.Pilier ? pilier : talonneur).Root;
-                else
+                else if (kind == BossKind.Pelotari) body = pelotari.Root;
+                if (!boss_.IsRugby && kind != BossKind.Pelotari)
                 {
                     body.position = W(pos.x, pos.y);
                     body.localScale = Vector3.one * scale * (1 + hitPunch * 0.08f);
@@ -485,7 +508,7 @@ namespace PalmStreet.Game
             }
 
             foreach (var sp in spells) sp.End();
-            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End(); balls.End();
+            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End(); balls.End(); pelotes.End();
         }
 
         float hitPunch;

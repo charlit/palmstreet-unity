@@ -198,7 +198,7 @@ dans research R8 et écrits avant le code de chaque story. Le dessin est vérifi
 - [X] T035 Lancer `Tools/run-tests.sh` (tout vert) et `Tools/capture.sh <scratchpad>`, et relire les captures selon `quickstart.md`
 - [X] T036 Régler la vie du Pilier et du Talonneur et le rythme des attaques, en jouant ou par test, pour viser SC-003 : le Pilier en moins de 60 s, le Talonneur en moins de 90 s, en esquivant bien
 - [X] T037 Lancer `Tools/build-ios.sh` puis `Tools/build-android.sh`, installer sur l'iPhone et sur l'émulateur, puis vérifier le niveau 2 complet et une partie fluide
-- [ ] T038 Demander au propriétaire avant tout commit et tout push
+- [X] T038 Demander au propriétaire avant tout commit et tout push
 
 ---
 
