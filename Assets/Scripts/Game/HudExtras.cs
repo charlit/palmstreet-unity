@@ -104,7 +104,7 @@ namespace PalmStreet.Game
                 text.rectTransform.pivot = new Vector2(0, 0.5f);
                 text.rectTransform.anchoredPosition = new Vector2(92, 0);
                 text.rectTransform.sizeDelta = new Vector2(244, 80);
-                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                Fit(text, 11);
             }
             var ok = Button(tutorial.transform, "C'est parti", new Vector2(0.5f, 0), new Vector2(0, 80), new Vector2(240, 54), Orange, () =>
             {
@@ -194,7 +194,7 @@ namespace PalmStreet.Game
         public void Shout(string trick, int combo)
         {
             shout.text = trick.TrimEnd(' ', '!') + "  x" + combo;
-            shout.color = combo >= 8 ? Pink : combo >= 5 ? Orange : Yellow;
+            shout.color = daySky ? Night : combo >= 8 ? Pink : combo >= 5 ? Orange : Yellow;
             shout.gameObject.SetActive(true);
             shoutTime = 0;
         }

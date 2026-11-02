@@ -52,6 +52,7 @@ namespace PalmStreet.Game
         readonly List<(Text text, float life, Vector3 pos)> floats = new List<(Text, float, Vector3)>();
         readonly Queue<(string, string, Color)> banners = new Queue<(string, string, Color)>();
         float bannerTime = 99, toastTime = 99, comboPop;
+        bool daySky;   // ville de jour : bandeaux, figures et points en sombre (spec 003)
         int lastCombo = 1;
 
         public void Init(Camera cam, HudActions a)
@@ -60,7 +61,8 @@ namespace PalmStreet.Game
             progress = a.Progress;
             outfitChanged = a.OutfitChanged;
             Action openSettings = a.OpenSettings, askQuit = a.AskQuit, resume = a.Resume, quit = a.Quit;
-            font = Font.CreateDynamicFontFromOSFont(new[] { "Avenir Next Condensed", "Futura", "Arial Black", "Roboto Condensed", "Roboto", "Arial" }, 32);
+            font = Resources.Load<Font>("Fonts/Rubik-Bold")   // Rubik Bold, licence OFL (spec 003)
+                ?? Font.CreateDynamicFontFromOSFont(new[] { "Avenir Next Condensed", "Futura", "Arial Black", "Roboto Condensed", "Roboto", "Arial" }, 32);
             round = RoundSprite();
 
             var canvasGo = new GameObject("Interface", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -344,8 +346,10 @@ namespace PalmStreet.Game
                 dotImg.raycastTarget = false;
                 var name = Label(card.transform, it.Name, 12, Cream, new Vector2(22, 8));
                 name.rectTransform.sizeDelta = new Vector2(100, 18);
+                Fit(name, 8);
                 var state = Label(card.transform, "", 10, Yellow, new Vector2(22, -11));
                 state.rectTransform.sizeDelta = new Vector2(104, 16);
+                Fit(state, 7);
                 refresh.Add(() =>
                 {
                     var p = progress();
@@ -444,7 +448,7 @@ namespace PalmStreet.Game
             tri.sprite = TriangleSprite();
             tri.color = Night;
             tri.raycastTarget = false;
-            Destroy(Label(face, text, 34, Night, new Vector2(16, 0)).GetComponent<Shadow>());
+            Label(face, text, 34, Night, new Vector2(16, 0));
             return root;
         }
 
@@ -577,7 +581,7 @@ namespace PalmStreet.Game
                 if (floats[i].life > 0) continue;
                 var f = floats[i].text;
                 f.text = text;
-                f.color = col;
+                f.color = daySky ? Night : col;
                 f.gameObject.SetActive(true);
                 floats[i] = (f, 1, world);
                 return;
@@ -601,6 +605,7 @@ namespace PalmStreet.Game
                 comboPop = Mathf.MoveTowards(comboPop, 0, dt * 4);
                 combo.rectTransform.localScale = Vector3.one * (1 + comboPop * 0.35f);
                 theme.text = ThemeLook.Of(run.Theme).Name;
+                daySky = Levels.IsDay(run.Theme);
                 bossBar.gameObject.SetActive(run.Boss != null && run.Boss.State != BossState.Dying);
                 if (run.Boss != null) bossFill.anchorMax = new Vector2(Mathf.Clamp01((float)run.Boss.Hp / run.Boss.MaxHp), 1);
 
@@ -608,7 +613,8 @@ namespace PalmStreet.Game
                 if (bannerTime > 1.7f && banners.Count > 0)
                 {
                     var (text, sub, col) = banners.Dequeue();
-                    banner.text = text; banner.color = col; subBanner.text = sub ?? "";
+                    banner.text = text; banner.color = daySky ? Night : col; subBanner.text = sub ?? "";
+                    subBanner.color = daySky ? Night : Cream;
                     bannerTime = 0;
                 }
                 bool showBanner = bannerTime < 1.7f;
@@ -717,11 +723,17 @@ namespace PalmStreet.Game
             t.color = col;
             t.text = text;
             t.raycastTarget = false;
-            t.horizontalOverflow = HorizontalWrapMode.Overflow;
-            var sh = rt.gameObject.AddComponent<Shadow>();
-            sh.effectColor = new Color(0.05f, 0.01f, 0.1f, 0.75f);
-            sh.effectDistance = new Vector2(size / 16f + 1, -(size / 16f + 1));
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;   // pas d'ombre : elle rendait le texte flou (spec 003)
             return t;
+        }
+
+        /// <summary>Texte qui rapetisse (jusqu'à min) pour tenir dans sa boîte au lieu de déborder (spec 003, FR-005).</summary>
+        static void Fit(Text t, int min)
+        {
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.resizeTextForBestFit = true;
+            t.resizeTextMinSize = min;
+            t.resizeTextMaxSize = t.fontSize;
         }
 
         static Sprite RoundSprite()

@@ -615,5 +615,12 @@ namespace PalmStreet.Tests
             }
             Assert.IsTrue(kinds.All(k => k == ObstacleKind.SmallCone), "seulement le niveau 1 ouvert : petits plots");
         }
+
+        [Test] public void CielsDeJour()
+        {
+            var day = new[] { Theme.Biarritz, Theme.Bidart, Theme.Guethary, Theme.Bayonne, Theme.Espelette, Theme.Cambo };
+            foreach (Theme t in System.Enum.GetValues(typeof(Theme)))
+                Assert.AreEqual(day.Contains(t), Levels.IsDay(t), t.ToString());
+        }
     }
 }

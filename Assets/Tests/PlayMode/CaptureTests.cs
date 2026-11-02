@@ -80,6 +80,17 @@ namespace PalmStreet.Tests
                 yield return Steps(run, 140, true);
                 yield return Shot($"0-ville-{n:00}");
             }
+            // spec 003 : textes du milieu de l'écran sur un ciel de jour (Biarritz : sombres) et du soir (Anglet : couleurs)
+            foreach (int n in new[] { 2, 1 })
+            {
+                game.StartLevel(n);
+                yield return Steps(run, 140, true);
+                hud.Banner("FULL SPEED", Levels.Get(n).City, new Color(1, 0.88f, 0.3f));
+                hud.Shout("KICKFLIP", 4);
+                hud.Float("+100 KICKFLIP", new Vector3(run.Skater.X / 100f, (run.Skater.Y + 70) / 100f, 0), new Color(1, 0.88f, 0.3f));
+                for (int i = 0; i < 6; i++) yield return null;
+                yield return Shot($"003-textes-{Levels.Get(n).City.ToLowerInvariant()}");
+            }
 
             // les 4 boss : au sol, puis en pleine attaque
             foreach (int n in new[] { 3, 6, 9, 12 })
@@ -129,6 +140,19 @@ namespace PalmStreet.Tests
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("0-profil-tenue2");
+            // spec 003 : le reste de la garde-robe, peaux et cheveux sur le nouveau skateur
+            foreach (var id in new[] { "beanie-stripes", "hoodie-purple", "pants-green", "start-shoes" }) all.Wear(id);
+            all.Skin = 3; all.HairStyle = 0; all.HairColor = 4;
+            game.Progress = all;
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("003-garde-robe-1");
+            foreach (var id in new[] { "start-head", "hoodie-gold", "start-legs", "shoes-yellow" }) all.Wear(id);
+            all.Skin = 1; all.HairStyle = 1; all.HairColor = 1;
+            game.Progress = all;
+            game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("003-garde-robe-2");
             game.Progress = six;
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
             yield return null;
@@ -175,7 +199,7 @@ namespace PalmStreet.Tests
             yield return Shot("3-grind");
             yield return Shot("3-grind-zoom", new Vector2(run.Skater.X, run.Skater.Y + 30));
             // figures sur rail, sur un long rail posé exprès
-            while (!run.Skater.Grounded || run.Skater.Rail != null) { run.Step(); run.Bolts.Clear(); }
+            for (int g = 0; g < 900 && (!run.Skater.Grounded || run.Skater.Rail != null); g++) { run.Step(); run.Bolts.Clear(); }
             run.Obstacles.Clear();
             run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Rail, X = run.Skater.X + 40, W = 900, H = Tuning.RailHeight });
             run.Press(); run.Release();
@@ -202,7 +226,7 @@ namespace PalmStreet.Tests
             yield return Steps(run, 200, true);
             for (int k = 0; k < Tuning.TrickNames.Length; k++)   // les figures (glissé dans leur direction), saisies à 5 moments
             {
-                while (!run.Skater.Grounded) { run.Step(); yield return null; }
+                for (int g = 0; g < 600 && !run.Skater.Grounded; g++) { run.Step(); yield return null; }
                 run.Obstacles.Clear(); run.Bolts.Clear();
                 run.Press(); run.Release();
                 yield return Steps(run, 12, false);
@@ -212,22 +236,22 @@ namespace PalmStreet.Tests
                 for (int moment = 1; moment <= 5; moment++)
                 {
                     int target = run.Skater.TrickLength * moment / 6;
-                    while (run.Skater.TrickStep < target) { run.Step(); run.Bolts.Clear(); }
+                    for (int g = 0; g < 600 && run.Skater.TrickStep < target && !run.Skater.Grounded; g++) { run.Step(); run.Bolts.Clear(); }
                     yield return Shot($"4-figure-{k}-{moment}", new Vector2(run.Skater.X, run.Skater.Y + 30));
                 }
             }
 
             // 180 à deux doigts : demi-tour en l'air, puis il roule en fakie
-            while (!run.Skater.Grounded) { run.Step(); yield return null; }
+            for (int g = 0; g < 600 && !run.Skater.Grounded; g++) { run.Step(); yield return null; }
             run.Obstacles.Clear(); run.Bolts.Clear();
             run.HalfTurn();
-            while (run.Skater.TrickStep < run.Skater.TrickLength / 2) { run.Step(); run.Bolts.Clear(); }
+            for (int g = 0; g < 600 && run.Skater.TrickStep < run.Skater.TrickLength / 2; g++) { run.Step(); run.Bolts.Clear(); }
             yield return Shot("4-fakie-180", new Vector2(run.Skater.X, run.Skater.Y + 30));
-            while (!run.Skater.Grounded) { run.Step(); run.Bolts.Clear(); }
+            for (int g = 0; g < 600 && !run.Skater.Grounded; g++) { run.Step(); run.Bolts.Clear(); }
             yield return Steps(run, 20, false);
             yield return Shot("4-fakie-roule", new Vector2(run.Skater.X, run.Skater.Y + 30));
             run.HalfTurn();
-            while (!run.Skater.Grounded) { run.Step(); run.Bolts.Clear(); }
+            for (int g = 0; g < 600 && !run.Skater.Grounded; g++) { run.Step(); run.Bolts.Clear(); }
 
             run.Score = 6000;
             yield return Steps(run, 240, true);
@@ -260,6 +284,14 @@ namespace PalmStreet.Tests
                 while (run.Skater.X < hole.Value.X0 - 120 && run.Phase == Phase.Playing) { run.Obstacles.RemoveAll(o => !o.IsRail); run.Step(); if (run.StepCount % 3 == 0) yield return null; }
                 yield return Shot("8-neon-trou");
             }
+
+            // spec 003 : genou très plié, baissé (glissé vers le bas)
+            game.StartRun(false);
+            yield return Steps(run, 60, true);
+            run.Press(); run.Swipe(0, -1);
+            for (int i = 0; i < 20; i++) { run.Step(); run.Obstacles.Clear(); yield return null; }
+            yield return Shot("003-baisse-zoom", new Vector2(run.Skater.X, run.Skater.Y + 30));
+            run.Release();
 
             game.StartRun(false);
             yield return Steps(run, 30, true);

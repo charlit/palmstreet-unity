@@ -65,6 +65,10 @@ namespace PalmStreet.Core
 
         public static LevelDef Get(int n) => All[n - 1];
 
+        /// <summary>Ciel de jour : le texte du milieu de l'écran s'y écrit en sombre (spec 003, FR-004).</summary>
+        public static bool IsDay(Theme t) => t == Theme.Biarritz || t == Theme.Bidart || t == Theme.Guethary
+            || t == Theme.Bayonne || t == Theme.Espelette || t == Theme.Cambo;
+
         static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip, ChallengeKind challenge, int goal, string spot)
         {
             float k = Tuning.SpeedScale;   // plus rapide, et plus long d'autant : la durée d'un niveau ne change pas

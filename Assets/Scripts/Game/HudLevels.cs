@@ -56,7 +56,8 @@ namespace PalmStreet.Game
                 nodeFills[i].raycastTarget = false;
                 Label(node.transform, n.ToString(), boss ? 22 : 19, Night, Vector2.zero);
                 var name = Label(mapViewport, def.City, 11, Cream, new Vector2(0, -size / 2 - 8), at);
-                name.rectTransform.sizeDelta = new Vector2(160, 16);
+                name.rectTransform.sizeDelta = new Vector2(104, 16);
+                Fit(name, 8);
                 nodeBests[i] = Label(mapViewport, "", 10, Yellow, new Vector2(0, -size / 2 - 20), at);
                 if (boss) Label(mapViewport, "BOSS", 11, Pink, new Vector2(0, size / 2 + 7), at);
                 nodes[i] = node.GetComponent<RectTransform>();
@@ -181,7 +182,6 @@ namespace PalmStreet.Game
             demoHow = Label(section, "", 12, Cream, new Vector2(-104, -430), new Vector2(0.5f, 1));
             demoHow.rectTransform.sizeDelta = new Vector2(150, 44);
             demoHow.horizontalOverflow = HorizontalWrapMode.Wrap;
-            Sharp(demoHow);
 
             // à droite : la liste ; toucher une figure la montre
             var entries = new System.Collections.Generic.List<(string name, int id)>
@@ -189,7 +189,6 @@ namespace PalmStreet.Game
             for (int k = 0; k < Tuning.TrickNames.Length; k++) entries.Add((Tuning.TrickNames[k], k));
             var equippedCount = Label(section, "", 13, Yellow, new Vector2(76, -142), new Vector2(0.5f, 1));
             equippedCount.rectTransform.sizeDelta = new Vector2(200, 18);
-            Sharp(equippedCount);
             refresh.Add(() => equippedCount.text = $"ÉQUIPÉES : {progress().ActiveTricks.Count}/{Progress.MaxEquipped}  (+ / -)");
             for (int i = 0; i < entries.Count; i++)
             {
@@ -200,8 +199,8 @@ namespace PalmStreet.Game
                 var title = Label(row.transform, name, 15, Night, new Vector2(0, 7));
                 title.rectTransform.sizeDelta = new Vector2(190, 18);
                 var state = Label(row.transform, "", 11, Night, new Vector2(0, -8));
-                state.rectTransform.sizeDelta = new Vector2(190, 14);
-                Sharp(title); Sharp(state);
+                state.rectTransform.sizeDelta = new Vector2((air ? 156 : 196) - 10, 14);
+                Fit(state, 8);
                 Image eqBg = null; Text eqText = null;
                 if (air)
                 {
@@ -214,7 +213,6 @@ namespace PalmStreet.Game
                     });
                     eqBg = eq.GetComponent<Image>();
                     eqText = Label(eq.transform, "+", 24, Night, Vector2.zero);
-                    Sharp(eqText);
                 }
                 refresh.Add(() =>
                 {
@@ -231,13 +229,6 @@ namespace PalmStreet.Game
                 });
             }
             SelectDemo(0, false);
-        }
-
-        /// <summary>Texte net sur petit corps : sans l'ombre portée, qui le faisait paraître flou.</summary>
-        static void Sharp(Text t)
-        {
-            var sh = t.GetComponent<Shadow>();
-            if (sh != null) Destroy(sh);
         }
 
         /// <summary>Le geste d'une figure, ou le niveau qui la débloque si elle n'est pas connue (short : pour la liste).</summary>

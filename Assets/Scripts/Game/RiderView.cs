@@ -56,24 +56,33 @@ namespace PalmStreet.Game
             body = new GameObject("Corps").transform;
             body.SetParent(spin, false);
 
-            legB = MakeLeg("Jambe arrière", order + 3, layer, 0.8f);
+            // ordres de tri : planche 0-2, bras arrière 3-4, jambe arrière 5-8, buste 9-11, jambe avant 12-15, tête 16-17, bras avant 18-19
+            // (chaque membre : contour d'encre puis couleurs, spec 003)
             torso = new GameObject("Buste").transform;
             torso.SetParent(body, false);
-            new Paint()
-                .Capsule(0, 2, 2.5f, 18, 15, l.Top)
-                .Ellipse(0, 0, 7.6f, 5.5f, l.Pants, 16)                 // bassin de la couleur du bas
-                .Rect(-6.8f, 3, 13.6f, 3, l.Top)                        // le sweat recouvre le haut du bassin
-                .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent)
-                .Make("Sweat", torso, order + 4, layer);
-            if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 4, layer);   // aile de goéland
-            TopDesign(l).Make("Motif du haut", torso, order + 4, layer);
-            var head = Head(l, order + 6, layer);
+            armB = Arm("Bras arrière", torso, order + 3, layer, 0.85f);
+            armB.localPosition = W(0.5f, 18);
+            legB = MakeLeg("Jambe arrière", order + 5, layer, 0.8f);
+            var bust = new Piece();
+            bool hoodie = l.TopId.StartsWith("hoodie");
+            if (hoodie) bust.Ink.Ellipse(-5.5f, 19.5f, 4.6f + Outline, 3.6f + Outline, Ink, 12);   // capuche (dessinée par TopDesign)
+            bust.Ellipse(0, 0, 7.6f, 5.5f, l.Pants, 16)                      // bassin de la couleur du bas
+                .Capsule(0, 2, 2.5f, 18, 15, l.Top);                         // épaules arrondies
+            bust.Col.Capsule(-3.4f, 3.5f, -1.2f, 17.5f, 6.5f, Shade(l.Top))   // ombre côté dos
+                .Capsule(4.2f, 6, 5.4f, 15.5f, 2.2f, Light(l.Top))             // lumière côté poitrine
+                .Rect(-6.8f, 3, 13.6f, 3, l.Top)                              // le haut recouvre le haut du bassin
+                .Line(-2.5f, 4.6f, 2.5f, 5.6f, 0.5f, Shade(l.Top))              // plis
+                .Line(-1, 7.4f, 3.6f, 8.2f, 0.5f, Shade(l.Top))
+                .Line(-6.6f, 3, 6.6f, 3, 0.7f, Shade(l.Pants))                 // taille
+                .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent);
+            bust.Make("Buste", torso, order + 9, layer);
+            if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 11, layer);   // aile de goéland
+            TopDesign(l).Make("Motif du haut", torso, order + 11, layer);
+            legF = MakeLeg("Jambe avant", order + 12, layer, 1);
+            var head = Head(l, order + 16, layer);
             head.SetParent(torso, false);
             head.localPosition = W(3.5f, 28);
-            legF = MakeLeg("Jambe avant", order + 5, layer, 1);
-            armB = Arm("Bras arrière", torso, order + 2, layer, 0.85f);
-            armB.localPosition = W(0.5f, 18);
-            armF = Arm("Bras avant", torso, order + 7, layer, 1);
+            armF = Arm("Bras avant", torso, order + 18, layer, 1);
             armF.localPosition = W(2.5f, 18);
         }
 
@@ -209,120 +218,239 @@ namespace PalmStreet.Game
             return p;
         }
 
+        // ---------- dessin des pièces (spec 003) ----------
+
+        const float Outline = 0.7f;   // contour d'encre (unités du skateur) : il suit l'échelle du skateur
+        static readonly Color Ink = Hex("#1B1028");
+        static Color Shade(Color c) => Color.Lerp(c, Color.black, 0.25f);
+        static Color Light(Color c) => Color.Lerp(c, Color.white, 0.2f);
+
+        /// <summary>
+        /// Une pièce : sa silhouette gonflée de Outline en encre (Ink), et ses couleurs par-dessus (Col).
+        /// Le contour d'un membre est posé sous toutes ses couleurs : aucun trait aux articulations.
+        /// </summary>
+        sealed class Piece
+        {
+            public readonly Paint Ink = new Paint(), Col = new Paint();
+            public Piece Capsule(float x0, float y0, float x1, float y1, float w, Color c)
+            { Ink.Capsule(x0, y0, x1, y1, w + 2 * Outline, RiderView.Ink); Col.Capsule(x0, y0, x1, y1, w, c); return this; }
+            public Piece Taper(float x0, float y0, float x1, float y1, float w0, float w1, Color c)
+            { Ink.Taper(x0, y0, x1, y1, w0 + 2 * Outline, w1 + 2 * Outline, RiderView.Ink); Col.Taper(x0, y0, x1, y1, w0, w1, c); return this; }
+            public Piece Ellipse(float cx, float cy, float rx, float ry, Color c, int seg = 16, float rot = 0)
+            { Ink.Ellipse(cx, cy, rx + Outline, ry + Outline, RiderView.Ink, seg, rot); Col.Ellipse(cx, cy, rx, ry, c, seg, rot); return this; }
+            public Piece Circle(float cx, float cy, float r, Color c, int seg = 14) => Ellipse(cx, cy, r, r, c, seg);
+            public Piece Dome(float cx, float cy, float rx, float ry, Color c, int seg = 14)
+            {
+                Ink.Dome(cx, cy, rx + Outline, ry + Outline, RiderView.Ink, seg).Rect(cx - rx - Outline, cy - Outline, 2 * (rx + Outline), Outline, RiderView.Ink);
+                Col.Dome(cx, cy, rx, ry, c, seg);
+                return this;
+            }
+            /// <summary>Polygone convexe ; son contour suit chaque bord.</summary>
+            public Piece Poly(Color c, params float[] xy)
+            {
+                Ink.Poly(RiderView.Ink, xy);
+                for (int i = 0, n = xy.Length / 2; i < n; i++)
+                {
+                    int j = (i + 1) % n;
+                    Ink.Capsule(xy[2 * i], xy[2 * i + 1], xy[2 * j], xy[2 * j + 1], 2 * Outline, RiderView.Ink);
+                }
+                Col.Poly(c, xy);
+                return this;
+            }
+            public Piece Rect(float x, float y, float w, float h, Color c) => Poly(c, x, y, x + w, y, x + w, y + h, x, y + h);
+            public void Make(string name, Transform t, int order, string layer)
+            {
+                Ink.Make(name + " contour", t, order, layer);
+                Col.Make(name, t, order + 1, layer);
+            }
+        }
+
+        /// <summary>
+        /// Jambe : cuisse effilée, tibia et chaussure. Au genou, la cuisse finit par un demi-disque du rayon du haut du
+        /// tibia, centré sur l'articulation ; le contour de toute la jambe est sous ses couleurs (ordres : encre de la jambe,
+        /// couleurs de la jambe, encre de la chaussure, couleurs de la chaussure).
+        /// </summary>
         LegRig MakeLeg(string name, int order, string layer, float tint)
         {
             var l = look;
             Color Tint(Color c) => Color.Lerp(Color.black, c, tint);
-            Transform Part(string part, Paint p, int o)
+            Transform Part(string part, Piece p, int o)
             {
                 var t = new GameObject(name + " " + part).transform;
                 t.SetParent(body, false);
-                p.Make(part, t, o, layer);
+                p.Ink.Make(part + " contour", t, o, layer);
+                p.Col.Make(part, t, o + 1, layer);
                 return t;
             }
-            var thigh = new Paint().Capsule(0, 0, 0, -Thigh, l.Shorts ? 9.6f : 8.8f, Tint(l.Pants));
+            Color pants = Tint(l.Pants), skin = Tint(l.Skin);
+            float knee = l.Shorts ? 6 : 8;   // largeur au genou : la même pour la cuisse et le tibia
+            var thigh = new Piece();
+            if (l.Shorts)
+            {
+                thigh.Taper(0, 0, 0, -Thigh, 7.4f, knee, skin)
+                     .Taper(0, 0.5f, 0, -Thigh * 0.62f, 10, 9, pants);
+                thigh.Col.Line(-4.4f, -Thigh * 0.62f + 0.4f, 4.4f, -Thigh * 0.62f + 0.4f, 0.8f, Shade(pants))   // ourlet
+                     .Capsule(-2.2f, -2, -1.4f, -Thigh * 0.55f, 2.4f, Shade(pants))
+                     .Line(-1.2f, -Thigh + 1.2f, 1.6f, -Thigh + 0.6f, 0.5f, Shade(skin));                       // genou
+            }
+            else
+            {
+                thigh.Taper(0, 0, 0, -Thigh, 9.4f, knee, pants);
+                thigh.Col.Taper(-2.6f, -0.5f, -2.2f, -Thigh + 1, 3.2f, 2.6f, Shade(pants))                   // ombre dessous
+                     .Line(3.2f, -1.5f, 2.8f, -Thigh + 2.5f, 0.9f, Light(pants))                              // lumière dessus
+                     .Line(-2.6f, -2.2f, 1.2f, -3.6f, 0.5f, Shade(pants))                                       // plis de l'aine
+                     .Line(-1.6f, -Thigh + 2.6f, 2.4f, -Thigh + 1.6f, 0.5f, Shade(pants));                      // pli du genou
+            }
             switch (l.LegsId)
             {
                 case "start-legs":   // jean : genou usé et couture
-                    thigh.Rect(-3, -Thigh + 1.5f, 5.5f, 3.5f, Tint(Color.Lerp(l.Pants, Color.white, 0.35f)))
-                         .Line(-3.2f, -Thigh + 3, 2.2f, -Thigh + 3.4f, 0.5f, Tint(Color.white)).Line(3.4f, -1, 3.4f, -Thigh + 1, 0.4f, Tint(Hex("#E9B44C")));
+                    thigh.Col.Rect(-3, -Thigh + 1.5f, 5.5f, 3.5f, Tint(Color.Lerp(l.Pants, Color.white, 0.35f)))
+                         .Line(-3.2f, -Thigh + 3, 2.2f, -Thigh + 3.4f, 0.5f, Tint(Color.white)).Line(3.4f, -1, 3.2f, -Thigh + 1, 0.4f, Tint(Hex("#E9B44C")));
                     break;
                 case "shorts-surf":   // hibiscus
-                    foreach (var (x, y) in new[] { (-1.5f, -4f), (2f, -9f) })
+                    foreach (var (x, y) in new[] { (-1.5f, -2.5f), (2f, -6.5f) })
                     {
-                        for (int i = 0; i < 5; i++) { float a = i * Mathf.PI * 2 / 5; thigh.Circle(x + Mathf.Cos(a) * 1.4f, y + Mathf.Sin(a) * 1.4f, 1.1f, Tint(Hex("#FF4D8D")), 8); }
-                        thigh.Circle(x, y, 0.7f, Tint(Hex("#FFE14D")), 6);
+                        for (int i = 0; i < 5; i++) { float a = i * Mathf.PI * 2 / 5; thigh.Col.Circle(x + Mathf.Cos(a) * 1.4f, y + Mathf.Sin(a) * 1.4f, 1.1f, Tint(Hex("#FF4D8D")), 8); }
+                        thigh.Col.Circle(x, y, 0.7f, Tint(Hex("#FFE14D")), 6);
                     }
                     break;
                 case "pants-green":   // cargo : grande poche à rabat
-                    thigh.Rect(-3.2f, -Thigh * 0.7f, 6, 5.5f, Tint(Color.Lerp(l.Pants, Color.black, 0.25f)))
+                    thigh.Col.Rect(-3.2f, -Thigh * 0.7f, 6, 5.5f, Tint(Color.Lerp(l.Pants, Color.black, 0.25f)))
                          .Rect(-3.4f, -Thigh * 0.7f + 4, 6.4f, 1.6f, Tint(Color.Lerp(l.Pants, Color.black, 0.4f)));
                     break;
             }
-            var shin = new Paint();
-            if (l.Shorts) shin.Capsule(0, 0, 0, -Shin, 6, Tint(l.Skin)).Rect(-3.3f, -Shin + 0.5f, 6.6f, 3.5f, Tint(l.Accent));   // chaussettes
-            else shin.Capsule(0, 0, 0, -Shin + 1, 8, Tint(l.Pants)).Rect(-4.2f, -Shin, 8.4f, 2.2f, Tint(Color.Lerp(l.Pants, Color.black, 0.25f)));
+            var shin = new Piece();
+            if (l.Shorts)
+            {
+                shin.Taper(0, 0, 0, -Shin + 1, knee, 5.2f, skin).Rect(-3.2f, -Shin + 0.5f, 6.4f, 3.5f, Tint(l.Accent));   // chaussettes
+                shin.Col.Line(-1.8f, -2, -1.6f, -Shin + 4.5f, 1.2f, Shade(skin)).Line(-3.2f, -Shin + 3.4f, 3.2f, -Shin + 3.4f, 0.5f, Shade(Tint(l.Accent)));
+            }
+            else
+            {
+                shin.Taper(0, 0, 0, -Shin + 1, knee, 7.4f, pants).Rect(-4, -Shin, 8, 2.4f, Shade(pants));          // bas du jean
+                shin.Col.Taper(-2.3f, -1, -2, -Shin + 2.5f, 2.8f, 2.4f, Shade(pants))
+                     .Line(2.6f, -2, 2.4f, -Shin + 3, 0.8f, Light(pants))
+                     .Line(-2.4f, -Shin + 4, 2.6f, -Shin + 3.3f, 0.5f, Shade(pants));                           // pli au-dessus de la chaussure
+            }
             // chaussure : la cheville est l'origine, la semelle 4 plus bas, la pointe vers l'avant
-            var shoe = new Paint()
-                .Ellipse(3, -1.4f, 6.8f, 2.9f, Tint(l.Shoes), 16)
-                .Rect(-3.8f, -4, 13.6f, 1.8f, Tint(Hex("#F4F1EA")))
-                .Line(2, 0.4f, 6.5f, -0.6f, 0.8f, Tint(Color.Lerp(l.Shoes, Color.white, 0.6f)));
+            Color shoes = Tint(l.Shoes), sole = Tint(l.ShoesId == "shoes-yellow" ? Hex("#1B1028") : Hex("#F4F1EA"));
+            var shoe = new Piece()
+                .Ellipse(3, -1.4f, 6.8f, 2.9f, shoes, 18)
+                .Rect(-3.8f, -4, 13.6f, 1.9f, sole);
+            shoe.Col.Ellipse(1.5f, -2, 4.8f, 1.6f, Shade(shoes), 14)                                                // ombre du flanc
+                .Ellipse(3, -1.1f, 6.2f, 2.3f, shoes, 18)
+                .Ellipse(8.2f, -1.9f, 2.5f, 1.8f, Tint(l.ShoesId == "start-shoes" ? Hex("#C9CED6") : Light(l.Shoes)), 12)   // embout
+                .Curve(new Vector2(-2.6f, -2.3f), new Vector2(2.5f, 0.2f), new Vector2(6.8f, -2.4f), 0.8f, 0.8f, Tint(Light(l.Shoes)), 6)   // bande
+                .Line(-3.6f, -2.5f, 9.6f, -2.5f, 0.45f, Shade(sole));                                              // semelle
+            for (int i = 0; i < 3; i++) shoe.Col.Line(2.4f + i * 1.6f, 1 - i * 0.45f, 3.6f + i * 1.6f, 0.4f - i * 0.45f, 0.55f, Tint(Color.white));   // lacets
             switch (l.ShoesId)
             {
-                case "start-shoes": shoe.Ellipse(8, -2, 2.4f, 1.7f, Tint(Hex("#C9CED6")), 10); break;                     // bout gris
-                case "shoes-yellow":                                                                                          // bande noire, semelle noire
-                    shoe.Curve(new Vector2(-1, -2.5f), new Vector2(3, 0.5f), new Vector2(7, -2.6f), 1, 1, Tint(Hex("#1B1028")), 6)
-                        .Rect(-3.8f, -4, 13.6f, 1.8f, Tint(Hex("#1B1028")));
+                case "shoes-yellow":   // bande noire
+                    shoe.Col.Curve(new Vector2(-1, -2.4f), new Vector2(3, 0.5f), new Vector2(7, -2.6f), 1, 1, Tint(Hex("#1B1028")), 6);
                     break;
-                case "shoes-pink":                                                                                            // lacets blancs, bande violette
-                    for (int i = 0; i < 3; i++) shoe.Circle(1.5f + i * 2, 0.6f - i * 0.5f, 0.55f, Tint(Color.white), 6);
-                    shoe.Rect(-3, -2.8f, 11, 0.9f, Tint(Hex("#7B2CBF")));
+                case "shoes-pink":     // lacets blancs, bande violette
+                    for (int i = 0; i < 3; i++) shoe.Col.Circle(1.5f + i * 2, 0.6f - i * 0.5f, 0.55f, Tint(Color.white), 6);
+                    shoe.Col.Rect(-3, -2.8f, 11, 0.9f, Tint(Hex("#7B2CBF")));
                     break;
             }
-            return new LegRig { Thigh = Part("cuisse", thigh, order), Shin = Part("tibia", shin, order), Shoe = Part("chaussure", shoe, order + 1) };
+            return new LegRig { Thigh = Part("cuisse", thigh, order), Shin = Part("tibia", shin, order), Shoe = Part("chaussure", shoe, order + 2) };
         }
 
+        /// <summary>Bras : manche, coude marqué, main avec pouce et doigts repliés. Ordres : encre puis couleurs.</summary>
         Transform Arm(string name, Transform parent, int order, string layer, float tint)
         {
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
             var l = look;
             Color Tint(Color c) => Color.Lerp(Color.black, c, tint);
+            Color top = Tint(l.Top), skin = Tint(l.Skin);
+            var p = new Piece();
             if (l.TopId == "start-top")   // t-shirt : manches courtes
-                new Paint().Capsule(0, -4, 0, -15, 4.6f, Tint(l.Skin)).Capsule(0, 0, 0, -4.5f, 6.2f, Tint(l.Top)).Make(name, t, order, layer);
-            else new Paint().Capsule(0, 0, 0, -10, 5.8f, Tint(l.Top)).Capsule(0, -10, 0, -15, 4.6f, Tint(l.Skin))
-                .Rect(-2.9f, -10.5f, 5.8f, 1.6f, Tint(Color.Lerp(l.Top, Color.black, 0.25f))).Make(name, t, order, layer);   // poignet du sweat
+            {
+                p.Taper(0, -3, 0.5f, -9, 4.6f, 4.2f, skin).Taper(0.5f, -9, 0, -13.4f, 4.2f, 3.8f, skin)
+                 .Capsule(0, 0, 0, -4.4f, 6.4f, top);
+                p.Col.Capsule(-1.2f, -0.2f, -1.2f, -4.2f, 2.6f, Shade(top))
+                     .Line(-3.1f, -5.5f, 3.1f, -5.5f, 0.6f, Ink);                       // ourlet de la manche
+            }
+            else
+            {
+                p.Taper(0, 0, 0.5f, -9, 6.2f, 5.6f, top).Taper(0.5f, -9, 0.2f, -11.6f, 5.6f, 5.2f, top);
+                p.Col.Taper(-1.4f, -0.5f, -1, -10.5f, 2.8f, 2.2f, Shade(top))
+                     .Rect(-2.6f, -12.4f, 5.6f, 1.6f, Shade(top));                    // poignet
+            }
+            p.Col.Line(-0.6f, -8.6f, 1.6f, -9.4f, 0.5f, Shade(l.TopId == "start-top" ? skin : top));   // coude
+            // main : paume, doigts repliés vers l'avant, pouce
+            p.Circle(0.2f, -15, 2.4f, skin, 12)
+             .Capsule(-1.2f, -16.4f, 1.8f, -16.6f, 1.9f, skin)
+             .Capsule(1.6f, -13.8f, 2.8f, -15.4f, 1.4f, skin);
+            p.Col.Line(-0.3f, -15.6f, -0.3f, -17.2f, 0.35f, Shade(skin)).Line(0.8f, -15.7f, 0.8f, -17.3f, 0.35f, Shade(skin));
+            p.Make(name, t, order, layer);
             return t;
         }
 
+        /// <summary>Tête de profil (vers la droite) : front, nez, lèvres, menton, oreille, joue, œil, sourcil ; cheveux qui suivent le crâne.</summary>
         static Transform Head(RiderLook l, int order, string layer)
         {
-            var p = new Paint();
-            p.Rect(-2.2f, -9, 4.4f, 5, l.Skin);                       // cou
-            p.Circle(0, 0, 7.5f, l.Skin, 20);
-            p.Circle(-5.5f, -0.5f, 2, Color.Lerp(l.Skin, Color.black, 0.15f), 10);   // oreille
-            // cheveux (libres), puis couvre-chef gagné (spec 002)
+            var p = new Piece();
+            p.Capsule(0.2f, -8, 0.6f, -3, 4.4f, Shade(l.Skin));                    // cou
+            p.Circle(-0.5f, 0.6f, 7.2f, l.Skin, 22);                                  // crâne
+            p.Poly(l.Skin, 0, -7.2f, 5.2f, -7.2f, 6.9f, -5.6f, 7.3f, -4.6f, 7.4f, -3.2f, 7.35f, -2.6f, 7, 1.2f, 6.2f, 4.2f, 0, 5);   // visage
+            p.Poly(l.Skin, 6.9f, 0.6f, 9.1f, -1.7f, 8.5f, -2.4f, 7.1f, -2.5f);         // nez
+            p.Col.Line(7.3f, -2.4f, 8.4f, -2.3f, 0.4f, Shade(l.Skin))                // narine
+                .Ellipse(2.4f, -5.6f, 3.6f, 1.2f, Shade(l.Skin), 12)                  // dessous de la mâchoire
+                .Ellipse(3.4f, -5.2f, 3.4f, 1.1f, l.Skin, 12);
+            // cheveux, puis couvre-chef gagné (spec 002)
             if (l.Hat == Hat.Cap || l.Hat == Hat.Beanie)
-                p.Ellipse(-5.8f, -0.5f, 2.6f, 3.2f, l.Hair, 10);       // le bonnet ou la casquette cache les cheveux : seule la nuque dépasse
+                p.Ellipse(-6, -0.6f, 2.6f, 3.2f, l.Hair, 10);                         // le couvre-chef cache les cheveux : seule la nuque dépasse
             else if (l.Curly)
                 for (int i = 0; i < 9; i++)
                 {
                     float a = Mathf.PI * (0.05f + i / 8f * 1.05f);
-                    p.Circle(Mathf.Cos(a) * 7, 1.5f + Mathf.Sin(a) * 6.5f, 3.6f, l.Hair, 10);
+                    p.Circle(-0.5f + Mathf.Cos(a) * 7, 1.8f + Mathf.Sin(a) * 6.5f, 3.6f, l.Hair, 10);
                 }
             else
             {
-                p.Dome(0, 1, 8, 8.2f, l.Hair, 14);
-                p.Ellipse(-5.5f, 1, 3, 4.5f, l.Hair, 10);
+                p.Ellipse(-1.6f, 3.2f, 7, 5.2f, l.Hair, 18, 0.2f)                    // calotte qui suit le crâne
+                 .Ellipse(-5.4f, -0.4f, 3, 4.4f, l.Hair, 12)                          // nuque
+                 .Ellipse(4.2f, 5.6f, 2.4f, 1.4f, l.Hair, 10, -0.5f);                 // mèche du front
+                p.Col.Line(-4, 6.2f, 1.5f, 7.4f, 0.6f, Light(l.Hair)).Line(-5.6f, 3, -3.2f, 5.6f, 0.5f, Shade(l.Hair));
             }
+            p.Col.Ellipse(-2, -0.4f, 2, 2.5f, Shade(l.Skin), 12).Ellipse(-1.8f, -0.4f, 1.4f, 1.9f, l.Skin, 10)   // oreille et son creux
+                .Ellipse(-1.6f, -0.6f, 0.6f, 1, Shade(l.Skin), 8);
             switch (l.Hat)
             {
                 case Hat.Cap:
-                    p.Dome(0, 1.2f, 8.4f, 8, l.HatColor, 14);
-                    p.Capsule(-7, 2.2f, -13, 1.2f, 3, l.HatColor);   // visière à l'envers
-                    p.Circle(0, 9.3f, 1.3f, Color.Lerp(l.HatColor, Color.black, 0.3f), 8);   // bouton
+                    p.Dome(-0.4f, 1.4f, 8.2f, 7.8f, l.HatColor, 14)
+                     .Capsule(-7.4f, 2.2f, -13, 1.2f, 3, l.HatColor);                 // visière à l'envers
+                    p.Col.Line(-7.8f, 1.6f, 7.6f, 1.6f, 0.6f, Shade(l.HatColor)).Circle(-0.4f, 9.2f, 1.3f, Shade(l.HatColor), 8);   // bouton
                     if (l.HeadId == "cap-gold")   // étoile blanche devant
-                        for (int i = 0; i < 5; i++) { float a = Mathf.PI / 2 + i * Mathf.PI * 2 / 5; p.Line(4.2f, 4.6f, 4.2f + Mathf.Cos(a) * 2.2f, 4.6f + Mathf.Sin(a) * 2.2f, 0.9f, Color.white); }
-                    else p.Rect(2.5f, 3.2f, 3.6f, 2.6f, Color.white).Rect(3.2f, 3.8f, 2.2f, 1.4f, l.HatColor);   // petit « P »
+                        for (int i = 0; i < 5; i++) { float a = Mathf.PI / 2 + i * Mathf.PI * 2 / 5; p.Col.Line(3.8f, 4.6f, 3.8f + Mathf.Cos(a) * 2.2f, 4.6f + Mathf.Sin(a) * 2.2f, 0.9f, Color.white); }
+                    else p.Col.Rect(2.1f, 3.2f, 3.6f, 2.6f, Color.white).Rect(2.8f, 3.8f, 2.2f, 1.4f, l.HatColor);   // petit « P »
                     break;
                 case Hat.Beanie:
-                    p.Dome(0, 1, 8.2f, 9.5f, l.HatColor, 14);
-                    if (l.Stripes) { p.Rect(-7.6f, 4.5f, 15.2f, 1.8f, Color.white); p.Rect(-6.2f, 7.5f, 12.4f, 1.6f, Color.white); }
-                    p.Rect(-8.4f, 0, 16.8f, 3.4f, Color.Lerp(l.HatColor, Color.white, 0.25f));
-                    p.Circle(0, 11, 3, Color.white, 10);
+                    p.Dome(-0.4f, 1, 8, 9.3f, l.HatColor, 14).Circle(-0.4f, 10.8f, 3, Color.white, 10);
+                    if (l.Stripes) p.Col.Rect(-7.8f, 4.5f, 14.8f, 1.8f, Color.white).Rect(-6.4f, 7.5f, 12, 1.6f, Color.white);
+                    p.Col.Rect(-8.4f, 0, 16, 3.4f, Light(l.HatColor)).Line(-8.4f, 0.2f, 7.6f, 0.2f, 0.5f, Shade(l.HatColor));
                     break;
                 case Hat.Band:   // bandana à pois blancs
-                    p.Rect(-8, 2, 16, 3, l.HatColor);
-                    p.Capsule(-8, 3.5f, -12, 0, 2.4f, l.HatColor);
-                    for (int i = 0; i < 4; i++) p.Circle(-5 + i * 3.5f, 3.5f, 0.5f, Color.white, 6);
+                    p.Rect(-7.8f, 2, 15, 3, l.HatColor).Capsule(-8, 3.5f, -12, 0, 2.4f, l.HatColor);
+                    for (int i = 0; i < 4; i++) p.Col.Circle(-5 + i * 3.5f, 3.5f, 0.5f, Color.white, 6);
                     break;
             }
-            p.Circle(4.2f, 0.5f, 1.2f, Hex("#1B1028"), 8);           // œil
-            p.Line(3.2f, -3.6f, 6, -3.2f, 1, Color.Lerp(l.Skin, Color.black, 0.4f));
+            // visage : joue, œil (blanc, iris, reflet), paupière, sourcil, lèvres
+            p.Col.Circle(4.4f, -3.2f, 1.6f, new Color(1, 0.45f, 0.5f, 0.35f), 10)
+                .Ellipse(4.9f, 0.7f, 1.5f, 1.1f, Color.white, 12)
+                .Circle(5.5f, 0.6f, 0.85f, Hex("#3A2A1E"), 10)
+                .Circle(5.8f, 0.95f, 0.3f, Color.white, 6)
+                .Line(3.3f, 1.8f, 6.4f, 1.6f, 0.5f, Ink);
+            if (l.Hat != Hat.Beanie) p.Col.Line(3.4f, 3, 6.5f, 2.8f, 0.8f, Shade(l.Hair));   // sourcil
+            p.Col.Line(6.4f, -4.1f, 7.35f, -4, 0.45f, Color.Lerp(Shade(l.Skin), Hex("#B23A48"), 0.5f))   // bouche
+                .Line(6.7f, -4.6f, 7.2f, -4.6f, 0.5f, Light(l.Skin));                                         // lèvre
             var t = new GameObject("Tête").transform;
             p.Make("Tête", t, order, layer);
             return t;
         }
+
 
         // ---------- poses ----------
 

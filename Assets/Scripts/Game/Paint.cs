@@ -98,6 +98,18 @@ namespace PalmStreet.Game
             return Circle(x1, y1, w / 2, col, 10);
         }
 
+        /// <summary>Capsule effilée : bouts ronds de largeurs w0 et w1 (cuisse plus large à la hanche qu'au genou).</summary>
+        public Paint Taper(float x0, float y0, float x1, float y1, float w0, float w1, Color col)
+        {
+            var d = new Vector2(x1 - x0, y1 - y0);
+            if (d.sqrMagnitude < 1e-6f) return Circle(x0, y0, Mathf.Max(w0, w1) / 2, col, 12);
+            var n = new Vector2(-d.y, d.x).normalized;
+            Vector2 a = n * (w0 / 2), b = n * (w1 / 2);
+            Poly(col, x0 + a.x, y0 + a.y, x1 + b.x, y1 + b.y, x1 - b.x, y1 - b.y, x0 - a.x, y0 - a.y);
+            Circle(x0, y0, w0 / 2, col, 12);
+            return Circle(x1, y1, w1 / 2, col, 12);
+        }
+
         /// <summary>Courbe de Bézier quadratique tracée en capsules (palmes, câbles).</summary>
         public Paint Curve(Vector2 a, Vector2 ctrl, Vector2 b, float w0, float w1, Color col, int seg = 8)
         {
