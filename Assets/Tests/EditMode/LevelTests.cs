@@ -20,7 +20,7 @@ namespace PalmStreet.Tests
             Assert.IsTrue(r.Skater.Grounded, $"retombée attendue (phase {r.Phase})");
         }
 
-        static Run Story(int n, params int[] tricks)
+        internal static Run Story(int n, params int[] tricks)
         {
             var r = new Run(5) { StartRamp = false };
             r.StartLevel(Levels.Get(n), tricks);
@@ -37,7 +37,7 @@ namespace PalmStreet.Tests
                 var d = Levels.Get(n);
                 Assert.AreEqual(n, d.Number);
                 Assert.AreEqual((Theme)(n - 1), d.Theme, "un décor par ville, dans l'ordre de la carte");
-                Assert.AreEqual(n % 3 == 0, d.Boss != BossKind.None, "boss aux niveaux 3, 6, 9, 12");
+                Assert.AreEqual(n % 3 == 0 || n == 2 || n == 7, d.Boss != BossKind.None, "boss aux niveaux 2, 3, 6, 7, 9, 12 (spec 004 : rugby aux 2 et 7)");
                 float seconds = d.Finish / ((d.StartSpeed + d.MaxSpeed) / 2) / 60;
                 Assert.That(seconds, Is.InRange(60f, 90f), $"durée du niveau {n} (SC-002)");
                 if (n > 1)
@@ -127,7 +127,7 @@ namespace PalmStreet.Tests
         }
 
         /// <summary>Obstacles vus pendant un niveau joué sans chuter.</summary>
-        static System.Collections.Generic.HashSet<ObstacleKind> KindsIn(int n, out bool hills, out bool gaps)
+        internal static System.Collections.Generic.HashSet<ObstacleKind> KindsIn(int n, out bool hills, out bool gaps)
         {
             var r = Story(n);
             var kinds = new System.Collections.Generic.HashSet<ObstacleKind>();
@@ -165,8 +165,9 @@ namespace PalmStreet.Tests
 
         [Test] public void Niveau_BulleDAideAuDepart()
         {
-            var r = Story(7);
-            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.NewObstacle && e.Text.Contains("Mouettes")));
+            var r = Story(2);
+            Assert.IsTrue(r.Events.Any(e => e.Cue == Cue.NewObstacle && e.Text.Contains("baisser")), "spec 004 : on apprend à se baisser au niveau 2");
+            Assert.IsFalse(Story(7).Events.Any(e => e.Cue == Cue.NewObstacle), "le conseil n'est plus au niveau 7");
             Assert.IsFalse(Story(1).Events.Any(e => e.Cue == Cue.NewObstacle));
         }
 
@@ -528,7 +529,7 @@ namespace PalmStreet.Tests
         [Test] public void Objets_TenueDeDepartEtUnParNiveau()
         {
             Assert.AreEqual(5, Items.All.Count(i => i.Level == 0), "tenue de départ : un objet par emplacement");
-            for (int n = 1; n <= 12; n++) Assert.AreEqual(1, Items.All.Count(i => i.Level == n), $"un objet au niveau {n}");
+            for (int n = 1; n <= 12; n++) Assert.AreEqual(1, Items.All.Count(i => i.Level == n && i.Boss == BossKind.None), $"un objet au niveau {n} (hors tenues de rugby)");
             Assert.AreEqual(Items.All.Length, Items.All.Select(i => i.Id).Distinct().Count());
             Assert.AreEqual("cap-red", Items.ForLevel(1).Id);
             Assert.AreEqual("deck-neon", Items.ForLevel(12).Id);

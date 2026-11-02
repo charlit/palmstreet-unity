@@ -51,7 +51,8 @@ namespace PalmStreet.Game
             string info = $"Étoiles : {p.StarCount(n)}/3   ·   meilleur score : {(p.IsCleared(n) ? p.Best[n - 1].ToString() : "—")}"
                 + $"\nDéfi : {d.ChallengeText} ({star})\nScore visé : {d.ScoreGoal} ({score})\nSpot : {d.Spot}";
             if (d.Unlocks >= 0) info += $"\nDébloque : {Tuning.TrickNames[d.Unlocks]}";
-            if (d.Boss != BossKind.None) info += $"\nBattre le boss donne le sort {Tuning.SpellNames[(int)d.Boss - 1]}";
+            if (Levels.SpellOf(d.Boss) >= 0) info += $"\nBattre le boss donne le sort {Tuning.SpellNames[Levels.SpellOf(d.Boss)]}";
+            else if (d.Boss != BossKind.None) info += "\nBattre le boss donne sa tenue complète";
 
             previewInfo.text = info;
             preview.SetActive(true);
@@ -62,7 +63,7 @@ namespace PalmStreet.Game
 
         static readonly string[] Gestures =
         {
-            "TOUCHE : ollie\nGLISSE VERS LE BAS : il se baisse (oiseaux)",
+            "TOUCHE : ollie\nGLISSE VERS LE BAS : il se baisse (mouettes)",
             "EN L'AIR, GLISSE : une figure par direction",
             "2 DOIGTS : 180, passe en fakie (figures ×1,5)",
             "SUR UN RAIL, GLISSE : 8 grinds (50-50, boardslide, smith…)\nTOUCHE pour sauter du rail",

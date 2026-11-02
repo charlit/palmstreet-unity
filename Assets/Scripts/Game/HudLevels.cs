@@ -129,7 +129,8 @@ namespace PalmStreet.Game
             Label(mb.transform, "CARTE", 18, Cream, Vector2.zero);
         }
 
-        public void ShowCleared(LevelDef def, int score, int best, string trick, Item gift, string challenge)
+        /// <summary>outfit : un boss de rugby battu pour la première fois donne sa tenue (spec 004), annoncée à la place de l'objet.</summary>
+        public void ShowCleared(LevelDef def, int score, int best, string trick, Item gift, string challenge, Item outfit = null)
         {
             clearedChallenge.text = challenge;
             cleared.SetActive(true);
@@ -139,7 +140,8 @@ namespace PalmStreet.Game
             clearedCity.text = $"NIVEAU {def.Number} · {def.City}" + (last ? " · FIN DE L'AVENTURE" : "");
             clearedScore.text = score.ToString();
             clearedBest.text = "MEILLEUR : " + best;
-            clearedGift.text = gift != null ? "NOUVEAU : " + gift.Name : "";
+            if (outfit != null) gift = outfit;
+            clearedGift.text = outfit != null ? "NOUVELLE TENUE : " + Game.BossName(outfit.Boss) : gift != null ? "NOUVEAU : " + gift.Name : "";
             clearedChip.gameObject.SetActive(gift != null);
             if (gift != null)
             {

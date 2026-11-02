@@ -75,6 +75,14 @@ namespace PalmStreet.Core
         public const float NeonMaxSpeed = 5.0f;
         public const float GapMin = 50, GapMax = 90, GapChance = 0.4f, FallCrash = -45;
         public const float GullHeight = 46, GullWidth = 30, GullBody = 16, GullSpeed = 1.6f;
+        public const float FlyingRate = 0.28f;          // part des obstacles volants (mouettes, ballons)
+
+        // boss de rugby (spec 004) : annonce, passe, chandelle
+        public const int RugbyWindup = 36;              // 0,6 s de pose avant chaque attaque (SC-002 : ≥ 0,5 s)
+        public const int RugbyAttackEvery = 150, RugbyAttackSteps = 60;
+        public const float PassSpeed = 4;               // vitesse du ballon vers le skateur (en plus du défilement)
+        public const int ChandelleFlight = 60;          // pas de vol de la chandelle
+        public const float ChandelleLand = 140, ChandelleBounce = 26, ChandelleRoll = 3, BallGravity = 0.25f;
         public const float PadWidth = 40, PadHeight = 6, PadJump = 13.5f;
         public const int MegaAirPoints = 50;
 

@@ -181,6 +181,8 @@ namespace PalmStreet.Game
             bannerRt.anchoredPosition = new Vector2(0, 90);
             banner = Label(bannerRt, "", 48, Yellow, Vector2.zero);
             subBanner = Label(bannerRt, "", 22, Cream, new Vector2(0, -44));
+            subBanner.rectTransform.sizeDelta = new Vector2(350, 52);   // deux lignes au plus
+            Fit(subBanner, 12);   // les conseils des boss sont longs
             bannerRt.gameObject.SetActive(false);
 
             for (int i = 0; i < 14; i++)
@@ -325,6 +327,7 @@ namespace PalmStreet.Game
                 {
                     if (progress().Wear(it.Id)) Changed();
                     else if (it.Stars > 0) Toast($"Se gagne avec {it.Stars} étoiles (tu en as {progress().TotalStars})");
+                    else if (it.Boss != BossKind.None) Toast($"Tenue de {Game.BossName(it.Boss)} : bats-le au niveau {it.Level}");
                     else { var d = Levels.Get(it.Level); Toast($"Se gagne en finissant le niveau {d.Number} · {d.City}"); }
                 });
                 var frame = card.GetComponent<Image>();
@@ -358,7 +361,7 @@ namespace PalmStreet.Game
                     chipImg.color = owned ? Wardrobe.ItemColor(it.Id) : Hex("#5C6670");
                     dotImg.color = owned ? Wardrobe.ItemDetail(it.Id) : Color.clear;
                     name.color = owned ? Cream : new Color(Cream.r, Cream.g, Cream.b, 0.5f);
-                    state.text = worn ? "PORTÉ" : owned ? "" : it.Stars > 0 ? $"{it.Stars} ÉTOILES" : $"NIVEAU {it.Level} · {Levels.Get(it.Level).City}";
+                    state.text = worn ? "PORTÉ" : owned ? "" : it.Stars > 0 ? $"{it.Stars} ÉTOILES" : it.Boss != BossKind.None ? "BATS " + Game.BossName(it.Boss) : $"NIVEAU {it.Level} · {Levels.Get(it.Level).City}";
                     state.color = worn ? Yellow : new Color(Cream.r, Cream.g, Cream.b, 0.6f);
                 });
             }

@@ -7,7 +7,7 @@ namespace PalmStreet.Core
     public enum GameMode { Story, Endless }
     /// <summary>Les décors : une ville par niveau, dans l'ordre de la carte (spec 002, FR-002).</summary>
     public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit }
-    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier }
+    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier, Ball }
     public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Bail, Boost, Spell, Spot, SpotAhead, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle }
 
     public sealed class Obstacle
@@ -15,9 +15,11 @@ namespace PalmStreet.Core
         public ObstacleKind Kind;
         public float X, W, H;   // X : bord gauche
         public float Y;         // hauteur du bas de l'obstacle
-        public float Vy;
+        public float Vx, Vy;         // Vx : vitesse propre (ballons)
+        public int Bounces = -1;     // chandelle : rebonds restants ; −1 : vole en ligne droite
         public bool Falling, Used;   // Used : tremplin déjà pris
         public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail;
+        public bool IsFlying => Kind == ObstacleKind.Gull || Kind == ObstacleKind.Ball;
         public float Top => Y + H;
         public string Spot;     // nom du spot de la ville (grand rail), ou null
     }
@@ -524,7 +526,7 @@ namespace PalmStreet.Core
         {
             float behind = Skater.X - 300;
             Obstacles.RemoveAll(o => o.X + o.W < behind);
-            foreach (var o in Obstacles) if (o.Kind == ObstacleKind.Gull) o.X -= Tuning.GullSpeed;   // FR-031 : les mouettes foncent sur le skateur
+            foreach (var o in Obstacles) if (o.IsFlying && o.Bounces < 0 && o.Vx == 0) o.X -= Tuning.GullSpeed;   // FR-031 : les mouettes (et ballons volants) foncent sur le skateur
             Bolts.RemoveAll(b => b.X < behind);
             Ground.DropBefore(Skater.X - 600);
         }
@@ -598,12 +600,16 @@ namespace PalmStreet.Core
         {
             double r = rng.NextDouble();
             Obstacle o;
-            if (r < 0.28 && Has(Allow.Gulls))
+            float flying = Mode == GameMode.Story && Def != null ? Def.FlyingRate : Tuning.FlyingRate;
+            if (r < flying && Has(Allow.Gulls))
             {
                 float gx = x + 140;   // elle vole vers le skateur : on la fait naître plus loin
-                o = new Obstacle { Kind = ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
+                // spec 004 : à Biarritz, des ballons de rugby volent aussi (seulement des ballons au niveau 2)
+                bool biarritz = Theme == Theme.Biarritz || Theme == Theme.BiarritzNuit;
+                bool ball = biarritz && (Theme == Theme.Biarritz || rng.NextDouble() < 0.5);
+                o = new Obstacle { Kind = ball ? ObstacleKind.Ball : ObstacleKind.Gull, X = gx, W = Tuning.GullWidth, H = Tuning.GullBody, Y = Ground.Floor(gx) + Tuning.GullHeight };
             }
-            else if (r >= 0.28 && r < 0.45 && Has(Allow.Pads))
+            else if (r >= Tuning.FlyingRate && r < 0.45 && Has(Allow.Pads))
             {
                 // le tremplin se met juste avant le prochain trou s'il y en a un : saut géant par-dessus
                 var gap = Ground.GapIn(x, x + 400);
@@ -661,6 +667,7 @@ namespace PalmStreet.Core
         {
             foreach (var o in Obstacles)
             {
+                if (o.Kind == ObstacleKind.Ball && (o.Vx != 0 || o.Bounces >= 0)) { MoveBall(o); continue; }
                 if (!o.Falling) continue;
                 o.Vy -= Tuning.Gravity;
                 o.Y += o.Vy;
@@ -690,7 +697,8 @@ namespace PalmStreet.Core
                 if (b.Timer >= 90) { Boss = null; if (bossDone) Clear(); }
                 return;
             }
-            if (b.Kind != BossKind.Purple) UpdateBeast(b);
+            if (b.IsRugby) UpdateRugby(b);
+            else if (b.Kind != BossKind.Purple) UpdateBeast(b);
             else switch (b.State)
             {
                 case BossState.Arriving:
@@ -815,6 +823,89 @@ namespace PalmStreet.Core
                 }
             }
             b.X = Skater.X + b.Offset;
+        }
+
+        /// <summary>
+        /// Boss de rugby (spec 004, FR-002 à FR-005b) : il trottine devant, puis passe (ballon à hauteur de tête : se
+        /// baisser), chandelle (ballon qui retombe devant et rebondit vers le skateur : sauter), plaquage (plongeon au
+        /// ras du sol : sauter). Chaque attaque commence par RugbyWindup pas de pose (State Rising, Windup).
+        /// </summary>
+        void UpdateRugby(Boss b)
+        {
+            int w = Tuning.RugbyWindup;
+            switch (b.State)
+            {
+                case BossState.Arriving:
+                    if (b.Timer >= Boss.ArriveSteps) b.Next(BossState.Ground);
+                    break;
+                case BossState.Ground:
+                    b.Lift = 0;
+                    b.Offset = Boss.Distance;
+                    if (b.Timer >= Tuning.RugbyAttackEvery) { b.Next(BossState.Rising); Add(Cue.BossFly); }
+                    break;
+                case BossState.Rising:
+                    if (b.Timer == w && b.Attack == 0) ThrowBall(b, false);
+                    if (b.Timer == w && b.Attack == 1) ThrowBall(b, true);
+                    if (b.Attack == 2 && b.Timer >= w)   // plaquage : il fonce au ras du sol et passe sous le skateur
+                    {
+                        float k = Math.Min(1, (float)(b.Timer - w) / Tuning.RugbyAttackSteps);
+                        b.Offset = Boss.Distance + (Boss.BehindSkater - Boss.Distance) * k;
+                    }
+                    if (b.Attack < 2 && b.Timer >= w + 30 || b.Timer >= w + Tuning.RugbyAttackSteps)
+                    {
+                        b.Next(b.Attack == 2 ? BossState.Falling : BossState.Ground);
+                        if (b.Attack < 2) b.Attack++;
+                    }
+                    break;
+                case BossState.Falling:   // retour devant, d'un bond par-dessus le skateur
+                {
+                    float k = Math.Min(1, (float)b.Timer / Boss.ReturnSteps);
+                    b.Offset = Boss.BehindSkater + (Boss.Distance - Boss.BehindSkater) * k;
+                    b.Lift = (float)Math.Sin(Math.PI * k) * 140;
+                    if (b.Timer >= Boss.ReturnSteps) { b.Lift = 0; b.Attack = 0; b.Next(BossState.Ground); }
+                    break;
+                }
+            }
+            b.X = Skater.X + b.Offset;
+        }
+
+        /// <summary>Passe (droite, à hauteur de tête) ou chandelle (en cloche, retombe devant le skateur puis rebondit vers lui).</summary>
+        void ThrowBall(Boss b, bool chandelle)
+        {
+            float floor = Ground.Floor(b.X), v = CurrentSpeed;
+            var o = new Obstacle { Kind = ObstacleKind.Ball, W = Tuning.GullWidth, H = Tuning.GullBody, X = b.X - 30 };
+            if (chandelle)
+            {
+                int t = Tuning.ChandelleFlight;
+                float y0 = 50;
+                o.Y = floor + y0;
+                o.Vx = v + (Tuning.ChandelleLand - Boss.Distance + 30) / t;   // retombe ChandelleLand devant le skateur
+                o.Vy = (Tuning.BallGravity * t * t / 2 - y0) / t;
+                o.Bounces = 3;
+            }
+            else
+            {
+                o.Y = floor + Tuning.GullHeight;
+                o.Vx = v - Tuning.PassSpeed;
+            }
+            Obstacles.Add(o);
+            Add(Cue.ConeDrop, null, o.X, o.Y);
+        }
+
+        /// <summary>Ballon du boss : vol droit, ou en cloche avec rebonds de plus en plus bas vers le skateur.</summary>
+        void MoveBall(Obstacle o)
+        {
+            o.X += o.Vx;
+            if (o.Bounces < 0) return;
+            o.Vy -= Tuning.BallGravity;
+            o.Y += o.Vy;
+            float g = Ground.Floor(o.X + o.W / 2);
+            if (o.Y > g) return;
+            o.Y = g;
+            if (o.Bounces == 0) { o.Vy = 0; return; }   // il roule
+            o.Bounces--;
+            o.Vx = CurrentSpeed - Tuning.ChandelleRoll;   // il revient vers le skateur
+            o.Vy = (float)Math.Sqrt(2 * Tuning.BallGravity * Tuning.ChandelleBounce);
         }
 
         void DropThing(Boss b, ObstacleKind kind, float w, float h)

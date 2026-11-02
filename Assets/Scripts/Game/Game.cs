@@ -208,12 +208,16 @@ namespace PalmStreet.Game
             // 3 étoiles par ville : niveau fini, défi, score ; les étoiles débloquent des objets
             int starsBefore = progress.TotalStars, cityBefore = progress.StarCount(level);
             bool star = Run.ChallengeDone(def), scoreStar = Run.Score >= def.ScoreGoal;
-            if (def.Boss != BossKind.None && !progress.Cleared[level - 1]) hud.Toast("NOUVEAU SORT : " + Tuning.SpellNames[(int)def.Boss - 1]);
+            if (Levels.SpellOf(def.Boss) >= 0 && !progress.Cleared[level - 1]) hud.Toast("NOUVEAU SORT : " + Tuning.SpellNames[Levels.SpellOf(def.Boss)]);
             progress.Stars[level - 1] |= star;
             progress.ScoreStars[level - 1] |= scoreStar;
             var (trick, item) = progress.Clear(level, Run.Score);
+            bool first = item != null;   // Clear ne rend l'objet du niveau que la première fois
             var starItems = new List<Item>(Items.ForStars(starsBefore, progress.TotalStars));
             if (item == null && starItems.Count > 0) { item = starItems[0]; starItems.RemoveAt(0); }
+            // spec 004 : battre un boss de rugby la première fois donne sa tenue, annoncée à l'écran ; l'objet du niveau passe en message
+            Item outfit = first ? System.Linq.Enumerable.FirstOrDefault(Items.OutfitFor(level), i => i.Slot == Slot.Top) : null;
+            if (outfit != null) starItems.Insert(0, item);
             foreach (var extra in starItems) hud.Toast("NOUVEAU : " + extra.Name);
             SaveProgress();
             Leaderboard.Report(Run.Score, level);
@@ -221,7 +225,7 @@ namespace PalmStreet.Game
             int city = progress.StarCount(level);
             string stars = $"ÉTOILES {city}/3" + (city > cityBefore ? $" (+{city - cityBefore})" : "")
                 + $"  ·  défi {(star ? "réussi" : $"{Run.ChallengeValue(def)}/{def.Goal}")}  ·  score {(scoreStar ? "atteint" : "visé " + def.ScoreGoal)}";
-            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item, stars);
+            hud.ShowCleared(def, Run.Score, progress.Best[level - 1], trick >= 0 ? Tuning.TrickNames[trick] : null, item, stars, outfit);
         }
 
         public void OpenProfile()
@@ -488,12 +492,17 @@ namespace PalmStreet.Game
             overAt = time + 0.7f;   // on voit d'abord la planche s'échapper
         }
 
-        public static string BossName(BossKind k) => k switch { BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER", _ => "LE GRAND BOSS" };
+        public static string BossName(BossKind k) => k switch
+        {
+            BossKind.Crab => "LE CRABE GÉANT", BossKind.Gull => "LE GOÉLAND GÉANT", BossKind.Boar => "LE SANGLIER",
+            BossKind.Pilier => "LE PILIER", BossKind.Talonneur => "LE TALONNEUR", _ => "LE GRAND BOSS",
+        };
         static string BossTip(BossKind k) => k switch
         {
             BossKind.Crab => "Saute-le quand il fonce sur toi !",
             BossKind.Gull => "Glisse vers le bas quand il pique !",
             BossKind.Boar => "Saute ses charges et ses barrières !",
+            BossKind.Pilier or BossKind.Talonneur => "Passe : baisse-toi. Chandelle et plaquage : saute !",
             _ => "Saute ses plots !",
         };
 

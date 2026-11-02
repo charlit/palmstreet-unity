@@ -50,8 +50,34 @@ namespace PalmStreet.Game
                 AddLayer(t, 1, -94, Back(look.Decor, look, rng));
                 AddLayer(t, 2, -90, Mid(look.Decor, look, rng));
                 AddLayer(t, 3, -86, Near(look.Decor, look, rng));
+                if (look.Decor == Decor.Btz) { Scoreboard(layers[t][2].A); Scoreboard(layers[t][2].B); }
             }
         }
+
+        /// <summary>
+        /// Tableau lumineux du stade Aguiléra (spec 004) : « BIARRITZ vs BAYONNE », jamais de sigle de club (principe V).
+        /// Texte en Rubik, enfant de la tuile : il défile avec elle et s'éteint avec son fondu.
+        /// </summary>
+        static void Scoreboard(Transform tile)
+        {
+            var font = Resources.Load<Font>("Fonts/Rubik-Bold");
+            if (font == null) return;
+            var go = new GameObject("Tableau du stade");
+            go.transform.SetParent(tile, false);
+            go.transform.localPosition = W(StadiumBoard.x, StadiumBoard.y);
+            var tm = go.AddComponent<TextMesh>();
+            tm.font = font;
+            tm.richText = true;
+            tm.text = "<color=#FF4A5A>BIARRITZ</color> <color=#F7F4EC>vs</color> <color=#8FD3FF>BAYONNE</color>";
+            tm.anchor = TextAnchor.MiddleCenter;
+            tm.fontSize = 64;
+            tm.characterSize = 0.0145f;
+            var mr = go.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = font.material;
+            mr.sortingOrder = -89;   // juste devant le plan du stade
+        }
+
+        static readonly Vector2 StadiumBoard = new Vector2(452, 112);
 
         void AddLayer(int theme, int depth, int order, Paint content)
         {
@@ -251,6 +277,7 @@ namespace PalmStreet.Game
                     p.Rect(462, 250, 16, 10, l.Mid);
                     p.Glow(470, 255, 26, new Color(1, 0.95f, 0.7f, 0.9f), new Color(1, 0.95f, 0.7f, 0));
                     p.Dome(470, 260, 9, 8, l.Mid);
+                    RocherDeLaVierge(p, 150, l);
                     break;
                 case Decor.Neon:
                     // nuit étoilée, grande roue et ville aux toits de néon
@@ -364,6 +391,84 @@ namespace PalmStreet.Game
             p.Glow(cx, cy, rad + 20, new Color(ring.r, ring.g, ring.b, 0.12f), new Color(ring.r, ring.g, ring.b, 0));
         }
 
+        /// <summary>Rocher de la Vierge (spec 004) : rocher dans l'océan, statue blanche, passerelle en treillis reliée à la falaise.</summary>
+        static void RocherDeLaVierge(Paint p, float x, ThemeLook l)
+        {
+            var rock = Color.Lerp(l.Far, Color.black, 0.15f); var light = Color.Lerp(l.Far, Color.white, 0.15f); var iron = Color.Lerp(l.Far, Color.black, 0.45f);
+            p.Poly(rock, x - 100, 120, x - 66, 120, x - 64, 196, x - 84, 204, x - 100, 200);                 // la falaise
+            p.Poly(rock, x - 20, 118, x + 34, 118, x + 26, 178, x + 8, 196, x - 12, 186, x - 22, 160);       // le rocher
+            p.Poly(light, x - 12, 186, x + 8, 196, x + 4, 170, x - 10, 168);
+            // passerelle en treillis, en arc, de la falaise au rocher
+            float y = 188;
+            p.Rect(x - 66, y, 60, 2.2f, iron);
+            for (int i = 0; i <= 10; i++)
+            {
+                float t = i / 10f, bx = x - 66 + t * 60, dip = Mathf.Sin(t * Mathf.PI) * 9;
+                p.Line(bx, y, bx, y - 4 - dip, 1, iron);
+                if (i < 10) p.Line(bx, y - 4 - dip, bx + 6, y, 0.8f, iron);
+            }
+            // la statue blanche sur son socle
+            var white = Hex("#F7F4EC");
+            p.Rect(x + 4, 196, 8, 6, light);
+            p.Poly(white, x + 5, 202, x + 11, 202, x + 10, 218, x + 6, 218).Circle(x + 8, 220, 2.2f, white, 10);
+            p.Glow(x + 8, 214, 14, new Color(1, 1, 0.9f, 0.35f), new Color(1, 1, 0.9f, 0));
+            p.Ellipse(x + 6, 120, 34, 3, new Color(1, 1, 1, 0.35f), 16);                                     // écume au pied
+        }
+
+        /// <summary>Hôtel du Palais : palace brique et pierre, trois pavillons aux toits d'ardoise très pentus, terrasse.</summary>
+        static void Palais(Paint p, float x0)
+        {
+            Color brick = Hex("#A0583F"), stone = Hex("#EFE3CC"), slate = Hex("#3C4A5E"), slateLight = Hex("#56667D"), win = Hex("#FFE7A8"), dark = Hex("#2A2F3A");
+            void Wing(float x, float w, float h, float roof)
+            {
+                p.Rect(x, -10, w, h + 10, brick);
+                for (float y = 14; y < h; y += 24) p.Rect(x, y, w, 3, stone);                       // bandeaux de pierre
+                p.Rect(x, -10, 4, h + 10, stone).Rect(x + w - 4, -10, 4, h + 10, stone);            // chaînes d'angle
+                p.Poly(slate, x - 3, h, x + w + 3, h, x + w - 6, h + roof, x + 6, h + roof);         // toit d'ardoise très pentu
+                p.Line(x + 8, h + roof * 0.5f, x + w - 8, h + roof * 0.5f, 1.2f, slateLight);
+                for (float wx = x + 9; wx < x + w - 12; wx += 15)
+                {
+                    for (float y = 20; y < h - 6; y += 24) p.Rect(wx, y, 7, 11, win).Dome(wx + 3.5f, y + 11, 3.5f, 3, win, 6);
+                    p.Rect(wx + 1, h + 6, 5, 8, stone);                                              // lucarnes
+                }
+            }
+            Wing(x0, 72, 88, 30);
+            Wing(x0 + 168, 72, 88, 30);
+            Wing(x0 + 64, 112, 74, 24);                                                                  // corps central, en retrait
+            Wing(x0 + 92, 56, 110, 44);                                                                  // pavillon central, plus haut
+            p.Line(x0 + 120, 154, x0 + 120, 172, 1.4f, dark).Poly(Hex("#F7F4EC"), x0 + 120, 172, x0 + 132, 168, x0 + 120, 164);   // drapeau blanc
+            // terrasse sur la plage : balustrade
+            p.Rect(x0 - 6, -10, 252, 14, stone);
+            for (float bx = x0 - 2; bx < x0 + 244; bx += 7) p.Rect(bx, 4, 3, 8, stone);
+            p.Rect(x0 - 6, 12, 252, 3, stone);
+        }
+
+        /// <summary>Stade Aguiléra : tribune couverte aux sièges rouges et blancs, toit en porte-à-faux, pylônes allumés, poteaux.</summary>
+        static void Stadium(Paint p, float x0)
+        {
+            Color red = Hex("#D7263D"), white = Hex("#F2EEE6"), concrete = Hex("#9AA3B0"), dark = Hex("#2A2F3A"), glow = new Color(1, 0.97f, 0.8f, 0.85f);
+            p.Rect(x0 + 6, -10, 250, 66, concrete);
+            for (int i = 0; i < 8; i++) p.Rect(x0 + 10, -2 + i * 7, 242, 4.5f, i % 2 == 0 ? red : white);   // rangées de sièges
+            for (float px = x0 + 10; px < x0 + 256; px += 40) p.Rect(px, -10, 3, 84, dark);                 // poteaux de la tribune
+            p.Poly(dark, x0, 76, x0 + 266, 76, x0 + 272, 86, x0 - 6, 82);                                    // toit en porte-à-faux
+            p.Rect(x0, 74, 266, 3, red);
+            foreach (float lx in new[] { x0 - 14f, x0 + 300f })                                             // pylônes d'éclairage
+            {
+                p.Rect(lx, -10, 4, 196, dark);
+                p.Glow(lx + 2, 192, 34, glow, new Color(glow.r, glow.g, glow.b, 0));
+                p.Rect(lx - 11, 184, 26, 16, dark);
+                for (int i = 0; i < 3; i++) for (int j = 0; j < 2; j++) p.Rect(lx - 9 + i * 8, 186 + j * 7, 6, 5, Hex("#FFF7D6"));
+            }
+            // poteaux de rugby en H, sur la pelouse à droite
+            float gx = x0 + 276;
+            p.Rect(gx - 6, -10, 40, 14, Hex("#5FAE58"));
+            p.Rect(gx, -4, 2.5f, 74, white).Rect(gx + 26, -4, 2.5f, 74, white).Rect(gx, 22, 28.5f, 2.5f, white);
+            // tableau d'affichage (le texte est un TextMesh : Scoreboard)
+            float bx = StadiumBoard.x, by = StadiumBoard.y;
+            p.Rect(bx - 3, 76, 3, by - 76, dark).Rect(bx, 76, 3, by - 76, dark);
+            p.Rect(bx - 72, by - 14, 144, 28, Hex("#3A4252")).Rect(bx - 70, by - 12, 140, 24, Hex("#141826"));
+        }
+
         static void House(Paint p, float x, float w, float h, float roof, Color wall, Color window, bool basque = false)
         {
             p.Rect(x, -10, w, h + 10, wall);
@@ -390,14 +495,10 @@ namespace PalmStreet.Game
                     for (int i = 0; i < 3; i++) House(p, 40 + i * 210 + R(r, -10, 10), R(r, 44, 60), R(r, 26, 40), 18, l.Mid, lit);
                     for (int i = 0; i < 5; i++) Palm(p, 20 + i * 128 + R(r, -12, 12), R(r, 150, 215), R(r, -25, 30), l.Mid, R(r, 0.8f, 1));
                     break;
-                case Decor.Btz:
-                    for (int x = 10; x < Tile - 70;)
-                    {
-                        float w = R(r, 46, 80);
-                        House(p, x, w, R(r, 50, 110), R(r, 12, 30), l.Mid, lit);
-                        x += (int)(w + R(r, 14, 40));
-                    }
-                    Palm(p, 220, 190, 14, l.Mid, 0.9f);
+                case Decor.Btz:   // spec 004 : l'Hôtel du Palais et le stade Aguiléra
+                    Palais(p, 12);
+                    Palm(p, 268, 190, 14, l.Mid, 0.9f);
+                    Stadium(p, 296);
                     break;
                 case Decor.Neon:
                     // palmiers et enseignes de néon

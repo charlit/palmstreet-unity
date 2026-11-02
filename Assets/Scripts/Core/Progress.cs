@@ -63,7 +63,7 @@ namespace PalmStreet.Core
             get
             {
                 var list = new List<int>();
-                foreach (var l in Levels.All) if (l.Boss != BossKind.None && IsCleared(l.Number)) list.Add((int)l.Boss - 1);
+                foreach (var l in Levels.All) if (Levels.SpellOf(l.Boss) >= 0 && IsCleared(l.Number)) list.Add(Levels.SpellOf(l.Boss));
                 list.Sort();
                 return list;
             }

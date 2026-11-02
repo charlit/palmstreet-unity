@@ -95,13 +95,13 @@ namespace PalmStreet.Game
         public static ThemeLook Of(Theme t) => All[(int)t];
     }
 
-    public enum Hat { None, Cap, Beanie, Band }
+    public enum Hat { None, Cap, Beanie, Band, Scrum }   // Scrum : casque de mêlée (spec 004)
     public enum DeckArt { Wood, Crab, Pepper, Neon, Gold }
 
     /// <summary>Apparence du skateur, telle que le moteur de dessin l'utilise.</summary>
     public sealed class RiderLook
     {
-        public Color Skin, Hair, HatColor, Top, Accent, Pants, Shoes, Deck, Wheels;
+        public Color Skin, Hair, HatColor, Top, Accent, Pants, Shoes, Deck, Wheels, Socks;
         public Hat Hat;
         public bool Curly, Shorts, Stripes, Logo;
         public DeckArt Art;
@@ -135,6 +135,9 @@ namespace PalmStreet.Game
             "shoes-pink" => Color.white,
             "deck-crab" or "deck-neon" => Hex("#35F2FF"),
             "deck-pepper" => Hex("#3BB273"),
+            "band-pilier" or "jersey-pilier" or "shorts-pilier" or "boots-pilier" => Hex("#D7263D"),
+            "scrum-cap" or "jersey-talonneur" or "deck-pilier" or "deck-talonneur" => Color.white,
+            "shorts-talonneur" or "boots-talonneur" => Hex("#5DADE2"),
             _ => Color.clear,
         };
 
@@ -164,6 +167,10 @@ namespace PalmStreet.Game
             "pants-white" => Hex("#F4F1EA"),
             "deck-gold" => Hex("#E9B824"),
             "hoodie-gold" => Hex("#E9B824"),
+            "band-pilier" or "shorts-pilier" or "shorts-talonneur" => Hex("#F7F4EC"),
+            "jersey-pilier" or "deck-pilier" => Hex("#D7263D"),
+            "scrum-cap" or "jersey-talonneur" or "deck-talonneur" => Hex("#5DADE2"),
+            "boots-pilier" or "boots-talonneur" => Hex("#1B1028"),
             _ => Color.gray,
         };
 
@@ -175,20 +182,22 @@ namespace PalmStreet.Game
                 Skin = Skins[Mathf.Clamp(p.Skin, 0, Skins.Length - 1)],
                 Hair = Hairs[Mathf.Clamp(p.HairColor, 0, Hairs.Length - 1)],
                 Curly = p.HairStyle == 1,
-                Hat = head == "cap-red" || head == "cap-gold" ? Hat.Cap : head == "beanie-stripes" ? Hat.Beanie : head == "band-red" ? Hat.Band : Hat.None,
+                Hat = head == "cap-red" || head == "cap-gold" ? Hat.Cap : head == "beanie-stripes" ? Hat.Beanie : head == "band-red" || head == "band-pilier" ? Hat.Band : head == "scrum-cap" ? Hat.Scrum : Hat.None,
                 HatColor = ItemColor(head),
                 Stripes = head == "beanie-stripes",
                 Top = ItemColor(top),
                 Accent = top == "start-top" ? Hex("#C9CED6") : top == "hoodie-basque" ? Hex("#009B48") : top == "hoodie-gold" ? Hex("#FFF4D6") : top == "hoodie-purple" ? Hex("#C77DFF") : top == "hoodie-gull" ? Hex("#9AA3B5") : Color.white,
                 Logo = top == "hoodie-gull",
                 Pants = ItemColor(legs),
-                Shorts = legs == "shorts-surf",
+                Shorts = legs == "shorts-surf" || legs == "shorts-pilier" || legs == "shorts-talonneur",
                 Shoes = ItemColor(shoes),
                 Deck = ItemColor(deck),
-                Wheels = deck == "deck-crab" || deck == "deck-gold" ? Color.white : deck == "deck-pepper" ? Hex("#3BB273") : deck == "deck-neon" ? Hex("#35F2FF") : Hex("#FFF4D6"),
+                Wheels = deck == "deck-crab" || deck == "deck-gold" || deck == "deck-pilier" || deck == "deck-talonneur" ? Color.white : deck == "deck-pepper" ? Hex("#3BB273") : deck == "deck-neon" ? Hex("#35F2FF") : Hex("#FFF4D6"),
                 Art = deck == "deck-crab" ? DeckArt.Crab : deck == "deck-pepper" ? DeckArt.Pepper : deck == "deck-neon" ? DeckArt.Neon : deck == "deck-gold" ? DeckArt.Gold : DeckArt.Wood,
                 HeadId = head, TopId = top, LegsId = legs, ShoesId = shoes,
             };
+            // chaussettes : celles du short de rugby (spec 004), sinon la couleur d'accent du haut
+            l.Socks = legs == "shorts-pilier" ? Hex("#D7263D") : legs == "shorts-talonneur" ? Hex("#5DADE2") : l.Accent;
             return l;
         }
     }

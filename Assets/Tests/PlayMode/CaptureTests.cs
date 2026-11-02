@@ -116,6 +116,57 @@ namespace PalmStreet.Tests
                     yield return Shot($"0-boss-{n}-sorts");
                 }
             }
+            // spec 004 : Biarritz (stade, palace, rocher), ballons et mouette de jour, boss de rugby et leurs attaques
+            game.StartLevel(2);
+            yield return Steps(run, 120, true);
+            for (int k = 1; k <= 3; k++)
+            {
+                if (k == 2)
+                {
+                    run.Obstacles.RemoveAll(o => !o.IsRail);
+                    run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Ball, X = run.Skater.X + 150, W = Tuning.GullWidth, H = Tuning.GullBody, Y = run.Ground.Floor(run.Skater.X + 150) + Tuning.GullHeight });
+                    run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = run.Skater.X + 250, W = Tuning.GullWidth, H = Tuning.GullBody, Y = run.Ground.Floor(run.Skater.X + 250) + Tuning.GullHeight + 20 });
+                    for (int i = 0; i < 4; i++) yield return null;
+                }
+                yield return Shot($"004-biarritz-{k}");
+                yield return Steps(run, 170, true);
+            }
+            foreach (int n in new[] { 2, 7 })
+            {
+                game.StartLevel(n);
+                run.Skater.X = Levels.Get(n).Finish - 2;
+                for (int i = 0; i < 200 && (run.Boss == null || run.Boss.State != BossState.Ground); i++) { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Ball); run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                run.Boss.Hp = 100000;
+                yield return Shot($"004-boss-{n}");
+                for (int attack = 0; attack < 3; attack++)
+                {
+                    for (int i = 0; i < 600 && !(run.Boss.Attack == attack && run.Boss.State == BossState.Rising && run.Boss.Timer >= Tuning.RugbyWindup - 6); i++)
+                    { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Ball || o.X < run.Skater.X + 40); if (run.Boss.Tackling && run.Boss.Offset < 60) run.Boss.Offset = 60; run.Step(); run.Phase = Phase.Playing; if (i % 3 == 0) yield return null; }
+                    yield return Shot($"004-boss-{n}-annonce-{attack}");
+                    int after = attack == 1 ? 50 : 14;
+                    for (int i = 0; i < after; i++) { run.Obstacles.RemoveAll(o => o.Kind != ObstacleKind.Ball || o.X < run.Skater.X + 40); run.Step(); run.Phase = Phase.Playing; if (i % 2 == 0) yield return null; }
+                    yield return Shot($"004-boss-{n}-attaque-{attack}");
+                }
+            }
+            game.StartLevel(12);
+            yield return Steps(run, 140, true);
+            run.Obstacles.RemoveAll(o => !o.IsRail);
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Ball, X = run.Skater.X + 150, W = Tuning.GullWidth, H = Tuning.GullBody, Y = run.Ground.Floor(run.Skater.X + 150) + Tuning.GullHeight });
+            run.Obstacles.Add(new Obstacle { Kind = ObstacleKind.Gull, X = run.Skater.X + 250, W = Tuning.GullWidth, H = Tuning.GullBody, Y = run.Ground.Floor(run.Skater.X + 250) + Tuning.GullHeight + 20 });
+            for (int i = 0; i < 4; i++) yield return null;
+            yield return Shot("004-nuit-volants");
+            foreach (var (lvl, ids) in new[] { (2, new[] { "band-pilier", "jersey-pilier", "shorts-pilier", "boots-pilier", "deck-pilier" }), (7, new[] { "scrum-cap", "jersey-talonneur", "shorts-talonneur", "boots-talonneur", "deck-talonneur" }) })
+            {
+                var rugby = new Progress();
+                rugby.Clear(lvl, 1000);
+                foreach (var id in ids) Assert.IsTrue(rugby.Wear(id), id);
+                game.Progress = rugby;
+                game.OpenProfile();
+                for (int i = 0; i < 3; i++) yield return null;
+                yield return Shot($"004-tenue-{lvl}");
+            }
+            game.ToMenu();
+
             // profil : tenue de départ, puis après 6 niveaux avec des objets portés
             game.Progress = new Progress();
             game.OpenProfile();

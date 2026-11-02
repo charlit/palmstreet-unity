@@ -43,7 +43,8 @@ namespace PalmStreet.Game
             }
         }
 
-        Pool cones, bolts, teeth, shadows, rails, gulls, pads;
+        Pool cones, bolts, teeth, shadows, rails, gulls, pads, balls;
+        RugbyView pilier, talonneur;   // boss de rugby (spec 004)
         Pool[] spells;   // vague, tornade, éclair, boule de feu
         Transform boss, bossWingL, bossWingR, bossPupil, bossShadow;
         static readonly Color Shadow = new Color(0.05f, 0.02f, 0.08f, 0.35f);
@@ -131,26 +132,42 @@ namespace PalmStreet.Game
 
             BuildBoss();
 
-            // mouette (FR-031) : corps blanc, bec jaune, ailes qui battent, halo rose pour la nuit
+            // mouette (FR-031, redessinée spec 004) : dessous blanc, dos gris perle, bouts d'ailes noirs, bec jaune à
+            // tache rouge ; halo rose seulement la nuit (enfant 3)
+            var ink = Hex("#1B1028"); var pearl = Hex("#C9CED6");
             gulls = new Pool(() =>
             {
                 var t = new GameObject("Mouette").transform;
                 t.SetParent(transform, false);
                 new Paint()
-                    .Glow(15, 8, 26, Hex("#FF4FD8", 0.35f), Hex("#FF4FD8", 0))
-                    .Ellipse(15, 8, 14, 6, Hex("#F4F6FA"), 18)
-                    .Circle(4, 11, 5, Hex("#F4F6FA"), 14)
-                    .Poly(Hex("#FFB21A"), -1, 11, -8, 9.5f, -1, 8.5f)
-                    .Circle(3, 12.5f, 1.1f, Hex("#1B1028"), 6)
-                    .Poly(Hex("#B9C0CC"), 26, 9, 34, 13, 34, 5)
+                    .Ellipse(15, 8, 14.8f, 6.8f, ink, 18).Circle(4, 11, 5.8f, ink, 14)
+                    .Ellipse(15, 8, 14, 6, Hex("#F7F8FA"), 18)
+                    .Ellipse(17, 10, 11, 3.4f, pearl, 16)                                   // dos gris perle
+                    .Circle(4, 11, 5, Hex("#F7F8FA"), 14)
+                    .Poly(Hex("#FFD23F"), -1, 11.4f, -8.5f, 10, -1, 8.4f)
+                    .Circle(-5.5f, 9.4f, 0.9f, Hex("#E23B2E"), 6)                            // tache rouge du bec
+                    .Circle(3, 12.5f, 1.1f, ink, 6)
+                    .Poly(pearl, 26, 9, 34, 13, 34, 5).Poly(ink, 32, 11, 35, 13, 35, 9)      // queue
                     .Make("Corps", t, 16);
                 foreach (float side in new[] { -1f, 1f })
                 {
                     var w = new GameObject(side < 0 ? "Aile arrière" : "Aile avant").transform;
                     w.SetParent(t, false);
                     w.localPosition = W(15, 10);
-                    new Paint().Capsule(0, 0, 4, 14, 5, Hex(side < 0 ? "#C9CED6" : "#FFFFFF")).Capsule(4, 14, 12, 18, 3.5f, Hex("#3A3F4A")).Make("Aile", w, side < 0 ? 15 : 17);
+                    new Paint().Capsule(0, 0, 4, 14, 5.6f, ink).Capsule(0, 0, 4, 14, 4.6f, side < 0 ? Color.Lerp(pearl, Color.black, 0.15f) : pearl)
+                        .Capsule(4, 14, 12, 18, 3.6f, Hex("#141018")).Circle(10, 17, 0.7f, Color.white, 6)   // bout d'aile noir, point blanc
+                        .Make("Aile", w, side < 0 ? 15 : 17);
                 }
+                new Paint().Glow(15, 8, 26, Hex("#FF4FD8", 0.35f), Hex("#FF4FD8", 0)).Make("Halo de nuit", t, 14);
+                return t;
+            });
+
+            // ballon de rugby (spec 004) : passe et chandelle du boss, ballons volants de Biarritz ; il tourne
+            balls = new Pool(() =>
+            {
+                var t = new GameObject("Ballon").transform;
+                t.SetParent(transform, false);
+                RugbyView.BallPaint().Make("Ballon", t, 16);
                 return t;
             });
 
@@ -234,6 +251,10 @@ namespace PalmStreet.Game
         /// <summary>Le Crabe, le Goéland géant et le Sanglier (spec 002, FR-011), tournés vers le skateur (à gauche).</summary>
         void BuildBeasts()
         {
+            pilier = new RugbyView(transform, false, 6);
+            talonneur = new RugbyView(transform, true, 6);
+            pilier.Root.gameObject.SetActive(false);
+            talonneur.Root.gameObject.SetActive(false);
             var red = Hex("#E0452B"); var dark = Hex("#9E2A18"); var white = Hex("#FFFDF5"); var ink = Hex("#1B1028");
             // crabe : carapace, yeux sur pédoncules, pinces qui claquent, pattes
             crab = new GameObject("Crabe").transform; crab.SetParent(transform, false);
@@ -320,7 +341,7 @@ namespace PalmStreet.Game
             finish.gameObject.SetActive(showFinish);
             if (showFinish) finish.position = W(run.Def.Finish, run.Ground.Floor(run.Def.Finish));
             foreach (var sp in spells) sp.Begin();
-            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin();
+            cones.Begin(); bolts.Begin(); teeth.Begin(); shadows.Begin(); rails.Begin(); gulls.Begin(); pads.Begin(); balls.Begin();
             var g = run.Ground;
             foreach (var o in run.Obstacles)
             {
@@ -332,9 +353,18 @@ namespace PalmStreet.Game
                     ShadowAt(o, o.X + o.W / 2, o.Y, o.W + 16, 0);
                     continue;
                 }
+                if (o.Kind == ObstacleKind.Ball)
+                {
+                    var bt = balls.Get(o, out _);
+                    bt.position = W(o.X + o.W / 2, o.Y + o.H / 2);
+                    bt.rotation = Quaternion.Euler(0, 0, time * 540 + o.X);
+                    ShadowAt(o, o.X + o.W / 2, g.Floor(o.X + o.W / 2), 22, o.Y - g.Floor(o.X + o.W / 2));
+                    continue;
+                }
                 if (o.Kind == ObstacleKind.Gull)
                 {
                     var gt = gulls.Get(o, out _);
+                    gt.GetChild(3).gameObject.SetActive(!Levels.IsDay(run.Theme));
                     gt.position = W(o.X, o.Y + Mathf.Sin(time * 5 + o.X * 0.02f) * 3);
                     float flap = Mathf.Sin(time * 14 + o.X) * 40;
                     gt.GetChild(1).localRotation = Quaternion.Euler(0, 0, -20 + flap);
@@ -384,6 +414,8 @@ namespace PalmStreet.Game
             gullBoss.gameObject.SetActive(kind == BossKind.Gull);
             boar.gameObject.SetActive(kind == BossKind.Boar);
             boss.gameObject.SetActive(kind == BossKind.Purple);
+            pilier.Root.gameObject.SetActive(kind == BossKind.Pilier);
+            talonneur.Root.gameObject.SetActive(kind == BossKind.Talonneur);
             bossShadow.gameObject.SetActive(boss_ != null);
             if (boss_ != null)
             {
@@ -413,9 +445,15 @@ namespace PalmStreet.Game
                     scale = 1 + k * 0.4f;
                     if (k > 0.75f) scale *= (1 - k) * 4;
                 }
+                if (boss_.IsRugby)   // pantin : posé par les pieds, la pose dit l'attaque
+                    (kind == BossKind.Pilier ? pilier : talonneur).Pose(boss_, new Vector2(boss_.X + enter * enter * 320, gy + boss_.Lift), time, scale * (1 + hitPunch * 0.08f));
                 var body = kind == BossKind.Crab ? crab : kind == BossKind.Gull ? gullBoss : kind == BossKind.Boar ? boar : boss;
-                body.position = W(pos.x, pos.y);
-                body.localScale = Vector3.one * scale * (1 + hitPunch * 0.08f);
+                if (boss_.IsRugby) body = (kind == BossKind.Pilier ? pilier : talonneur).Root;
+                else
+                {
+                    body.position = W(pos.x, pos.y);
+                    body.localScale = Vector3.one * scale * (1 + hitPunch * 0.08f);
+                }
                 bool attacking = boss_.State == BossState.Rising;
                 if (kind == BossKind.Crab)
                 {
@@ -447,7 +485,7 @@ namespace PalmStreet.Game
             }
 
             foreach (var sp in spells) sp.End();
-            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End();
+            cones.End(); bolts.End(); teeth.End(); shadows.End(); rails.End(); gulls.End(); pads.End(); barriers.End(); balls.End();
         }
 
         float hitPunch;

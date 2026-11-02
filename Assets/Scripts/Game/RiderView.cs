@@ -74,7 +74,7 @@ namespace PalmStreet.Game
                 .Line(-2.5f, 4.6f, 2.5f, 5.6f, 0.5f, Shade(l.Top))              // plis
                 .Line(-1, 7.4f, 3.6f, 8.2f, 0.5f, Shade(l.Top))
                 .Line(-6.6f, 3, 6.6f, 3, 0.7f, Shade(l.Pants))                 // taille
-                .Line(-3, 10, 7.5f, 13, 3, l.Logo ? new Color(0, 0, 0, 0) : l.Accent);
+                .Line(-3, 10, 7.5f, 13, 3, l.Logo || l.TopId.StartsWith("jersey") ? new Color(0, 0, 0, 0) : l.Accent);   // pas de sangle sur un maillot
             bust.Make("Buste", torso, order + 9, layer);
             if (l.Logo) new Paint().Poly(l.Accent, -2, 10, 8, 14, 5, 9).Poly(l.Accent, -2, 10, 6, 8, 2, 6).Make("Logo", torso, order + 11, layer);   // aile de goéland
             TopDesign(l).Make("Motif du haut", torso, order + 11, layer);
@@ -205,6 +205,9 @@ namespace PalmStreet.Game
                     p.Line(-4, 16, 6, 7, 1.6f, new Color(1, 1, 1, 0.45f));
                     p.Curve(new Vector2(1, 18), new Vector2(4, 12), new Vector2(7, 18), 0.6f, 0.6f, Hex("#FFF4D6"), 6).Circle(4, 13.6f, 1.2f, Hex("#FFF4D6"), 8);
                     break;
+                case "jersey-pilier": case "jersey-talonneur":   // maillot de rugby : cerceau et col blancs (spec 004)
+                    p.Rect(-7.2f, 11, 15.6f, 3, Hex("#F7F4EC")).Capsule(-0.6f, 19.6f, 5.4f, 19, 2.4f, Hex("#F7F4EC"));
+                    break;
             }
             switch (l.LegsId)
             {
@@ -229,7 +232,7 @@ namespace PalmStreet.Game
         /// Une pièce : sa silhouette gonflée de Outline en encre (Ink), et ses couleurs par-dessus (Col).
         /// Le contour d'un membre est posé sous toutes ses couleurs : aucun trait aux articulations.
         /// </summary>
-        sealed class Piece
+        internal sealed class Piece
         {
             public readonly Paint Ink = new Paint(), Col = new Paint();
             public Piece Capsule(float x0, float y0, float x1, float y1, float w, Color c)
@@ -322,8 +325,11 @@ namespace PalmStreet.Game
             var shin = new Piece();
             if (l.Shorts)
             {
-                shin.Taper(0, 0, 0, -Shin + 1, knee, 5.2f, skin).Rect(-3.2f, -Shin + 0.5f, 6.4f, 3.5f, Tint(l.Accent));   // chaussettes
-                shin.Col.Line(-1.8f, -2, -1.6f, -Shin + 4.5f, 1.2f, Shade(skin)).Line(-3.2f, -Shin + 3.4f, 3.2f, -Shin + 3.4f, 0.5f, Shade(Tint(l.Accent)));
+                bool rugby = l.LegsId == "shorts-pilier" || l.LegsId == "shorts-talonneur";   // chaussettes hautes à bandes blanches
+                float sock = rugby ? 6.5f : 3.5f;
+                shin.Taper(0, 0, 0, -Shin + 1, knee, 5.2f, skin).Rect(-3.2f, -Shin + 0.5f, 6.4f, sock, Tint(l.Socks));   // chaussettes
+                shin.Col.Line(-1.8f, -2, -1.6f, -Shin + 4.5f + (sock - 3.5f), 1.2f, Shade(skin)).Line(-3.2f, -Shin + 0.5f + sock - 0.1f, 3.2f, -Shin + 0.5f + sock - 0.1f, 0.5f, Shade(Tint(l.Socks)));
+                if (rugby) shin.Col.Rect(-3.2f, -Shin + 3, 6.4f, 0.9f, Tint(Color.white)).Rect(-3.2f, -Shin + 4.6f, 6.4f, 0.9f, Tint(Color.white));
             }
             else
             {
@@ -352,6 +358,9 @@ namespace PalmStreet.Game
                     for (int i = 0; i < 3; i++) shoe.Col.Circle(1.5f + i * 2, 0.6f - i * 0.5f, 0.55f, Tint(Color.white), 6);
                     shoe.Col.Rect(-3, -2.8f, 11, 0.9f, Tint(Hex("#7B2CBF")));
                     break;
+                case "boots-pilier": case "boots-talonneur":   // baskets noires à bande de la couleur du boss (spec 004)
+                    shoe.Col.Curve(new Vector2(-1, -2.4f), new Vector2(3, 0.5f), new Vector2(7, -2.6f), 1.1f, 1.1f, Tint(l.ShoesId == "boots-pilier" ? Hex("#D7263D") : Hex("#5DADE2")), 6);
+                    break;
             }
             return new LegRig { Thigh = Part("cuisse", thigh, order), Shin = Part("tibia", shin, order), Shoe = Part("chaussure", shoe, order + 2) };
         }
@@ -365,12 +374,14 @@ namespace PalmStreet.Game
             Color Tint(Color c) => Color.Lerp(Color.black, c, tint);
             Color top = Tint(l.Top), skin = Tint(l.Skin);
             var p = new Piece();
-            if (l.TopId == "start-top")   // t-shirt : manches courtes
+            bool jersey = l.TopId.StartsWith("jersey");
+            if (l.TopId == "start-top" || jersey)   // t-shirt et maillot : manches courtes
             {
                 p.Taper(0, -3, 0.5f, -9, 4.6f, 4.2f, skin).Taper(0.5f, -9, 0, -13.4f, 4.2f, 3.8f, skin)
                  .Capsule(0, 0, 0, -4.4f, 6.4f, top);
                 p.Col.Capsule(-1.2f, -0.2f, -1.2f, -4.2f, 2.6f, Shade(top))
                      .Line(-3.1f, -5.5f, 3.1f, -5.5f, 0.6f, Ink);                       // ourlet de la manche
+                if (jersey) p.Col.Line(-3, -3.9f, 3, -3.9f, 1.3f, Tint(Hex("#F7F4EC")));   // bande blanche de la manche
             }
             else
             {
@@ -378,7 +389,7 @@ namespace PalmStreet.Game
                 p.Col.Taper(-1.4f, -0.5f, -1, -10.5f, 2.8f, 2.2f, Shade(top))
                      .Rect(-2.6f, -12.4f, 5.6f, 1.6f, Shade(top));                    // poignet
             }
-            p.Col.Line(-0.6f, -8.6f, 1.6f, -9.4f, 0.5f, Shade(l.TopId == "start-top" ? skin : top));   // coude
+            p.Col.Line(-0.6f, -8.6f, 1.6f, -9.4f, 0.5f, Shade(l.TopId == "start-top" || jersey ? skin : top));   // coude
             // main : paume, doigts repliés vers l'avant, pouce
             p.Circle(0.2f, -15, 2.4f, skin, 12)
              .Capsule(-1.2f, -16.4f, 1.8f, -16.6f, 1.9f, skin)
@@ -400,7 +411,7 @@ namespace PalmStreet.Game
                 .Ellipse(2.4f, -5.6f, 3.6f, 1.2f, Shade(l.Skin), 12)                  // dessous de la mâchoire
                 .Ellipse(3.4f, -5.2f, 3.4f, 1.1f, l.Skin, 12);
             // cheveux, puis couvre-chef gagné (spec 002)
-            if (l.Hat == Hat.Cap || l.Hat == Hat.Beanie)
+            if (l.Hat == Hat.Cap || l.Hat == Hat.Beanie || l.Hat == Hat.Scrum)
                 p.Ellipse(-6, -0.6f, 2.6f, 3.2f, l.Hair, 10);                         // le couvre-chef cache les cheveux : seule la nuque dépasse
             else if (l.Curly)
                 for (int i = 0; i < 9; i++)
@@ -432,9 +443,16 @@ namespace PalmStreet.Game
                     if (l.Stripes) p.Col.Rect(-7.8f, 4.5f, 14.8f, 1.8f, Color.white).Rect(-6.4f, 7.5f, 12, 1.6f, Color.white);
                     p.Col.Rect(-8.4f, 0, 16, 3.4f, Light(l.HatColor)).Line(-8.4f, 0.2f, 7.6f, 0.2f, 0.5f, Shade(l.HatColor));
                     break;
-                case Hat.Band:   // bandana à pois blancs
+                case Hat.Band:   // bandana à pois blancs ; bandeau du Pilier : blanc à liseré rouge
                     p.Rect(-7.8f, 2, 15, 3, l.HatColor).Capsule(-8, 3.5f, -12, 0, 2.4f, l.HatColor);
-                    for (int i = 0; i < 4; i++) p.Col.Circle(-5 + i * 3.5f, 3.5f, 0.5f, Color.white, 6);
+                    if (l.HeadId == "band-pilier") p.Col.Line(-7.8f, 2.6f, 7.2f, 2.6f, 0.6f, Hex("#D7263D")).Line(-7.8f, 4.4f, 7.2f, 4.4f, 0.6f, Hex("#D7263D"));
+                    else for (int i = 0; i < 4; i++) p.Col.Circle(-5 + i * 3.5f, 3.5f, 0.5f, Color.white, 6);
+                    break;
+                case Hat.Scrum:   // casque de mêlée : calotte bleu ciel à bandes blanches, protège-oreille
+                    p.Dome(-0.6f, 0.4f, 8.2f, 8.4f, l.HatColor, 16).Circle(-2, -0.6f, 3.2f, l.HatColor, 14);
+                    p.Col.Line(-0.6f, 0.4f, -0.6f, 8.8f, 1.1f, Color.white).Line(-8.6f, 4, 7.4f, 4, 1.1f, Color.white)
+                        .Circle(-2, -0.6f, 1.6f, Shade(l.HatColor), 10)
+                        .Line(1, -1, 4.6f, -6.8f, 0.6f, Ink);   // jugulaire
                     break;
             }
             // visage : joue, œil (blanc, iris, reflet), paupière, sourcil, lèvres

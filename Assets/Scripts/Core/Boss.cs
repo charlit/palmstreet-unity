@@ -33,20 +33,35 @@ namespace PalmStreet.Core
         public Boss(BossKind kind = BossKind.Purple)
         {
             Kind = kind;
-            MaxHp = Hp = kind switch { BossKind.Crab => 4000, BossKind.Gull => 5000, BossKind.Boar => 6000, _ => Tuning.BossHp };
+            MaxHp = Hp = kind switch
+            {
+                BossKind.Pilier => 3000, BossKind.Crab => 4000, BossKind.Gull => 5000, BossKind.Talonneur => 5500, BossKind.Boar => 6000,
+                _ => Tuning.BossHp,
+            };
         }
         public float X, Lift;   // Lift : hauteur au-dessus du sol
         public float Offset = Distance;   // distance devant le skateur (négative quand il est passé derrière)
         public const float GullDive = 46, BehindSkater = -90;
 
         /// <summary>Corps qui fait chuter le skateur (largeur, hauteur) ; (0, 0) pour le boss violet qui ne touche pas.</summary>
-        public (float w, float h) Body => Kind switch { BossKind.Crab => (40, 28), BossKind.Gull => (60, 28), BossKind.Boar => (56, 34), _ => (0, 0) };
+        public (float w, float h) Body => Kind switch
+        {
+            BossKind.Crab => (40, 28), BossKind.Gull => (60, 28), BossKind.Boar => (56, 34),
+            BossKind.Pilier or BossKind.Talonneur => Tackling ? (56, 20) : (0, 0),   // il ne touche qu'en plongeant au ras du sol
+            _ => (0, 0),
+        };
+
+        /// <summary>Boss de rugby (spec 004) : trottine, puis passe, chandelle et plaquage, chacun annoncé par une pose.</summary>
+        public bool IsRugby => Kind == BossKind.Pilier || Kind == BossKind.Talonneur;
+        public int Attack;   // attaque en cours (rugby) : 0 passe, 1 chandelle, 2 plaquage
+        public bool Windup => IsRugby && State == BossState.Rising && Timer < Tuning.RugbyWindup;
+        public bool Tackling => IsRugby && Attack == 2 && State == BossState.Rising && Timer >= Tuning.RugbyWindup;
 
         /// <summary>Zone touchée par les tirs (largeur ; la hauteur est Height, depuis Lift).</summary>
-        public float HitWidth => Kind == BossKind.Purple ? Size : Body.w;
+        public float HitWidth => Kind == BossKind.Purple ? Size : IsRugby ? 40 : Body.w;
 
         /// <summary>Taille dessinée (et cible des dents).</summary>
-        public float Height => Kind switch { BossKind.Crab => 28, BossKind.Gull => 28, BossKind.Boar => 34, _ => Size };
+        public float Height => Kind switch { BossKind.Crab => 28, BossKind.Gull => 28, BossKind.Boar => 34, BossKind.Pilier or BossKind.Talonneur => Tackling ? 20 : 60, _ => Size };
 
         /// <summary>Pas entre deux attaques, durée de l'aller et du retour.</summary>
         public int AttackEvery => Kind == BossKind.Crab ? 200 : 240;   // il attaque souvent ; entre deux, il saute (Hop)
