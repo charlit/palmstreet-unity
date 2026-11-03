@@ -11,6 +11,7 @@ namespace PalmStreet.Game
     {
         const int Rate = 22050;
         AudioSource music, sfx, grind, tricks;   // tricks : sa hauteur monte avec le combo
+        AudioClip[] flips;   // un son par figure de Tuning.TrickNames (T033)
         AudioClip ollie, land, trick, bolt, crash, boom, tooth, hit, banner, start;
         bool muted;
 
@@ -33,6 +34,19 @@ namespace PalmStreet.Game
             ollie = Make("ollie", 0.16f, (t, n) => Noise(n) * Env(t, 0.002f, 0.04f) * 0.6f + Sine(t, Sweep(t, 0.12f, 260, 620)) * Env(t, 0.005f, 0.12f) * 0.5f);
             land = Make("retombée", 0.12f, (t, n) => Sine(t, Sweep(t, 0.1f, 140, 55)) * Env(t, 0.002f, 0.1f) * 0.7f + Noise(n) * Env(t, 0.001f, 0.03f) * 0.3f);
             trick = Make("figure", 0.26f, (t, n) => Square(t, Sweep(t, 0.26f, 420, 1300)) * Env(t, 0.01f, 0.24f) * 0.22f + Noise(n) * Env(t, 0.05f, 0.2f) * 0.25f);
+            // figures : même base, mais hauteur, montée, forme d'onde et tournoiement (les 360) propres à chacune
+            flips = new AudioClip[Tuning.TrickNames.Length];
+            for (int k = 0; k < flips.Length; k++)
+            {
+                int i = k;
+                float f0 = 300 + 70 * i, f1 = (i % 2 == 0 ? 1500 : 700) + 60 * i, spin = Tuning.TrickNames[i].Contains("360") ? 14 + 4 * i : 0;
+                flips[k] = Make(Tuning.TrickNames[i], 0.26f, (t, n) =>
+                {
+                    float f = Sweep(t, 0.26f, f0, f1) * (1 + (spin > 0 ? 0.12f * Mathf.Sin(t * 2 * Mathf.PI * spin) : 0));
+                    float tone = i % 3 == 0 ? Square(t, f) : i % 3 == 1 ? Tri(t, f) * 1.6f : Sine(t, f) * 1.8f;
+                    return tone * Env(t, 0.01f, 0.24f) * 0.22f + Noise(n) * Env(t, 0.03f, i % 2 == 1 ? 0.24f : 0.12f) * 0.25f;
+                });
+            }
             bolt = Make("éclair", 0.16f, (t, n) => Square(t, t < 0.06f ? 1320 : 1980) * Env(t, 0.002f, 0.15f) * 0.3f);
             crash = Make("chute", 0.7f, (t, n) => Noise(n) * Env(t, 0.002f, 0.55f) * 0.7f + Sine(t, Sweep(t, 0.4f, 160, 45)) * Env(t, 0.002f, 0.4f) * 0.6f + Square(t, 230) * Env(t, 0.001f, 0.12f) * 0.2f);
             boom = Make("boom", 1.4f, (t, n) => Noise(n) * Env(t, 0.005f, 1.3f) * 0.8f + Sine(t, Sweep(t, 1f, 90, 30)) * Env(t, 0.005f, 1.2f) * 0.8f);
@@ -43,12 +57,15 @@ namespace PalmStreet.Game
             grind.clip = Make("grind", 0.5f, (t, n) => (Noise(n) * 0.5f + Sine(t, 1830) * 0.25f + Sine(t, 2470) * 0.2f) * (0.7f + 0.3f * Mathf.Sin(t * 2 * Mathf.PI * 18)) * 0.5f);
         }
 
-        public void Play(Cue cue, int combo = 1)
+        public void Play(Cue cue, int combo = 1, string text = null)
         {
             if (cue == Cue.Trick)
             {
                 tricks.pitch = 1 + 0.06f * Mathf.Clamp(combo - 2, 0, 10);
-                tricks.PlayOneShot(trick);
+                // « FAKIE 360 FLIP ! » → 360 FLIP ; grinds, 180 et manuals gardent le son commun
+                string name = text?.Replace("FAKIE ", "").TrimEnd(' ', '!');
+                int k = name == null ? -1 : System.Array.IndexOf(Tuning.TrickNames, name);
+                tricks.PlayOneShot(k >= 0 ? flips[k] : trick);
                 return;
             }
             AudioClip c = cue switch

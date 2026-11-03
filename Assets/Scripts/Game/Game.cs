@@ -412,7 +412,7 @@ namespace PalmStreet.Game
             var yellow = Hex("#FFE14D");
             foreach (var e in Run.Events)
             {
-                sound.Play(e.Cue, Run.Combo);
+                sound.Play(e.Cue, Run.Combo, e.Text);
                 switch (e.Cue)   // FR-028 : vibrations courtes sur les moments forts
                 {
                     case Cue.Trick:   // léger, plus fort en fakie et au 180, fort sur un long combo

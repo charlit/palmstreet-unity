@@ -29,7 +29,7 @@ namespace PalmStreet.Game
 
         /// <summary>À l'accueil le soleil monte à gauche du titre, où l'on peut le toucher (FR-020).</summary>
         public bool MenuSun, HideSun;   // HideSun : carte et profil, où il passait coupé sous l'en-tête
-        public static readonly Vector2 MenuSunPos = new Vector2(60, 440);   // x : distance au bord gauche
+        public static readonly Vector2 MenuSunPos = new Vector2(38, 505);   // x : distance au bord gauche
 
         public void Init()
         {

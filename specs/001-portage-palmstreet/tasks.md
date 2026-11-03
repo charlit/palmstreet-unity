@@ -97,7 +97,7 @@ Toutes les durées sont en pas de 1/60 s.
 - [x] T030 RiderView.cs : planche redessinée (profil, dessus, dessous) ; FLIP et SHOVE-IT sous les pieds levés, 360° et 360° INVERSÉ en saltos groupés
 - [x] T031 Props.cs et Fx.cs : plots, rails, éclairs, ombres douces ; poussière, étincelles de grind, éclats, confettis
 - [x] T032 Sound.cs : musique 132 bpm (la mineur, fa, do, sol), bruitages saut, retombée, figure, éclair, grind en boucle, chute, boss, BOOM ; bouton SON/MUET gardé dans PlayerPrefs `mute`
-- [ ] T033 [P] Un bruitage différent pour chaque figure (FLIP, SHOVE-IT, 360°, 360° INVERSÉ)
+- [X] T033 [P] Un bruitage différent pour chaque figure (FLIP, SHOVE-IT, 360°, 360° INVERSÉ)
 - [x] T046 [FR-026] Profil : plus de choix entre 4 skateurs ; Outfit et Wardrobe dans Look.cs (coiffures, peaux, cheveux, palette de 14 couleurs), écran PROFIL à onglets (TÊTE, PEAU, HAUT, BAS, PIEDS, PLANCHE) avec aperçu animé, tenue gardée dans PlayerPrefs `outfit`, bouton PROFIL à l'accueil et « CHANGER MA TENUE » à la fin
 - [x] T047 [FR-002] Nouveau bouton START (pilule en relief, icône lecture, respiration), PROFIL en haut à droite, TOP 10 seul en bas
 - [x] T048 [FR-027] Unlocks.cs (prix des couleurs, coiffures, coupes) et son test ; points cumulés dans PlayerPrefs `total` ; pastilles et choix verrouillés avec leur prix dans le profil ; annonce des nouveautés à la fin d'une partie
