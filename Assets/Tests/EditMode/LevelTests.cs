@@ -163,6 +163,42 @@ namespace PalmStreet.Tests
             Assert.IsTrue(gaps10, "niveau 10 : trous");
         }
 
+        [Test] public void ModeInfini_ApresLaCarte()
+        {
+            var p = new Progress();
+            Assert.IsFalse(p.EndlessOpen, "installation neuve : fermé");
+            for (int n = 1; n < Levels.Count; n++) p.Clear(n, 100);
+            Assert.IsFalse(p.EndlessOpen, "11 villes sur 12 : encore fermé");
+            p.Clear(Levels.Count, 100);
+            Assert.IsTrue(p.EndlessOpen, "les 12 villes : ouvert");
+        }
+
+        [Test] public void Plots_JamaisDansUneMontee()
+        {
+            int checkedCones = 0;
+            foreach (int n in new[] { 4, 6, 9, 11 })
+            {
+                var r = Story(n);
+                var seen = new System.Collections.Generic.HashSet<Obstacle>();
+                for (int i = 0; i < 6000 && r.Phase == Phase.Playing; i++)
+                {
+                    foreach (var o in r.Obstacles)
+                    {
+                        if (!seen.Add(o) || (o.Kind != ObstacleKind.SmallCone && o.Kind != ObstacleKind.BigCone)) continue;
+                        checkedCones++;
+                        Assert.IsNull(r.Ground.UpIn(o.X, o.X + o.W), $"niveau {n} : plot dans une montée à x = {o.X}");
+                    }
+                    r.Obstacles.RemoveAll(o => o.X < r.Skater.X + 60);
+                    r.Bolts.Clear();
+                    if (r.Skater.Grounded && r.Ground.IsGap(r.Skater.X + 40)) r.Press();
+                    r.Step();
+                    if (r.Phase == Phase.Over) { r.Phase = Phase.Playing; r.Skater.Y = 0; r.Skater.Vy = 0; r.Skater.Grounded = true; }
+                    if (r.Skater.Y < 0) { r.Skater.Y = 0; r.Skater.Vy = 0; r.Skater.Grounded = !r.Ground.IsGap(r.Skater.X); }
+                }
+            }
+            Assert.That(checkedCones, Is.GreaterThan(20), "assez de plots vérifiés");
+        }
+
         [Test] public void Niveau_BulleDAideAuDepart()
         {
             var r = Story(2);

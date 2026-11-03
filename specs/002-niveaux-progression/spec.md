@@ -25,6 +25,11 @@ lancement. Tout ce que décrit cette spec s'en écarte, à la demande du propri�
 pour donner une progression et des récompenses. Les règles de base (saut, grind, éclairs, combo, points des
 figures, boss à dents) restent celles de la spec 001, donc du jeu web.
 
+## Évolutions après la livraison
+
+- **2026-11-03** (demande du propriétaire) : plus de plot dans les montées (FR-007b) ; mode infini ouvert seulement
+  quand la carte est finie (FR-018b). Tests : `LevelTests.Plots_JamaisDansUneMontee`, `LevelTests.ModeInfini_ApresLaCarte`.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Jouer les niveaux sur la carte (Priority: P1)
@@ -210,6 +215,8 @@ lisible sous la planche, un toucher la passe.
   chaque nouveau type d'obstacle MUST apparaître d'abord dans un niveau précis, avec une courte bulle
   d'explication la première fois : rails (niveau 2), grands plots et bosses (niveau 4), mouettes à
   esquiver accroupi (niveau 7), tremplins (niveau 8), trous dans la route (niveau 10).
+- **FR-007b** *(ajout du 2026-11-03)* : aucun plot MUST NOT être posé dans une montée : un plot qui y tomberait est
+  repoussé après le sommet (et pas au début de la descente ni près d'un trou, comme avant).
 - **FR-008**: Passer la ligne d'arrivée ou battre le boss MUST afficher « NIVEAU RÉUSSI » avec le score
   du niveau, le meilleur score du niveau et les boutons NIVEAU SUIVANT et CARTE ; NIVEAU SUIVANT lance
   directement le niveau suivant.
@@ -252,6 +259,10 @@ lisible sous la planche, un toucher la passe.
 
 - **FR-018**: MODE INFINI MUST lancer une course sans fin dont la vitesse augmente avec le temps de jeu
   (et non plus avec le score), sans palier ni pause, plafonnée à 5,5 (un saut reste assez long pour passer les obstacles).
+- **FR-018b** *(ajout du 2026-11-03)* : MODE INFINI MUST rester fermé tant que les 12 villes de la carte ne sont
+  pas toutes réussies. Avant, le bouton de l'accueil est grisé avec « APRÈS LES 12 VILLES », et le toucher (ou le
+  raccourci du soleil) explique : « Finis les 12 villes de la carte pour débloquer le mode infini ». Les builds de
+  test (Development) gardent tout ouvert.
 - **FR-019**: En mode infini, les décors des villes déjà ouvertes en histoire MUST défiler à tour de
   rôle, et un boss MUST revenir régulièrement, choisi parmi ceux déjà rencontrés en histoire.
 - **FR-020**: Le mode infini MUST avoir son propre meilleur score, envoyé au classement ; le bouton

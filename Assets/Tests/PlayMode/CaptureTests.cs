@@ -14,7 +14,13 @@ namespace PalmStreet.Tests
     /// </summary>
     public class CaptureTests
     {
-        const int W = 780, H = 1688;   // iPhone en portrait, moitié de la résolution native
+        // iPhone en portrait, moitié de la résolution native ; PALMSTREET_SIZE=1290x2796 pour les images de l'App Store
+        static readonly int W = Size(0, 780), H = Size(1, 1688);
+        static int Size(int i, int fallback)
+        {
+            var v = System.Environment.GetEnvironmentVariable("PALMSTREET_SIZE");
+            return v != null && v.Split('x').Length == 2 && int.TryParse(v.Split('x')[i], out int n) ? n : fallback;
+        }
 
         static string Dir => System.Environment.GetEnvironmentVariable("PALMSTREET_CAPTURES") ?? Path.Combine(Application.dataPath, "../Temp/Captures");
 
@@ -418,6 +424,16 @@ namespace PalmStreet.Tests
             int w = zoom == null ? W : 600, h = zoom == null ? H : 600;
             var rt = new RenderTexture(w, h, 24);
             cam.targetTexture = rt;
+            // l'interface se cale sur la taille de la capture, pas sur la fenêtre du mode batch : sinon le texte est
+            // dessiné trop petit puis agrandi (flou)
+            var scalers = Object.FindObjectsByType<UnityEngine.UI.CanvasScaler>(FindObjectsSortMode.None);
+            var modes = new UnityEngine.UI.CanvasScaler.ScaleMode[scalers.Length];
+            for (int i = 0; i < scalers.Length; i++)
+            {
+                modes[i] = scalers[i].uiScaleMode;
+                scalers[i].uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ConstantPixelSize;
+                scalers[i].scaleFactor = Mathf.Min(w / scalers[i].referenceResolution.x, h / scalers[i].referenceResolution.y);
+            }
             yield return null;   // le décor et l'interface se calent sur ce format
             yield return null;
             var pos = cam.transform.position; float size = cam.orthographicSize;
@@ -430,6 +446,7 @@ namespace PalmStreet.Tests
             tex.Apply();
             RenderTexture.active = null;
             cam.targetTexture = null;
+            for (int i = 0; i < scalers.Length; i++) scalers[i].uiScaleMode = modes[i];
             File.WriteAllBytes(Path.Combine(Dir, name + ".png"), tex.EncodeToPNG());
             Object.Destroy(tex);
             rt.Release();

@@ -137,6 +137,15 @@ namespace PalmStreet.Core
             return null;
         }
 
+        /// <summary>Montée qui touche [x0, x1], ou null : on n'y pose pas de plot.</summary>
+        public Segment? UpIn(float x0, float x1)
+        {
+            EnsureUpTo(x1);
+            foreach (var s in Segments)
+                if (s.Kind == SlopeKind.Up && s.X1 > x0 && s.X0 < x1) return s;
+            return null;
+        }
+
         public bool IsFlat(float x0, float x1)
         {
             EnsureUpTo(x1);

@@ -26,6 +26,8 @@ namespace PalmStreet.Core
         public static bool UnlockAll;
         public bool IsCleared(int n) => UnlockAll || Cleared[n - 1];
         public bool IsOpen(int n) => UnlockAll || n == 1 || Cleared[n - 2];
+        /// <summary>Le mode infini s'ouvre quand les 12 villes de la carte sont réussies.</summary>
+        public bool EndlessOpen => UnlockAll || Array.TrueForAll(Cleared, c => c);
 
         /// <summary>Étoiles d'une ville (0 à 3) : niveau fini, défi réussi, score atteint.</summary>
         public int StarCount(int n) => (Cleared[n - 1] ? 1 : 0) + (Stars[n - 1] ? 1 : 0) + (ScoreStars[n - 1] ? 1 : 0);

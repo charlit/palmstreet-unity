@@ -646,10 +646,19 @@ namespace PalmStreet.Core
         void PlaceObstacle()
         {
             float x = nextObstacleX;
-            if (Ground.InDescentStart(x, out float after)) x = after;
+            // jamais d'obstacle au début d'une descente, juste avant, sur ou juste après un trou, ni dans une montée :
+            // on le pousse plus loin jusqu'à un endroit qui convient
+            for (int k = 0; k < 10; k++)
+            {
+                float was = x;
+                if (Ground.InDescentStart(x, out float after)) x = after;
+                var hole = Ground.GapIn(x - 150, x + 150);
+                if (hole != null) x = hole.Value.X1 + 160;   // plus loin que la marge de 150, sinon on retrouve le même trou
+                var up = Ground.UpIn(x - 10, x + 45);
+                if (up != null) x = up.Value.X1 + 20;
+                if (x == was) break;
+            }
             if (Mode == GameMode.Story && Def.Spot != null && !spotPlaced && x >= Def.Finish * 0.45f && PlaceSpot(x)) return;
-            // jamais d'obstacle juste avant, sur ou juste après un trou : on le pose bien après
-            for (var hole = Ground.GapIn(x - 150, x + 150); hole != null; hole = Ground.GapIn(x - 150, x + 150)) x = hole.Value.X1 + 160;   // plus loin que la marge de 150, sinon on retrouve le même trou
             if ((Has(Allow.Gulls) || Has(Allow.Pads)) && !bigRailPending && PlaceNeon(x)) return;
             bool rails = Has(Allow.Rails) && (Mode == GameMode.Story || Score >= Tuning.RailsAfterScore);
             bool wantRail = bigRailPending || (rails && pattern % 3 == 2);

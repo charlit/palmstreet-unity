@@ -56,7 +56,7 @@ namespace PalmStreet.Game
         void Awake()
         {
             Application.targetFrameRate = 60;
-            Progress.UnlockAll = false;   // true : tout ouvert pour tester sur le téléphone (jamais dans une version publique)
+            Progress.UnlockAll = Debug.isDebugBuild;   // tout ouvert dans les builds de test (Development) ; jamais dans une version publique
             cam = Camera.main;
             cam.orthographic = true;
             var probe = new GameObject("Sonde").AddComponent<SpriteRenderer>();
@@ -121,6 +121,7 @@ namespace PalmStreet.Game
         /// <summary>Mode infini : villes ouvertes, boss déjà battus, obstacles des niveaux ouverts (spec 002, FR-018 à FR-020).</summary>
         public void StartEndless(bool boss)
         {
+            if (!progress.EndlessOpen) { hud.Toast("Finis les 12 villes de la carte pour débloquer le mode infini"); return; }
             level = 0;
             Run.Best = progress.EndlessBest;
             var cities = new List<Theme>();

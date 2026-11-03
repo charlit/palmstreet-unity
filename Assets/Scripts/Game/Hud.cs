@@ -33,7 +33,8 @@ namespace PalmStreet.Game
         Sprite round;
         RectTransform safe;
         GameObject menu, game, over, pause, profile;
-        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, menuNext, toast;
+        Text score, best, combo, theme, banner, subBanner, overScore, overBest, record, hint, menuBest, menuNext, toast, endlessLabel, endlessLock;
+        Image endlessImage;
         RectTransform bossBar, bossFill, bannerRt;
         /// <summary>Le mot STREET du titre de l'accueil (l'animation de lancement grinde dessus).</summary>
         public Text TitleStreet { get; private set; }
@@ -208,7 +209,9 @@ namespace PalmStreet.Game
             startButton = StartButton(t, "JOUER", play);
             menuNext = Label(t, "", 13, Cream, new Vector2(0, 152), new Vector2(0.5f, 0));   // le niveau que JOUER va proposer
             var eb = Button(t, "INFINI", new Vector2(0.5f, 0), new Vector2(0, 108), new Vector2(250, 50), Hex("#4A2A6E"), endless);
-            Label(eb.transform, "MODE INFINI", 19, Yellow, Vector2.zero);
+            endlessImage = eb.GetComponent<Image>();
+            endlessLabel = Label(eb.transform, "MODE INFINI", 19, Yellow, Vector2.zero);
+            endlessLock = Label(eb.transform, "APRÈS LES 12 VILLES", 10, Cream, new Vector2(0, -14));
             string[] bar = { "PROFIL", "TUTORIEL" };
             Action[] barActions = { openProfile, () => ShowTutorial() };
             for (int i = 0; i < bar.Length; i++)
@@ -501,6 +504,11 @@ namespace PalmStreet.Game
             menuBest.text = $"{p.TotalStars}/{Levels.Count * 3} ÉTOILES" + (bestScore > 0 ? "   ·   RECORD INFINI " + bestScore : "");
             var next = Levels.Get(p.NextLevel);
             menuNext.text = $"NIVEAU {next.Number} · {next.City}";
+            bool open = p.EndlessOpen;   // le mode infini s'ouvre une fois la carte finie
+            endlessImage.color = open ? Hex("#4A2A6E") : Hex("#2E2440");
+            endlessLabel.color = open ? Yellow : new Color(Yellow.r, Yellow.g, Yellow.b, 0.45f);
+            endlessLabel.rectTransform.anchoredPosition = new Vector2(0, open ? 0 : 6);
+            endlessLock.gameObject.SetActive(!open);
         }
 
         public void ShowProfile()
