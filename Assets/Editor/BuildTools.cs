@@ -47,6 +47,7 @@ namespace PalmStreet.EditorTools
             PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneOnly;
             PlayerSettings.iOS.targetOSVersionString = "15.0";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.SplashScreen.show = false;   // pas d'écran « Made with Unity » (facultatif depuis Unity 6) : l'animation PST ouvre le jeu
         }
 
 #if UNITY_IOS

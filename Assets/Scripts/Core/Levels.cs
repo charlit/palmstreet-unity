@@ -26,7 +26,8 @@ namespace PalmStreet.Core
         public int Goal;
         public string Spot;             // lieu connu de la ville : un grand rail à grinder jusqu'au bout
         public int ScoreGoal;           // score de la troisième étoile
-        public float FlyingRate = Tuning.FlyingRate;   // part des obstacles volants (spec 004 : peu au niveau 2)
+        public float FlyingRate = Tuning.FlyingRate;
+        public bool Park;                   // skatepark de la Barre (spec 006) : hors de la carte des 12 niveaux   // part des obstacles volants (spec 004 : peu au niveau 2)
 
         /// <summary>Le défi en clair, ex. « 3 figures en fakie ».</summary>
         public string ChallengeText => Challenge switch
@@ -64,6 +65,18 @@ namespace PalmStreet.Core
 
         public static int Count => All.Length;
 
+        /// <summary>
+        /// Spec 006 : le skatepark de la Barre à Anglet, niveau bonus libre, hors de la suite des 12 niveaux et du mode
+        /// infini. Pas de ligne d'arrivée : la session dure Tuning.ParkSteps.
+        /// </summary>
+        public static readonly LevelDef Park = new LevelDef
+        {
+            Number = 13, City = "SKATEPARK DE LA BARRE", Theme = Theme.Skatepark, Park = true,
+            Finish = float.MaxValue, StartSpeed = 3.0f * Tuning.SpeedScale, MaxSpeed = 3.0f * Tuning.SpeedScale,
+            Allowed = Allow.Rails, Boss = BossKind.None, Unlocks = -1, FlyingRate = 0, ScoreGoal = Tuning.ParkScoreGoal,
+            Challenge = ChallengeKind.Combo, Goal = Tuning.ParkComboGoal,
+        };
+
         public static LevelDef Get(int n) => All[n - 1];
 
         /// <summary>Sort donné par un boss (index de Tuning.SpellNames), ou −1 : les boss de rugby n'en donnent pas (spec 004).</summary>
@@ -71,7 +84,7 @@ namespace PalmStreet.Core
 
         /// <summary>Ciel de jour : le texte du milieu de l'écran s'y écrit en sombre (spec 003, FR-004).</summary>
         public static bool IsDay(Theme t) => t == Theme.Biarritz || t == Theme.Bidart || t == Theme.Guethary
-            || t == Theme.Bayonne || t == Theme.Espelette || t == Theme.Cambo;
+            || t == Theme.Bayonne || t == Theme.Espelette || t == Theme.Cambo || t == Theme.Skatepark;   // la Barre : fin d'après-midi claire
 
         static LevelDef L(int n, string city, Theme theme, float finish, float start, float max, Allow allowed, BossKind boss, int unlocks, string tip, ChallengeKind challenge, int goal, string spot, float flying = Tuning.FlyingRate)
         {

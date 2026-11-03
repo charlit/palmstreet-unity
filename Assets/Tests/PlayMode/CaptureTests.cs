@@ -154,6 +154,32 @@ namespace PalmStreet.Tests
                     yield return Shot($"004-boss-{n}-attaque-{attack}");
                 }
             }
+            // spec 006 : skatepark de la Barre — carte, aperçu, grande rampe, modules, fin de session
+            var parkP = new Progress(); parkP.Clear(1, 1000);
+            game.Progress = parkP;
+            game.OpenMap();
+            for (int i = 0; i < 40; i++) yield return null;
+            yield return Shot("006-carte");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowPreview(Levels.Park.Number);
+            yield return null;
+            yield return Shot("006-apercu");
+            Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(0);
+            game.StartPark();
+            for (int i = 0; i < 40; i++) { run.Step(); if (i % 2 == 0) yield return null; }
+            yield return Shot("006-rampe");
+            var parkSeen = new System.Collections.Generic.HashSet<ObstacleKind>();
+            for (int i = 0; i < 4000 && run.Phase == Phase.Playing && parkSeen.Count < 4; i++)
+            {
+                if (run.Skater.Grounded && run.Obstacles.Exists(o => o.IsRail && o.X - run.Skater.X is > 30 and < 70)) run.Press();
+                run.Step(); if (i % 3 == 0) yield return null;
+                var near = run.Obstacles.Find(o => !parkSeen.Contains(o.Kind) && o.X - run.Skater.X is > 60 and < 160);
+                if (near != null) { parkSeen.Add(near.Kind); yield return Shot($"006-module-{near.Kind}"); }
+            }
+            run.StepCount = Tuning.ParkSteps - 2;
+            for (int i = 0; i < 60; i++) { run.Step(); yield return null; }
+            yield return Shot("006-fin");
+            game.Progress = saved;
+
             // spec 005 : Arcangues (fronton, clocher, platanes), pelote volante, combat planche en main
             game.StartLevel(8);
             yield return Steps(run, 160, true);

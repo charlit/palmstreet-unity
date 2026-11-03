@@ -121,11 +121,11 @@ Toutes les durées sont en pas de 1/60 s.
 ## Phase 8: Polish & publication
 
 - [ ] T039 Amender la constitution (principe I : la spec remplace le jeu web comme référence) avec /speckit-constitution
-- [ ] T040 [P] Icône de l'app et écran de lancement dans le style du jeu (l'icône 1024 × 1024 manque pour l'App Store)
+- [X] T040 [P] Icône de l'app et écran de lancement dans le style du jeu (l'icône 1024 × 1024 manque pour l'App Store)
 - [ ] T041 Profiler sur iPhone et Android pendant le boss : 60 images/s (SC-002) ; supprimer les allocations par image (maillages du ciel, du soleil et de la route reconstruits à chaque image) ; interpolation de l'affichage si les écrans 120 Hz saccadent
 - [ ] T042 Mesurer le démarrage (< 3 s, SC-003, la synthèse du son compte) et la taille de l'app (< 150 Mo)
 - [ ] T043 Build Android (.aab signé avec la clé hors du dépôt), essai sur l'émulateur ou un téléphone Android
-- [ ] T044 Build iOS de distribution ; vérifier que `palmstreet.top` existe dans App Store Connect pour com.charlit.palmstreet
+- [X] T044 Build iOS de distribution ; vérifier que `palmstreet.top` existe dans App Store Connect pour com.charlit.palmstreet
 - [ ] T045 Fiches App Store et Google Play, captures (Tools/capture.sh), page de confidentialité ; envoi en review (SC-005)
 
 ---

@@ -26,12 +26,15 @@ namespace PalmStreet.Core
 
         /// <summary>Niveau 2 : des trous dans la route (FR-030). Hauteur du vide : Abyss.</summary>
         public bool Gaps;
+
+        /// <summary>Skatepark (spec 006) : du plat et des bowls (creux), ni bosse ni trou.</summary>
+        public bool Park;
         public const float Abyss = -1000;
 
         // la pente la plus raide possible : sert d'échelle aux bonus et freins de vitesse
         static readonly float MaxSlope = Tuning.HillMax * (float)Math.PI / (2 * Tuning.RampMin);
 
-        public Ground(Random rng, float start, bool startRamp = false)
+        public Ground(Random rng, float start, bool startRamp = false, float rampTop = Tuning.StartRampTop, float rampLength = Tuning.StartRampLength)
         {
             this.rng = rng;
             if (!startRamp)
@@ -40,7 +43,7 @@ namespace PalmStreet.Core
                 return;
             }
             // départ en haut d'une rampe : palier, descente jusqu'au niveau 0, puis le plat de départ habituel
-            float top = Tuning.StartRampTop, len = Tuning.StartRampLength;
+            float top = rampTop, len = rampLength;
             Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = -600, X1 = 0, Top = top });
             Segments.Add(new Segment { Kind = SlopeKind.Down, X0 = 0, X1 = len, Top = top });
             Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = len, X1 = Math.Max(start, len) + Tuning.StartFlat });
@@ -59,7 +62,15 @@ namespace PalmStreet.Core
             float x = last.X1;
             if (last.Kind == SlopeKind.Up)
             {
-                Segments.Add(new Segment { Kind = SlopeKind.Down, X0 = x, X1 = x + Range(Tuning.RampMin, Tuning.RampMax), Top = last.Top });
+                float down = last.Top < 0 ? Tuning.BowlHalf : Range(Tuning.RampMin, Tuning.RampMax);   // bowl : remontée symétrique
+                Segments.Add(new Segment { Kind = SlopeKind.Down, X0 = x, X1 = x + down, Top = last.Top });
+                return;
+            }
+            if (Park)   // plat, puis un bowl de temps en temps : une « montée » de hauteur négative (on descend) et sa remontée
+            {
+                if (last.Kind == SlopeKind.Flat && last.Length > 250 && rng.NextDouble() < Tuning.BowlChance)
+                    Segments.Add(new Segment { Kind = SlopeKind.Up, X0 = x, X1 = x + Tuning.BowlHalf, Top = -Tuning.BowlDepth });
+                else Segments.Add(new Segment { Kind = SlopeKind.Flat, X0 = x, X1 = x + Range(Tuning.FlatMin, Tuning.FlatMax) });
                 return;
             }
             if (last.Kind == SlopeKind.Flat && x >= FlatUntil && Gaps && rng.NextDouble() < Tuning.GapChance)

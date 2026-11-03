@@ -6,8 +6,8 @@ namespace PalmStreet.Core
     public enum Phase { Menu, Playing, Over, Cleared }
     public enum GameMode { Story, Endless }
     /// <summary>Les décors : une ville par niveau, dans l'ordre de la carte (spec 002, FR-002).</summary>
-    public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit }
-    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier, Ball, Pelote }
+    public enum Theme { Anglet, Biarritz, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Arcangues, Espelette, Ascain, Cambo, BiarritzNuit, Skatepark }
+    public enum ObstacleKind { SmallCone, BigCone, Rail, BigRail, NoseRail, DroppedCone, Gull, Pad, Barrier, Ball, Pelote, Curb, Funbox, Quarter }   // Curb, Funbox, Quarter : modules du skatepark (spec 006)
     public enum Cue { Ollie, Land, Trick, Bolt, GrindStart, GrindEnd, GrindOut, Bail, Boost, Spell, Spot, SpotAhead, Crash, Theme, FullSpeed, BossIn, BossFly, ConeDrop, Tooth, BossHit, Boom, MegaAir, Finish, Cleared, NewObstacle, Parry, Block, Boomerang }
 
     public sealed class Obstacle
@@ -19,7 +19,8 @@ namespace PalmStreet.Core
         public int Bounces = -1;     // chandelle : rebonds restants ; −1 : vole en ligne droite
         public bool Falling, Used;   // Used : tremplin déjà pris
         public bool FromBoss, Reflected;   // pelote lancée par le Pelotari ; renvoyée par une parade (spec 005)
-        public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail;
+        public bool IsRail => Kind == ObstacleKind.Rail || Kind == ObstacleKind.BigRail || Kind == ObstacleKind.NoseRail || Kind == ObstacleKind.Curb || Kind == ObstacleKind.Funbox;
+        public bool IsKicker => Kind == ObstacleKind.Pad || Kind == ObstacleKind.Quarter;   // fait décoller (tremplin, quarter)
         public bool IsFlying => Kind == ObstacleKind.Gull || Kind == ObstacleKind.Ball || Kind == ObstacleKind.Pelote;
         public float Top => Y + H;
         public string Spot;     // nom du spot de la ville (grand rail), ou null
@@ -116,10 +117,16 @@ namespace PalmStreet.Core
 
         bool Has(Allow a) => (Allowed & a) != 0;
 
+        /// <summary>Spec 006 : le skatepark de la Barre, niveau libre (pas de chute, session de 90 s, bonus de combo).</summary>
+        public bool Park => Def != null && Def.Park;
+        public int ParkLeft => Math.Max(0, Tuning.ParkSteps - StepCount);
+        float rampTop = Tuning.StartRampTop, rampLength = Tuning.StartRampLength;
+        int parkModule;
+
         /// <summary>Mode histoire : un niveau de la carte, avec les figures connues.</summary>
         public void StartLevel(LevelDef def, IList<int> tricks)
         {
-            Begin(GameMode.Story, def.Allowed, tricks);
+            Begin(GameMode.Story, def.Allowed, tricks, def.Park);
             Def = def;
             Theme = def.Theme;
             NextBossScore = int.MaxValue;   // le boss d'un niveau vient à son arrivée, pas au score
@@ -140,8 +147,11 @@ namespace PalmStreet.Core
         public void Start(bool bossNow = false) =>
             StartEndless(new[] { Theme.Anglet, Theme.Biarritz, Theme.Arcangues }, new[] { BossKind.Purple }, new[] { 0, 1, 2, 3, 4, 5, 6, 7 }, Allow.All & ~Allow.Gaps & ~Allow.Gulls & ~Allow.Pads, bossNow);
 
-        void Begin(GameMode mode, Allow allowed, IList<int> tricks)
+        void Begin(GameMode mode, Allow allowed, IList<int> tricks, bool park = false)
         {
+            rampTop = park ? Tuning.ParkRampTop : Tuning.StartRampTop;   // skatepark : une rampe immense au départ
+            rampLength = park ? Tuning.ParkRampLength : Tuning.StartRampLength;
+            parkModule = 0;
             Mode = mode;
             Allowed = allowed;
             Tricks = new List<int>(tricks);
@@ -149,7 +159,7 @@ namespace PalmStreet.Core
             bossDone = false;
             rng = new Random(seed != 0 ? seed : Environment.TickCount);
             Skater = new Skater();
-            Ground = new Ground(rng, 300, StartRamp) { Gaps = (allowed & Allow.Gaps) != 0 };   // choix : le départ plat de 420 commence au bord droit de l'écran
+            Ground = new Ground(rng, 300, StartRamp, rampTop, rampLength) { Gaps = (allowed & Allow.Gaps) != 0, Park = park };   // choix : le départ plat de 420 commence au bord droit de l'écran
             if ((allowed & Allow.Hills) == 0) Ground.FlatUntil = float.PositiveInfinity;   // pas de bosses
             Obstacles.Clear(); Bolts.Clear(); Events.Clear();
             Boss = null;
@@ -160,7 +170,7 @@ namespace PalmStreet.Core
             Array.Clear(SpellCooldown, 0, SpellCooldown.Length);
             Skater.Y = Ground.Height(0);   // en haut de la rampe de départ, s'il y en a une
             Speed = mode == GameMode.Endless ? EndlessSpeed(0) : 0; speedFactor = StartRamp ? Tuning.StartRampFrom : 1; CurrentSpeed = Speed * speedFactor;
-            nextObstacleX = StartRamp ? Math.Max(SpawnAhead, Tuning.StartRampLength + 150) : SpawnAhead;   // rien sur la rampe
+            nextObstacleX = StartRamp ? Math.Max(SpawnAhead, rampLength + 150) : SpawnAhead;   // rien sur la rampe
             bigRailPending = (allowed & Allow.Rails) != 0;   // FR-008 : le premier obstacle est un grand rail
             pattern = 0; holding = false;
             Phase = Phase.Playing;
@@ -386,13 +396,13 @@ namespace PalmStreet.Core
 
             Speed = Mode == GameMode.Story ? StorySpeed(Def, sk.X) : EndlessSpeed(StepCount);
             if (Boss != null) Speed *= Tuning.BossSpeedBoost;
-            if (StartRamp && sk.X < Tuning.StartRampLength)
+            if (StartRamp && sk.X < rampLength)
             {
                 // rampe de départ : la vitesse monte avec la hauteur descendue, même en l'air ;
-                // en infini, boost : elle monte de plus en plus vite et bien plus haut
-                float down = 1 - Ground.Height(sk.X) / Tuning.StartRampTop;
-                bool endless = Mode == GameMode.Endless;
-                float to = endless ? Tuning.EndlessRampTo : Tuning.StartRampTo;
+                // en infini et au skatepark, boost : elle monte de plus en plus vite et bien plus haut
+                float down = 1 - Ground.Height(sk.X) / rampTop;
+                bool endless = Mode == GameMode.Endless || Park;
+                float to = Park ? Tuning.ParkRampTo : endless ? Tuning.EndlessRampTo : Tuning.StartRampTo;
                 speedFactor = Tuning.StartRampFrom + (to - Tuning.StartRampFrom) * (endless ? down * down : down);
                 if (endless && !boosted && down > 0.92f) { boosted = true; Add(Cue.Boost, "BOOST !"); }
             }
@@ -400,9 +410,9 @@ namespace PalmStreet.Core
             {
                 float target = Ground.SpeedFactor(sk.X);
                 // après la rampe, l'élan retombe peu à peu à la vitesse du niveau au lieu de couper net
-                bool endlessRun = Mode == GameMode.Endless;
+                bool endlessRun = Mode == GameMode.Endless || Park;
                 float runOut = endlessRun ? Tuning.EndlessRunOut : Tuning.StartRunOut, decay = endlessRun ? Tuning.EndlessRampDecay : Tuning.StartRampDecay;
-                if (StartRamp && sk.X < Tuning.StartRampLength + runOut) target = Math.Max(target, speedFactor - decay);
+                if (StartRamp && sk.X < rampLength + runOut) target = Math.Max(target, speedFactor - decay);
                 speedFactor = target;
             }
             CurrentSpeed = Speed * speedFactor;
@@ -421,6 +431,7 @@ namespace PalmStreet.Core
             FallingCones();
             UpdateBoss();
             if (Phase != Phase.Playing) return;   // boss du niveau battu : niveau réussi
+            if (Park && StepCount >= Tuning.ParkSteps) { Add(Cue.Finish, "SESSION TERMINÉE"); Clear(); return; }
             if (Mode == GameMode.Story && sk.X >= Def.Finish && !bossDone && Boss == null)
             {
                 if (Def.Boss == BossKind.None) { Add(Cue.Finish); Clear(); return; }   // ligne d'arrivée
@@ -506,7 +517,7 @@ namespace PalmStreet.Core
             foreach (var o in Obstacles)
             {
                 if (o == sk.Rail || o.Reflected) continue;
-                if (o.Kind == ObstacleKind.Pad)
+                if (o.IsKicker)
                 {
                     // FR-032 : tremplin néon, saut géant et deux figures possibles
                     if (!o.Used && sk.Grounded && OverlapsX(o.X, o.X + o.W))
@@ -591,6 +602,7 @@ namespace PalmStreet.Core
 
         void Crash()
         {
+            if (Park) return;   // spec 006 : au skatepark on ne tombe jamais (une figure ratée reste un BAIL)
             Phase = Phase.Over;
             Skater.Rail = null;
             Add(Cue.Crash);
@@ -658,6 +670,7 @@ namespace PalmStreet.Core
                 if (up != null) x = up.Value.X1 + 20;
                 if (x == was) break;
             }
+            if (Park) { PlacePark(x); return; }
             if (Mode == GameMode.Story && Def.Spot != null && !spotPlaced && x >= Def.Finish * 0.45f && PlaceSpot(x)) return;
             if ((Has(Allow.Gulls) || Has(Allow.Pads)) && !bigRailPending && PlaceNeon(x)) return;
             bool rails = Has(Allow.Rails) && (Mode == GameMode.Story || Score >= Tuning.RailsAfterScore);
@@ -681,6 +694,39 @@ namespace PalmStreet.Core
             Obstacles.Add(o);
             float end = o.X + o.W, gap = Range(200, 400) + Speed * 40;
             PlaceBolts(end + 50, end + gap - 50);
+            nextObstacleX = end + gap;
+        }
+
+        /// <summary>
+        /// Skatepark (spec 006) : modules en boucle sur le plat — rail, curb, funbox, quarter, grand rail — et un quarter à
+        /// la sortie de chaque bowl, qui renvoie en l'air. Ni plot, ni obstacle volant, ni trou.
+        /// </summary>
+        void PlacePark(float x)
+        {
+            Obstacle o;
+            var bowl = Ground.UpIn(x - 300, x + 40);   // un bowl juste avant : quarter à sa sortie
+            if (bowl != null && Ground.At(bowl.Value.X1 + 1).Kind == SlopeKind.Down && bowl.Value.Top < 0 && !Obstacles.Exists(q => q.Kind == ObstacleKind.Quarter && q.X > bowl.Value.X0))
+            {
+                float exit = Ground.At(bowl.Value.X1 + 1).X1 + 4;
+                o = new Obstacle { Kind = ObstacleKind.Quarter, X = exit, W = Tuning.PadWidth, H = Tuning.PadHeight };
+            }
+            else
+            {
+                float len;
+                var kind = (parkModule++ % 5) switch { 0 => ObstacleKind.Rail, 1 => ObstacleKind.Curb, 2 => ObstacleKind.Funbox, 3 => ObstacleKind.Quarter, _ => ObstacleKind.BigRail };
+                len = kind switch
+                {
+                    ObstacleKind.Curb => Tuning.RailLength * 1.4f, ObstacleKind.Funbox => Tuning.FunboxWidth,
+                    ObstacleKind.Quarter => Tuning.PadWidth, ObstacleKind.BigRail => Tuning.RailLength * Tuning.BigRailFactor, _ => Tuning.RailLength,
+                };
+                if (!Ground.IsFlat(x - 10, x + len + 10)) x = NextFlat(x, len + 20) ?? x;
+                float h = kind switch { ObstacleKind.Curb => Tuning.CurbHeight, ObstacleKind.Funbox => Tuning.FunboxHeight, ObstacleKind.Quarter => Tuning.PadHeight, _ => Tuning.RailHeight };
+                o = new Obstacle { Kind = kind, X = x, W = len, H = h };
+            }
+            if (!o.IsRail) o.Y = Ground.Height(o.X);
+            Obstacles.Add(o);
+            float end = o.X + o.W, gap = Range(160, 300) + Speed * 30;
+            PlaceBolts(end + 40, end + gap - 40);
             nextObstacleX = end + gap;
         }
 
@@ -1105,6 +1151,7 @@ namespace PalmStreet.Core
 
         void AddPoints(Cue cue, int points, string text, float? x = null, float? y = null)
         {
+            if (Park && cue == Cue.Trick && Combo > Tuning.ParkComboFrom) points += Tuning.ParkBonus * (Combo - Tuning.ParkComboFrom);   // spec 006 : bonus de combo
             Score += points;
             Events.Add(new GameEvent { Cue = cue, Points = points, Text = text, X = x ?? Skater.X, Y = y ?? Skater.Y + Tuning.SkaterHeight });
         }

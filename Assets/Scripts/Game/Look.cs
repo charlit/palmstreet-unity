@@ -4,7 +4,7 @@ using static PalmStreet.Game.Paint;
 
 namespace PalmStreet.Game
 {
-    public enum Decor { Largente, Btz, Arcangues, Neon, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Espelette, Ascain, Cambo }
+    public enum Decor { Largente, Btz, Arcangues, Neon, Bidart, Guethary, SaintJeanDeLuz, Hendaye, Bayonne, Espelette, Ascain, Cambo, Park }
 
     /// <summary>Couleurs et position du soleil d'un décor (FR-015) : coucher de soleil sur l'océan, plein jour à BTZ, crépuscule basque.</summary>
     public sealed class ThemeLook
@@ -52,6 +52,8 @@ namespace PalmStreet.Game
                 b[2].City("ASCAIN", Decor.Ascain, false, "#1D2D50", "#6C5B7B", "#F8B195", "#355C7D", "#3E6B48", "#9BE15D", "#1F3A2B", "#13241B", "#9BE15D"),
                 b[2].City("CAMBO-LES-BAINS", Decor.Cambo, false, "#3A7CA5", "#A9D6E5", "#F6F1D1", "#5B7F6A", "#4C8C4A", "#CDEAC0", "#2D4A35", "#1B2E21", "#B5E48C", "#FFF8DC"),
                 b[3].With("BIARRITZ LA NUIT"),
+                // spec 006 : le skatepark de la Barre, fin d'après-midi sur la plage, béton gris
+                b[1].City("LA BARRE", Decor.Park, true, "#2E6FB0", "#79C7E3", "#FFE2B0", "#5E8FA8", "#1C7FA6", "#CFF6FF", "#4A5560", "#2A3540", "#D5DADF", null, "#9AA3AD", "#6B747E"),   // sol en béton clair, joints gris
             };
         }
 

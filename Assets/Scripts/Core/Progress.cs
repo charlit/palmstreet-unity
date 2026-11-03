@@ -18,6 +18,9 @@ namespace PalmStreet.Core
         public List<int> Equipped = new List<int>();   // figures en l'air équipées (4 au plus), choisies dans le profil
         public const int MaxEquipped = 4;
         public int EndlessBest;
+        // skatepark de la Barre (spec 006) : meilleur score, meilleur combo, 3 étoiles (session finie, combo x8, score)
+        public int ParkBest, ParkCombo;
+        public bool[] ParkStars = new bool[3];
         public List<int> SeenObstacles = new List<int>();
         public string[] Worn = { "start-head", "start-top", "start-legs", "start-shoes", "start-deck" };
         public int Skin, HairStyle, HairColor;
@@ -28,13 +31,28 @@ namespace PalmStreet.Core
         public bool IsOpen(int n) => UnlockAll || n == 1 || Cleared[n - 2];
         /// <summary>Le mode infini s'ouvre quand les 12 villes de la carte sont réussies.</summary>
         public bool EndlessOpen => UnlockAll || Array.TrueForAll(Cleared, c => c);
+        /// <summary>Le skatepark de la Barre s'ouvre quand Anglet (niveau 1) est réussi.</summary>
+        public bool ParkOpen => IsCleared(1);
+        public int ParkStarCount => (ParkStars[0] ? 1 : 0) + (ParkStars[1] ? 1 : 0) + (ParkStars[2] ? 1 : 0);
+        /// <summary>Étoiles possibles : 3 par ville et 3 au skatepark.</summary>
+        public static int MaxStars => Levels.Count * 3 + 3;
+
+        /// <summary>Fin d'une session au skatepark : records et étoiles gagnées.</summary>
+        public void ClearPark(int score, int combo)
+        {
+            ParkBest = Math.Max(ParkBest, score);
+            ParkCombo = Math.Max(ParkCombo, combo);
+            ParkStars[0] = true;
+            ParkStars[1] |= combo >= Tuning.ParkComboGoal;
+            ParkStars[2] |= score >= Tuning.ParkScoreGoal;
+        }
 
         /// <summary>Étoiles d'une ville (0 à 3) : niveau fini, défi réussi, score atteint.</summary>
         public int StarCount(int n) => (Cleared[n - 1] ? 1 : 0) + (Stars[n - 1] ? 1 : 0) + (ScoreStars[n - 1] ? 1 : 0);
 
         public int TotalStars
         {
-            get { int t = 0; for (int n = 1; n <= Levels.Count; n++) t += StarCount(n); return t; }
+            get { int t = ParkStarCount; for (int n = 1; n <= Levels.Count; n++) t += StarCount(n); return t; }
         }
 
         /// <summary>Premier niveau ouvert non réussi (12 si tout est réussi).</summary>
@@ -133,6 +151,7 @@ namespace PalmStreet.Core
             if (Stars == null || Stars.Length != Levels.Count) Array.Resize(ref Stars, Levels.Count);
             if (ScoreStars == null || ScoreStars.Length != Levels.Count) Array.Resize(ref ScoreStars, Levels.Count);
             SeenObstacles ??= new List<int>();
+            if (ParkStars == null || ParkStars.Length != 3) Array.Resize(ref ParkStars, 3);
             Equipped ??= new List<int>();
             Equipped = Equipped.FindAll(k => k >= 0 && k < Tuning.TrickNames.Length);
             if (Equipped.Count > MaxEquipped) Equipped.RemoveRange(MaxEquipped, Equipped.Count - MaxEquipped);

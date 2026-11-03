@@ -42,9 +42,20 @@ namespace PalmStreet.Game
 
         public void ShowPreview(int n)
         {
-            var d = Levels.Get(n);
             var p = progress();
             previewLevel = n;
+            if (n == Levels.Park.Number)   // spec 006 : skatepark de la Barre, niveau libre
+            {
+                previewTitle.text = "BONUS · NIVEAU LIBRE";
+                previewCity.text = "LA BARRE";
+                previewInfo.text = $"Étoiles : {p.ParkStarCount}/3   ·   meilleur score : {(p.ParkBest > 0 ? p.ParkBest.ToString() : "—")}"
+                    + $"\nMeilleur combo : {(p.ParkCombo > 0 ? "x" + p.ParkCombo : "—")}"
+                    + "\nSession de 90 secondes, pas de chute :\nrails, curbs, bowls, quarters, funbox"
+                    + $"\nÉtoiles : session finie, combo x{Tuning.ParkComboGoal}, score {Tuning.ParkScoreGoal}";
+                preview.SetActive(true);
+                return;
+            }
+            var d = Levels.Get(n);
             previewTitle.text = $"NIVEAU {n}" + (d.Boss != BossKind.None ? " · BOSS : " + Game.BossName(d.Boss) : "");
             previewCity.text = d.City;
             string star = p.Stars[n - 1] ? "réussi" : "à faire", score = p.ScoreStars[n - 1] ? "atteint" : "à faire";

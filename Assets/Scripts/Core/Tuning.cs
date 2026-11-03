@@ -92,6 +92,14 @@ namespace PalmStreet.Core
         public const int ParryDamage = 700, BoomerangDamage = 450;
         public const float BoomerangSpeed = 6;          // en plus du défilement, à l'aller comme au retour
         public const int BoomerangOut = 40;
+
+        // skatepark de la Barre (spec 006)
+        public const int ParkSteps = 90 * 60;            // session de 90 s
+        public const float ParkRampTop = 280, ParkRampLength = 700, ParkRampTo = 2.6f;   // la rampe de départ immense (110 × 360 ailleurs)
+        public const int ParkComboFrom = 5, ParkBonus = 25;          // au-delà de x5 : + 25 par cran de combo, à chaque figure
+        public const int ParkScoreGoal = 12000, ParkComboGoal = 8;  // étoiles : session finie, combo x8, score
+        public const float BowlDepth = 60, BowlHalf = 150, BowlChance = 0.35f;
+        public const float CurbHeight = 12, FunboxHeight = 26, FunboxWidth = 130;
         public const float PadWidth = 40, PadHeight = 6, PadJump = 13.5f;
         public const int MegaAirPoints = 50;
 

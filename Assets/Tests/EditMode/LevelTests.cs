@@ -655,7 +655,7 @@ namespace PalmStreet.Tests
 
         [Test] public void CielsDeJour()
         {
-            var day = new[] { Theme.Biarritz, Theme.Bidart, Theme.Guethary, Theme.Bayonne, Theme.Espelette, Theme.Cambo };
+            var day = new[] { Theme.Biarritz, Theme.Bidart, Theme.Guethary, Theme.Bayonne, Theme.Espelette, Theme.Cambo, Theme.Skatepark };
             foreach (Theme t in System.Enum.GetValues(typeof(Theme)))
                 Assert.AreEqual(day.Contains(t), Levels.IsDay(t), t.ToString());
         }

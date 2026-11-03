@@ -349,7 +349,7 @@ namespace PalmStreet.Game
         {
             if (finish == null) { BuildFinish(); BuildBeasts(); }
             barriers.Begin();
-            bool showFinish = run.Mode == GameMode.Story && run.Def != null && run.Def.Boss == BossKind.None && run.Phase != Phase.Menu;
+            bool showFinish = run.Mode == GameMode.Story && run.Def != null && !run.Def.Park && run.Def.Boss == BossKind.None && run.Phase != Phase.Menu;   // le skatepark n'a pas de ligne d'arrivée
             finish.gameObject.SetActive(showFinish);
             if (showFinish) finish.position = W(run.Def.Finish, run.Ground.Floor(run.Def.Finish));
             foreach (var sp in spells) sp.Begin();
@@ -357,7 +357,7 @@ namespace PalmStreet.Game
             var g = run.Ground;
             foreach (var o in run.Obstacles)
             {
-                if (o.IsRail)
+                if (o.IsRail || o.Kind == ObstacleKind.Quarter)
                 {
                     var t = rails.Get(o, out bool fresh);
                     if (fresh) BuildRail(t.GetComponent<MeshFilter>().sharedMesh, o);
@@ -527,6 +527,28 @@ namespace PalmStreet.Game
         {
             var p = new Paint();
             float h = o.H, w = o.W;
+            // modules du skatepark (spec 006) : béton gris et coping métallique
+            Color concrete = Hex("#AEB6BE"), side = Hex("#8C959E"), coping = Hex("#E8EDF2"), edge = Hex("#5E6670");
+            switch (o.Kind)
+            {
+                case ObstacleKind.Curb:   // bloc bas et long, arête en métal
+                    p.Rect(0, 0, w, h, side).Rect(0, h - 4, w, 4, concrete).Rect(0, h - 1.5f, w, 2.2f, coping).Rect(0, 0, w, 1.5f, edge);
+                    p.Build(mesh); return;
+                case ObstacleKind.Funbox:   // plateau surélevé, rampes aux deux bouts, bord grindable
+                    p.Poly(concrete, -34, 0, 0, h, 0, 0).Poly(concrete, w, 0, w, h, w + 34, 0);
+                    p.Rect(0, 0, w, h, side).Rect(0, h - 4, w, 4, concrete).Rect(0, h - 1.5f, w, 2.2f, coping);
+                    for (float x = 18; x < w - 10; x += 36) p.Rect(x, 4, 2, h - 10, edge);
+                    p.Build(mesh); return;
+                case ObstacleKind.Quarter:   // rampe courbe qui fait décoller
+                {
+                    var pts = new System.Collections.Generic.List<float> { 0, 0 };
+                    for (int i = 0; i <= 8; i++) { float t = i / 8f; pts.Add(t * w); pts.Add(h * 1.6f * (1 - Mathf.Cos(t * Mathf.PI / 2))); }
+                    pts.Add(w); pts.Add(0);
+                    p.Poly(concrete, pts.ToArray());
+                    p.Rect(w - 3, 0, 3, h * 1.6f, side).Line(w - 6, h * 1.6f, w + 2, h * 1.6f, 3, coping);
+                    p.Build(mesh); return;
+                }
+            }
             var post = Hex("#2A2D36");
             for (float x = 4; x <= w - 4 + 0.1f; x += Mathf.Max(40, (w - 8) / Mathf.Max(1, Mathf.Round((w - 8) / 70))))
             {

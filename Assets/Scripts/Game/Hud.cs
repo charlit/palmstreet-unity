@@ -501,7 +501,7 @@ namespace PalmStreet.Game
         {
             Show(menu);
             var p = progress();
-            menuBest.text = $"{p.TotalStars}/{Levels.Count * 3} ÉTOILES" + (bestScore > 0 ? "   ·   RECORD INFINI " + bestScore : "");
+            menuBest.text = $"{p.TotalStars}/{Progress.MaxStars} ÉTOILES" + (bestScore > 0 ? "   ·   RECORD INFINI " + bestScore : "");
             var next = Levels.Get(p.NextLevel);
             menuNext.text = $"NIVEAU {next.Number} · {next.City}";
             bool open = p.EndlessOpen;   // le mode infini s'ouvre une fois la carte finie

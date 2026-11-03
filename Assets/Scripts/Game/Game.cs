@@ -79,7 +79,7 @@ namespace PalmStreet.Game
                 OpenSettings = () => OpenGameSettings(true), AskQuit = () => { if (Run.Phase == Phase.Playing) OpenGameSettings(true, true); else QuitRun(); },   // partie perdue : on sort tout de suite Resume = () => OpenGameSettings(false),
                 Quit = QuitRun,
                 Home = ToMenu, Map = OpenMap, Retry = () => StartLevel(level),
-                Next = () => { if (level >= Levels.Count) StartEndless(false); else StartLevel(level + 1); },
+                Next = () => { if (level == Levels.Park.Number) StartPark(); else if (level >= Levels.Count) StartEndless(false); else StartLevel(level + 1); },
                 PickLevel = StartLevel, Cast = i => Run.Cast(i), SoundOn = () => !sound.Muted, VibrateOn = () => Haptics.Enabled, Progress = () => progress,
             });
             sound.Muted = PlayerPrefs.GetInt("mute", 0) == 1;
@@ -110,12 +110,38 @@ namespace PalmStreet.Game
         /// <summary>Mode histoire : un niveau de la carte (spec 002).</summary>
         public void StartLevel(int n)
         {
+            if (n == Levels.Park.Number) { StartPark(); return; }
             level = n;
             Run.Best = progress.Best[n - 1];
             var def = Levels.Get(n);
             Run.StartLevel(def, progress.ActiveTricks);   // les 4 figures équipées
             BeginRun();
             hud.Banner($"NIVEAU {n}", def.City, Hex("#FFE14D"));
+        }
+
+        /// <summary>Spec 006 : le skatepark de la Barre, niveau libre de 90 s, ouvert après Anglet.</summary>
+        public void StartPark()
+        {
+            if (!progress.ParkOpen) { hud.Toast("Finis Anglet pour ouvrir le skatepark de la Barre"); return; }
+            level = Levels.Park.Number;
+            Run.Best = progress.ParkBest;
+            Run.StartLevel(Levels.Park, progress.ActiveTricks);
+            BeginRun();
+            hud.Banner("LA BARRE", "Pas de chute : enchaîne les combos !", Hex("#FFE14D"));
+        }
+
+        /// <summary>Fin de session au skatepark : records, étoiles, écran « SESSION TERMINÉE ».</summary>
+        void ParkCleared()
+        {
+            sound.StopMusic();
+            int before = progress.TotalStars, parkBefore = progress.ParkStarCount;
+            progress.ClearPark(Run.Score, Run.MaxCombo);
+            foreach (var it in Items.ForStars(before, progress.TotalStars)) hud.Toast("NOUVEAU : " + it.Name);
+            SaveProgress();
+            mapFrom = 0;
+            int stars = progress.ParkStarCount;
+            string line = $"ÉTOILES {stars}/3" + (stars > parkBefore ? $" (+{stars - parkBefore})" : "") + $"  ·  combo max x{Run.MaxCombo}  ·  record combo x{progress.ParkCombo}";
+            hud.ShowCleared(Levels.Park, Run.Score, progress.ParkBest, null, null, line);
         }
 
         /// <summary>Mode infini : villes ouvertes, boss déjà battus, obstacles des niveaux ouverts (spec 002, FR-018 à FR-020).</summary>
@@ -480,11 +506,11 @@ namespace PalmStreet.Game
                         Crashed();
                         break;
                     case Cue.Cleared:
-                        LevelCleared();
+                        if (Run.Park) ParkCleared(); else LevelCleared();
                         break;
                     case Cue.Finish:
                         fx.Confetti(e.X + 40, e.Y + 80);
-                        hud.Banner("ARRIVÉE !", Levels.Get(level).City, yellow);
+                        if (!Run.Park) hud.Banner("ARRIVÉE !", Levels.Get(level).City, yellow);   // au skatepark, l'écran de fin le dit déjà
                         break;
                     case Cue.NewObstacle:
                         if (level > 0 && !progress.SeenObstacles.Contains(level))

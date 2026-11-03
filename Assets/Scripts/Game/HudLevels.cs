@@ -16,6 +16,8 @@ namespace PalmStreet.Game
         MapArt mapArt;
         readonly RectTransform[] nodes = new RectTransform[12];
         readonly Image[] nodeFills = new Image[12];
+        GameObject parkNode;   // spec 006 : le skatepark de la Barre, à côté d'Anglet
+        Text parkBest;
         readonly Text[] nodeBests = new Text[12];
         Image clearedChip;
         Text clearedTitle, clearedCity, clearedScore, clearedBest, clearedGift, clearedTrick, clearedHow, clearedChallenge, nextLabel, challengeHud;
@@ -63,6 +65,22 @@ namespace PalmStreet.Game
                 nodes[i] = node.GetComponent<RectTransform>();
             }
 
+            // skatepark de la Barre (spec 006) : niveau bonus, au nord d'Anglet, près de l'embouchure de l'Adour
+            {
+                var at = MapArt.Towns[0] + new Vector2(-0.12f, 0.06f);
+                var pn = Button(mapViewport, "Skatepark", at, Vector2.zero, new Vector2(38, 38), Cream, () => ShowPreview(Levels.Park.Number));
+                pn.GetComponent<Image>().pixelsPerUnitMultiplier = 0.6f;
+                var pf = Rect("Pastille", pn.transform);
+                pf.offsetMin = new Vector2(3, 3); pf.offsetMax = new Vector2(-3, -3);
+                var pfi = Img(pf, Hex("#35F2FF")); pfi.pixelsPerUnitMultiplier = 0.6f; pfi.raycastTarget = false;
+                Label(pn.transform, "SK8", 12, Night, Vector2.zero);
+                var pl = Label(pn.transform, "LA BARRE", 11, Cream, new Vector2(0, -27));
+                pl.rectTransform.sizeDelta = new Vector2(90, 16);
+                Label(pn.transform, "BONUS", 10, Hex("#35F2FF"), new Vector2(0, 26));
+                parkBest = Label(pn.transform, "", 10, Yellow, new Vector2(0, -39));
+                parkNode = pn;
+            }
+
             var back = Button(t, "Retour carte", new Vector2(0.5f, 0), new Vector2(0, 38), new Vector2(200, 44), Orange, a.Home);
             Label(back.transform, "RETOUR", 20, Night, Vector2.zero);
             BuildStoryHud();
@@ -80,6 +98,8 @@ namespace PalmStreet.Game
                 nodes[i].GetComponent<UnityEngine.UI.Button>().interactable = open;
                 nodeBests[i].text = done ? "BEST " + p.Best[i] : open ? "" : "VERROUILLÉ";
             }
+            parkNode.SetActive(p.ParkOpen);
+            parkBest.text = p.ParkBest > 0 ? "BEST " + p.ParkBest : "";
             int reached = 0;
             while (reached < 12 && p.IsOpen(reached + 1)) reached++;
             mapArt.Open = reached;
@@ -109,6 +129,8 @@ namespace PalmStreet.Game
             cleared.GetComponent<Image>().raycastTarget = true;
             var t = cleared.transform;
             clearedTitle = Label(t, "NIVEAU RÉUSSI !", 44, Yellow, new Vector2(0, 210));
+            clearedTitle.rectTransform.sizeDelta = new Vector2(370, 62);
+            Fit(clearedTitle, 26);   // « SESSION TERMINÉE » est plus long
             clearedCity = Label(t, "", 20, Cream, new Vector2(0, 170));
             Label(t, "SCORE", 14, Cream, new Vector2(0, 132));
             clearedScore = Label(t, "", 44, Cream, new Vector2(0, 102));
@@ -136,8 +158,8 @@ namespace PalmStreet.Game
             cleared.SetActive(true);
             settingsButton.gameObject.SetActive(false);
             bool last = def.Number == Levels.Count;
-            clearedTitle.text = last ? "TU ES UN VRAI PST !" : "NIVEAU RÉUSSI !";
-            clearedCity.text = $"NIVEAU {def.Number} · {def.City}" + (last ? " · FIN DE L'AVENTURE" : "");
+            clearedTitle.text = def.Park ? "SESSION TERMINÉE" : last ? "TU ES UN VRAI PST !" : "NIVEAU RÉUSSI !";
+            clearedCity.text = def.Park ? "ANGLET · " + def.City : $"NIVEAU {def.Number} · {def.City}" + (last ? " · FIN DE L'AVENTURE" : "");
             clearedScore.text = score.ToString();
             clearedBest.text = "MEILLEUR : " + best;
             if (outfit != null) gift = outfit;
@@ -151,7 +173,7 @@ namespace PalmStreet.Game
             int k = System.Array.IndexOf(Tuning.TrickNames, trick);
             clearedTrick.text = trick != null ? "NOUVELLE FIGURE : " + trick : "";
             clearedHow.text = trick != null ? "En l'air, glisse le doigt " + Tuning.SwipeWords[Tuning.TrickSwipe[k]] : "";
-            nextLabel.text = last ? "MODE INFINI" : "NIVEAU SUIVANT";
+            nextLabel.text = def.Park ? "REJOUER" : last ? "MODE INFINI" : "NIVEAU SUIVANT";
         }
 
         // ---------- profil : figures connues et à débloquer (FR-017) ----------
@@ -309,7 +331,14 @@ namespace PalmStreet.Game
             storyBar.gameObject.SetActive(story && run.Boss == null);
             if (story) storyFill.anchorMax = new Vector2(Mathf.Clamp01(run.Skater.X / run.Def.Finish), 1);
             challengeHud.gameObject.SetActive(story && run.Boss == null);   // pendant le boss, sa barre de vie prend la place
-            if (story)
+            if (story && run.Park)   // skatepark : temps restant et meilleur combo à la place du défi
+            {
+                storyFill.anchorMax = new Vector2(Mathf.Clamp01(1 - (float)run.ParkLeft / Tuning.ParkSteps), 1);
+                int s = (run.ParkLeft + 59) / 60;
+                challengeHud.text = $"SESSION {s / 60}:{s % 60:00}  ·  COMBO MAX x{run.MaxCombo}";
+                challengeHud.color = run.MaxCombo >= Tuning.ParkComboGoal ? Yellow : Cream;
+            }
+            else if (story)
             {
                 bool done = run.ChallengeDone(run.Def);
                 challengeHud.text = done ? "DÉFI RÉUSSI : " + run.Def.ChallengeText : $"DÉFI : {run.ChallengeValue(run.Def)} / {run.Def.ChallengeText}";

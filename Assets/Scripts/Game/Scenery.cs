@@ -265,6 +265,7 @@ namespace PalmStreet.Game
             switch (t)
             {
                 case Decor.Largente:
+                case Decor.Park:
                     Ridge(p, Color.Lerp(l.Far, l.SkyLow, 0.35f), 158, 16, 11);   // caps au loin, sous le soleil
                     Ridge(p, l.Far, 142, 12, 12);
                     break;
@@ -391,6 +392,37 @@ namespace PalmStreet.Game
             p.Glow(cx, cy, rad + 20, new Color(ring.r, ring.g, ring.b, 0.12f), new Color(ring.r, ring.g, ring.b, 0));
         }
 
+        /// <summary>
+        /// Skatepark de la Barre (spec 006) : mur en béton couvert de graffitis colorés (formes, sans marque ni mot),
+        /// quarters et bowl en béton à coping métallique, lampadaires.
+        /// </summary>
+        static void SkateparkBack(Paint p, ThemeLook l, System.Random r)
+        {
+            Color concrete = Hex("#AEB6BE"), shade = Hex("#8C959E"), coping = Hex("#E8EDF2"), dark = Hex("#2A3540");
+            Color[] spray = { Hex("#FF4D8D"), Hex("#35F2FF"), Hex("#FFE14D"), Hex("#7CE38B"), Hex("#FF7A1A"), Hex("#B86BFF") };
+            // mur à graffitis
+            p.Rect(20, -10, 300, 90, concrete).Rect(20, 76, 300, 4, coping);
+            for (int i = 0; i < 9; i++)
+            {
+                var c = spray[i % spray.Length]; float x = 34 + i * 32 + R(r, -6, 6), y = R(r, 14, 52);
+                p.Ellipse(x, y, R(r, 14, 22), R(r, 9, 16), c, 16, R(r, -0.5f, 0.5f));
+                p.Ellipse(x + R(r, -6, 6), y + R(r, -4, 4), R(r, 5, 9), R(r, 4, 7), spray[(i + 3) % spray.Length], 12);
+                p.Line(x - 12, y - 12, x + 14, y + R(r, -6, 10), 2.2f, dark);
+            }
+            // quarter pipe et bowl
+            p.Poly(concrete, 350, -10, 470, -10, 470, 70, 440, 64, 410, 46, 380, 24, 360, 8);
+            p.Poly(shade, 350, -10, 380, -10, 380, 24, 360, 8);
+            p.Rect(466, -10, 8, 80, shade).Line(440, 66, 476, 72, 3, coping);
+            p.Poly(concrete, 500, -10, 630, -10, 630, 30, 600, 18, 565, 10, 530, 18, 500, 30);
+            p.Line(500, 30, 528, 19, 3, coping).Line(602, 19, 630, 30, 3, coping);
+            // lampadaires
+            foreach (float lx in new[] { 335f, 485f })
+            {
+                p.Rect(lx, -10, 4, 150, dark).Capsule(lx + 2, 138, lx + 18, 142, 4, dark);
+                p.Glow(lx + 20, 138, 18, new Color(1, 0.95f, 0.7f, 0.7f), new Color(1, 0.95f, 0.7f, 0));
+            }
+        }
+
         /// <summary>Rocher de la Vierge (spec 004) : rocher dans l'océan, statue blanche, passerelle en treillis reliée à la falaise.</summary>
         static void RocherDeLaVierge(Paint p, float x, ThemeLook l)
         {
@@ -514,6 +546,9 @@ namespace PalmStreet.Game
                     for (int i = 0; i < 3; i++) House(p, 40 + i * 210 + R(r, -10, 10), R(r, 44, 60), R(r, 26, 40), 18, l.Mid, lit);
                     for (int i = 0; i < 5; i++) Palm(p, 20 + i * 128 + R(r, -12, 12), R(r, 150, 215), R(r, -25, 30), l.Mid, R(r, 0.8f, 1));
                     break;
+                case Decor.Park:   // spec 006 : le skatepark de la Barre
+                    SkateparkBack(p, l, r);
+                    break;
                 case Decor.Btz:   // spec 004 : l'Hôtel du Palais et le stade Aguiléra
                     Palais(p, 12);
                     Palm(p, 268, 190, 14, l.Mid, 0.9f);
@@ -566,6 +601,12 @@ namespace PalmStreet.Game
                     for (float x = 0; x < Tile; x += 32) p.Rect(x, -10, 4, 34, l.Near);           // garde-corps de la promenade
                     p.Rect(0, 22, Tile, 4, l.Near);
                     p.Rect(0, 8, Tile, 3, l.Near);
+                    break;
+                case Decor.Park:   // spec 006 : grillage du skatepark et un palmier de la plage
+                    Palm(p, 560, 270, -30, l.Near, 1.2f);
+                    for (float x = 0; x < Tile; x += 64) p.Rect(x, -10, 4, 46, l.Near);
+                    for (float x = 0; x < Tile; x += 12) { p.Line(x, 0, x + 12, 34, 0.8f, l.Near); p.Line(x + 12, 0, x, 34, 0.8f, l.Near); }
+                    p.Rect(0, 34, Tile, 3, l.Near);
                     break;
                 case Decor.Btz:
                     for (int i = 0; i < 2; i++)
