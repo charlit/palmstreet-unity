@@ -168,8 +168,31 @@ namespace PalmStreet.Game
                 bottom.Capsule(cx, -8.2f, cx, -6.8f, 3.4f, l.Wheels).Capsule(cx, 6.8f, cx, 8.2f, 3.4f, l.Wheels);
             }
             bottomFace = bottom.Make("Dessous", board, order + 2, layer).transform;
+            DeckName(l.DeckName, order + 3, layer);
             gripFace.gameObject.SetActive(false);
             bottomFace.gameObject.SetActive(false);
+        }
+
+        /// <summary>Nom de la planche écrit sur le dessous (ombre foncée puis lettres blanches) ; il s'écrase avec elle quand elle tourne.</summary>
+        void DeckName(string name, int order, string layer)
+        {
+            var font = Resources.Load<Font>("Fonts/Rubik-Bold");
+            if (font == null || string.IsNullOrEmpty(name)) return;
+            float size = 0.0062f * Mathf.Min(1, 9f / name.Length);   // tient entre les deux trucks ; les noms longs rapetissent
+            for (int i = 0; i < 2; i++)
+            {
+                var go = new GameObject("Nom de la planche");
+                go.transform.SetParent(bottomFace, false);
+                go.transform.localPosition = W(i == 0 ? 0.5f : 0, i == 0 ? -0.5f : 0);
+                var tm = go.AddComponent<TextMesh>();
+                tm.font = font; tm.text = name; tm.anchor = TextAnchor.MiddleCenter;
+                tm.fontSize = 64; tm.characterSize = size;
+                tm.color = i == 0 ? new Color(0, 0, 0, 0.6f) : Color.white;
+                var mr = go.GetComponent<MeshRenderer>();
+                mr.sharedMaterial = font.material;
+                mr.sortingLayerName = layer;
+                mr.sortingOrder = order + i;
+            }
         }
 
         /// <summary>Motif de chaque haut, de la ceinture et du bas (spec 002 : chaque objet a son dessin).</summary>
@@ -798,10 +821,29 @@ namespace PalmStreet.Game
             spin.localPosition = (at - transform.position) / scale + W(0, Center);
         }
 
+        /// <summary>Profil, onglet PLANCHE : la planche seule, en grand, tourne sur sa longueur (grip, puis dessous avec son nom).</summary>
+        public void Showcase(Vector3 center, float time, float scale)
+        {
+            if (crashed) Reset();
+            body.gameObject.SetActive(false);
+            transform.localScale = Vector3.one * scale;
+            spin.localPosition = (center - transform.position) / scale - W(0, DeckY - Center);
+            spin.localRotation = Quaternion.identity;
+            spin.localScale = Vector3.one;
+            float flip = time * 1.6f;
+            Board(Mathf.Sin(time * 0.9f) * 8, flip);
+            // une seule planche à la fois : la tranche (roues) seulement quand elle est presque de profil, sinon la face
+            bool edge = Mathf.Abs(Mathf.Sin(flip)) < 0.3f;
+            deck.gameObject.SetActive(edge);
+            if (edge) { gripFace.gameObject.SetActive(false); bottomFace.gameObject.SetActive(false); }
+        }
+
         /// <summary>Pose d'accueil : debout sur la planche, qui respire ; le skateur choisi fait des petits ollies.</summary>
         public void Idle(Vector3 feet, float time, bool selected, float scale)
         {
             if (crashed) Reset();
+            body.gameObject.SetActive(true);
+            deck.gameObject.SetActive(true);
             transform.localScale = Vector3.one * scale;
             // le skateur choisi enchaîne des petits ollies : même mouvement de planche qu'en partie
             float a = Mathf.Repeat(time * 3.2f, Mathf.PI * 2);

@@ -284,6 +284,7 @@ namespace PalmStreet.Tests
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
             yield return null;
             yield return Shot("0-profil-planches");
+            for (int k = 0; k < 4; k++) { yield return new WaitForSeconds(0.3f); yield return Shot($"007-planche-tourne-{k}"); }   // la planche tourne : grip, tranche, dessous et son nom
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(0);
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowSection(1);
             for (int i = 0; i < 40; i++) yield return null;   // le skateur de démonstration est en plein FLIP

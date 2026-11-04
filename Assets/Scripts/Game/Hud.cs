@@ -577,6 +577,10 @@ namespace PalmStreet.Game
             return profileStage.TransformPoint(new Vector3(0, -56, 0));
         }
 
+        /// <summary>Onglet PLANCHE ouvert : l'aperçu montre la planche qui tourne, centrée dans le cadre.</summary>
+        public bool BoardTabOpen => tabs[(int)Slot.Deck].page.activeSelf;
+        public Vector3 PreviewCenter => profileStage.TransformPoint(Vector3.zero);
+
         public bool PreviewVisible => profile.activeSelf && sections[0].page.activeSelf;
 
         public bool MenuVisible => menu.activeSelf;

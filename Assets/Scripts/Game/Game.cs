@@ -600,7 +600,8 @@ namespace PalmStreet.Game
                     {
                         var feet = hud.PreviewFeet(out float scale);
                         preview.Show(hud.PreviewVisible);   // profil, onglet TENUE
-                        preview.Idle(feet, time, true, scale);
+                        if (hud.BoardTabOpen) preview.Showcase(hud.PreviewCenter, time, scale * 1.7f);
+                        else preview.Idle(feet, time, true, scale);
                     }
                 }
             }

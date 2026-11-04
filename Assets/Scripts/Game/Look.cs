@@ -107,7 +107,8 @@ namespace PalmStreet.Game
         public Hat Hat;
         public bool Curly, Shorts, Stripes, Logo;
         public DeckArt Art;
-        public string HeadId = "", TopId = "", LegsId = "", ShoesId = "";   // motif propre à chaque objet (RiderView)
+        public string HeadId = "", TopId = "", LegsId = "", ShoesId = "";
+        public string DeckName = "";   // écrit sous la planche   // motif propre à chaque objet (RiderView)
     }
 
     /// <summary>
@@ -197,6 +198,7 @@ namespace PalmStreet.Game
                 Wheels = deck == "deck-crab" || deck == "deck-gold" || deck == "deck-pilier" || deck == "deck-talonneur" ? Color.white : deck == "deck-pepper" ? Hex("#3BB273") : deck == "deck-neon" ? Hex("#35F2FF") : Hex("#FFF4D6"),
                 Art = deck == "deck-crab" ? DeckArt.Crab : deck == "deck-pepper" ? DeckArt.Pepper : deck == "deck-neon" ? DeckArt.Neon : deck == "deck-gold" ? DeckArt.Gold : DeckArt.Wood,
                 HeadId = head, TopId = top, LegsId = legs, ShoesId = shoes,
+                DeckName = deck == "start-deck" ? "PST" : (Items.Get(deck)?.Name ?? "").Replace("PLANCHE ", "").Replace("DU ", ""),
             };
             // chaussettes : celles du short de rugby (spec 004), sinon la couleur d'accent du haut
             l.Socks = legs == "shorts-pilier" ? Hex("#D7263D") : legs == "shorts-talonneur" ? Hex("#5DADE2") : l.Accent;
