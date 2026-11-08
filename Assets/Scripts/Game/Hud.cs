@@ -603,6 +603,8 @@ namespace PalmStreet.Game
             }
         }
 
+        int shownScore = -1, shownBest = -1;
+
         public void Tick(Run run, float dt, float time)
         {
             TickStory(run, dt);
@@ -613,10 +615,13 @@ namespace PalmStreet.Game
             if (menu.activeSelf) startButton.localScale = Vector3.one * (1 + 0.035f * Mathf.Sin(time * 3.2f));
             if (game.activeSelf)
             {
-                score.text = run.Score.ToString();
-                best.text = "BEST " + Mathf.Max(run.Best, run.Score);
-                if (run.Combo != lastCombo) { if (run.Combo > lastCombo) comboPop = 1; lastCombo = run.Combo; }
-                combo.text = run.Combo > 1 ? "COMBO x" + run.Combo : "";
+                if (run.Score != shownScore || run.Best != shownBest)   // pas de nouvelles chaînes à chaque image
+                {
+                    shownScore = run.Score; shownBest = run.Best;
+                    score.text = run.Score.ToString();
+                    best.text = "BEST " + Mathf.Max(run.Best, run.Score);
+                }
+                if (run.Combo != lastCombo) { if (run.Combo > lastCombo) comboPop = 1; lastCombo = run.Combo; combo.text = run.Combo > 1 ? "COMBO x" + run.Combo : ""; }
                 comboPop = Mathf.MoveTowards(comboPop, 0, dt * 4);
                 combo.rectTransform.localScale = Vector3.one * (1 + comboPop * 0.35f);
                 theme.text = ThemeLook.Of(run.Theme).Name;

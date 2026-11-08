@@ -36,6 +36,8 @@ namespace PalmStreet.Game
         int mapFrom;         // le petit skateur de la carte part de ce niveau (après une réussite)
         float mapAnimAt;
         float acc, time, menuX, overAt = -1, overShownAt;
+        float prevX, prevY;   // skateur avant le dernier pas : l'affichage glisse entre les deux, sans saccade
+        float shake;          // secousse de la caméra sur les impacts, de 1 à 0
         bool paused, instantScenery = true;
         Vector2 pressAt;      // où le doigt s'est posé en partie : un glissé depuis là fait une figure
         bool swipeOpen, railTouch;   // railTouch : doigt posé pendant un grind, la sortie attend de savoir si c'est un glissé
@@ -172,6 +174,7 @@ namespace PalmStreet.Game
             Run.Spells = progress.Spells;   // sorts gagnés sur les boss
             sound.StartRun();
             paused = false; acc = 0; overAt = -1;
+            prevX = Run.Skater.X; prevY = Run.Skater.Y;
             instantScenery = true;
             preview.Show(false);
         }
@@ -321,7 +324,7 @@ namespace PalmStreet.Game
             if (Run.Phase == Phase.Playing && !paused && !Manual)
             {
                 acc += Mathf.Min(dt, 0.1f);
-                while (acc >= StepTime && Run.Phase == Phase.Playing) { acc -= StepTime; Run.Step(); }
+                while (acc >= StepTime && Run.Phase == Phase.Playing) { prevX = Run.Skater.X; prevY = Run.Skater.Y; acc -= StepTime; Run.Step(); }
             }
             PlayEvents();
             if (overAt > 0 && time >= overAt) { overAt = -1; overShownAt = time; hud.ShowOver(Run.Score, Run.Best, Run.NewBest, level > 0); }
@@ -456,6 +459,7 @@ namespace PalmStreet.Game
                         break;
                     case Cue.BossHit:
                         props.BossHit();
+                        Shake(e.Text != null ? 0.6f : 0.3f);
                         fx.Burst(e.X, e.Y, e.Text != null ? yellow : Color.white, e.Text != null ? 14 : 4, e.Text != null ? 4 : 2, 4);
                         if (e.Text != null) hud.Float(e.Text + " !", at, yellow);   // un sort qui touche
                         break;
@@ -482,6 +486,7 @@ namespace PalmStreet.Game
                         fx.Puff(e.X, Run.Skater.Y, DustColor());
                         break;
                     case Cue.Boost:
+                        Shake(0.5f);
                         hud.Banner("BOOST !", null, Hex("#FF7A1A"));
                         fx.Burst(e.X, e.Y + 10, Hex("#FFE14D"), 18, 5);
                         break;
@@ -497,6 +502,7 @@ namespace PalmStreet.Game
                         fx.Burst(e.X, e.Y - 40, Hex("#35F2FF"), 18, 4);
                         break;
                     case Cue.Boom:
+                        Shake(1);
                         fx.Confetti(e.X, e.Y);
                         fx.Burst(e.X, e.Y, Hex("#A55BD6"), 40, 7, 10);
                         hud.Float("+" + e.Points, at, yellow);
@@ -528,6 +534,7 @@ namespace PalmStreet.Game
         void Crashed()
         {
             rider.Crash(Run.Skater, Run.CurrentSpeed);
+            Shake(1);
             fx.Burst(Run.Skater.X + 12, Run.Skater.Y + 20, Hex("#FF7A1A"), 16, 4);
             sound.StopMusic();
             if (level == 0 && Run.NewBest) { progress.EndlessBest = Run.Best; SaveProgress(); }
@@ -553,6 +560,8 @@ namespace PalmStreet.Game
             _ => "Saute ses plots !",
         };
 
+        void Shake(float amount) => shake = Mathf.Max(shake, amount);
+
         Color DustColor() => Color.Lerp(ThemeLook.Of(Run.Theme).GroundTop, Color.white, 0.5f);
 
         // ---------- affichage ----------
@@ -568,7 +577,15 @@ namespace PalmStreet.Game
         {
             bool menu = Run.Phase == Phase.Menu;
             if (menu) menuX += dt * 45;
-            FitCamera(menu ? menuX : Run.Skater.X);
+            // entre deux pas de 1/60 s : sinon un écran à 60 Hz voit parfois 0 ou 2 pas par image, et le défilement tremble
+            float a = Run.Phase == Phase.Playing && !paused && !Manual ? acc / StepTime : 1;
+            float sx = Mathf.Lerp(prevX, Run.Skater.X, a), sy = Mathf.Lerp(prevY, Run.Skater.Y, a);
+            FitCamera(menu ? menuX : sx);
+            if (shake > 0)
+            {
+                shake = Mathf.MoveTowards(shake, 0, dt * 3);
+                cam.transform.position += (Vector3)(Random.insideUnitCircle * (shake * shake * 0.12f));
+            }
             var ground = menu ? menuGround : Run.Ground;
             scenery.MenuSun = menu;
             scenery.HideSun = menu && !hud.MenuVisible;
@@ -611,8 +628,8 @@ namespace PalmStreet.Game
                 rider.Show(true);
                 if (Run.Phase == Phase.Playing || Run.Phase == Phase.Cleared)
                 {
-                    float slope = sk.Rail != null ? 0 : Run.Ground.Slope(sk.X);
-                    rider.Ride(sk, W(sk.X, sk.Y), slope, time, Run.Speed > 0 ? Run.CurrentSpeed / Run.Speed : 1);
+                    float slope = sk.Rail != null ? 0 : Run.Ground.Slope(sx);
+                    rider.Ride(sk, W(sx, sy), slope, time, Run.Speed > 0 ? Run.CurrentSpeed / Run.Speed : 1);
                     if (!paused && Run.Phase == Phase.Playing)
                     {
                         // NUIT NÉON : feux d'artifice dans le ciel
