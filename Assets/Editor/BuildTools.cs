@@ -61,6 +61,9 @@ namespace PalmStreet.EditorTools
             plist.ReadFromFile(plistPath);
             plist.root.SetBoolean("ITSAppUsesNonExemptEncryption", false);
             plist.root.SetString("CFBundleDisplayName", "PalmStreet");
+            // le jeu est en français : la fiche App Store affiche « Français », pas « Anglais »
+            plist.root.SetString("CFBundleDevelopmentRegion", "fr");
+            plist.root.CreateArray("CFBundleLocalizations").AddString("fr");
             plist.WriteToFile(plistPath);
 
             var projPath = PBXProject.GetPBXProjectPath(path);
