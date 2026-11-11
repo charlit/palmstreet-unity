@@ -13,7 +13,7 @@ namespace PalmStreet.EditorTools
     public static class BuildTools
     {
         static readonly string[] Scenes = { "Assets/Scenes/Game.unity" };
-        const string Version = "1.0";
+        const string Version = "1.2";
         static bool release;   // build App Store en cours (signature manuelle après le build)
 
         public static void IOS() => Build(BuildTarget.iOS, "Builds/iOS", BuildOptions.Development);
@@ -72,6 +72,13 @@ namespace PalmStreet.EditorTools
             var caps = new ProjectCapabilityManager(projPath, "Unity-iPhone/PalmStreet.entitlements", null, proj.GetUnityMainTargetGuid());
             caps.AddGameCenter();
             caps.WriteToFile();
+
+            // Apple lit les langues de la fiche dans les dossiers .lproj de l'app : sans fr.lproj elle affiche « Anglais »
+            System.IO.Directory.CreateDirectory(path + "/fr.lproj");
+            System.IO.File.WriteAllText(path + "/fr.lproj/InfoPlist.strings", "\"CFBundleDisplayName\" = \"PalmStreet\";\n");
+            proj.ReadFromFile(projPath);
+            proj.AddFileToBuild(proj.GetUnityMainTargetGuid(), proj.AddFolderReference(path + "/fr.lproj", "fr.lproj"));
+            proj.WriteToFile(projPath);
             if (release)   // version App Store : signature manuelle de l'app seule (le framework Unity est signé à l'export)
             {
                 proj.ReadFromFile(projPath);
