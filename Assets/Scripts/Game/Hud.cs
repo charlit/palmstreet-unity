@@ -271,6 +271,12 @@ namespace PalmStreet.Game
             p = Page(settings, "Réglages", -146).transform; y = 0;
             Toggle(p, ref y, "SON (MUSIQUE ET BRUITAGES)", soundOn, mute);
             Toggle(p, ref y, "VIBRATIONS", vibrateOn, toggleVibrate);
+#if UNITY_IOS
+            // noter l'app : fiche App Store sur « Écrire un avis » (iPhone seulement, l'app n'est pas sur Google Play)
+            var rate = Button(p, "NOTER", new Vector2(0.5f, 1), new Vector2(0, y - 24), new Vector2(260, 46), Yellow,
+                () => Application.OpenURL("https://apps.apple.com/app/id6829924153?action=write-review"));
+            Label(rate.transform, "NOTER L'APPLICATION", 18, Night, Vector2.zero);
+#endif
 
             var ok = Button(t, "RETOUR", new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(210, 46), Orange, close);
             Label(ok.transform, "RETOUR", 22, Night, Vector2.zero);
