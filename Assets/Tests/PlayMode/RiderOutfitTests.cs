@@ -76,5 +76,24 @@ namespace PalmStreet.Tests
             }
             Assert.IsEmpty(problems, string.Join("\n", problems.Take(30)));
         }
+
+        [Test]
+        public void LaTenueRepeintChaquePartie()
+        {
+            var src = Resources.Load<Texture2D>("SkaterPix/Ride"); var mask = Resources.Load<Texture2D>("SkaterPix/Ride_Mask");
+            var look = new RiderLook { Top = Color.blue, Accent = Color.white, Pants = Color.green, Shoes = Color.yellow, Deck = Color.magenta, Skin = new Color(0.4f, 0.25f, 0.15f), Hair = Color.black, Socks = Color.white, Hat = Hat.None };
+            var t = RiderView.Tint(src, mask, look);
+            var m = mask.GetPixels32(); var px = t.GetPixels32();
+            Color Mean(int part)
+            {
+                var c = Enumerable.Range(0, m.Length).Where(k => m[k].a > 0 && m[k].r == part).Select(k => (Color)px[k]).ToList();
+                Assert.Greater(c.Count, 50, "partie " + part + " présente");
+                return new Color(c.Average(x => x.r), c.Average(x => x.g), c.Average(x => x.b));
+            }
+            var top = Mean(1); Assert.Greater(top.b, top.r + 0.2f, "maillot bleu");
+            var legs = Mean(3); Assert.Greater(legs.g, legs.r + 0.2f, "bas vert");
+            var deck = Mean(5); Assert.Greater(deck.r + deck.b, 2 * deck.g + 0.3f, "planche magenta");
+            var skin = Mean(6); Assert.Less(skin.r, 0.5f, "peau foncée");
+        }
     }
 }

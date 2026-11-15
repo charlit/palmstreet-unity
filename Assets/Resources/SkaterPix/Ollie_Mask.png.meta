@@ -1,0 +1,780 @@
+fileFormatVersion: 2
+guid: 14444f6cd5f83487eb422818e0363102
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8959645938003643861
+    second: Ollie_Mask_0
+  - first:
+      213: -3054634585297878360
+    second: Ollie_Mask_1
+  - first:
+      213: 6587191205032746851
+    second: Ollie_Mask_2
+  - first:
+      213: 973241028042073052
+    second: Ollie_Mask_3
+  - first:
+      213: 3896028676361755414
+    second: Ollie_Mask_4
+  - first:
+      213: -5368513680171728937
+    second: Ollie_Mask_5
+  - first:
+      213: 1936920916888988280
+    second: Ollie_Mask_6
+  - first:
+      213: -845957281783707600
+    second: Ollie_Mask_7
+  - first:
+      213: 5225880101105993251
+    second: Ollie_Mask_8
+  - first:
+      213: -4292035082799777252
+    second: Ollie_Mask_9
+  - first:
+      213: -1965159755510791587
+    second: Ollie_Mask_10
+  - first:
+      213: 7669481317958337053
+    second: Ollie_Mask_11
+  - first:
+      213: -3792288497867484493
+    second: Ollie_Mask_12
+  - first:
+      213: 1934969010716822895
+    second: Ollie_Mask_13
+  - first:
+      213: -925793764833425538
+    second: Ollie_Mask_14
+  - first:
+      213: -297335165566916256
+    second: Ollie_Mask_15
+  - first:
+      213: -4715031793413917375
+    second: Ollie_Mask_16
+  - first:
+      213: 4847249127599183497
+    second: Ollie_Mask_17
+  - first:
+      213: -4919322642736356244
+    second: Ollie_Mask_18
+  - first:
+      213: 8612008862528074583
+    second: Ollie_Mask_19
+  - first:
+      213: 3962040435188973148
+    second: Ollie_Mask_20
+  - first:
+      213: 2304954732908141307
+    second: Ollie_Mask_21
+  - first:
+      213: 3170904765500018008
+    second: Ollie_Mask_22
+  - first:
+      213: -7657678594885952360
+    second: Ollie_Mask_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Ollie_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 24
+        width: 57
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dd8af7a28e075c70800000000000000
+      internalID: 8959645938003643861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 25
+        width: 69
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a282b06702cb95d0800000000000000
+      internalID: -3054634585297878360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 273
+        y: 24
+        width: 71
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36fdd8320876a6b50800000000000000
+      internalID: 6587191205032746851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 342
+        y: 76
+        width: 24
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd3a84dfe85a18d00800000000000000
+      internalID: 973241028042073052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 24
+        width: 95
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61b17496079711630800000000000000
+      internalID: 3896028676361755414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 49
+        width: 94
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dff98160453f75b0800000000000000
+      internalID: -5368513680171728937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 652
+        y: 47
+        width: 93
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87a2139cf4351ea10800000000000000
+      internalID: 1936920916888988280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 27
+        width: 74
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0388024955e8244f0800000000000000
+      internalID: -845957281783707600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 849
+        y: 79
+        width: 25
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3268439934e068840800000000000000
+      internalID: 5225880101105993251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 907
+        y: 2
+        width: 104
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1a743615d0af64c0800000000000000
+      internalID: -4292035082799777252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 409
+        y: 6
+        width: 81
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d52c2ed3d995ab4e0800000000000000
+      internalID: -1965159755510791587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 534
+        y: 14
+        width: 91
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d12c660cf987f6a60800000000000000
+      internalID: 7669481317958337053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 589
+        y: 45
+        width: 23
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b21fce14b51f5bc0800000000000000
+      internalID: -3792288497867484493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 676
+        y: 40
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6d4a2730146ada10800000000000000
+      internalID: 1934969010716822895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 39
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7705d7d97be623f0800000000000000
+      internalID: -925793764833425538
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 2
+        width: 103
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 069e6250e37afdbf0800000000000000
+      internalID: -297335165566916256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 15
+        width: 22
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 145f3e0b097d09eb0800000000000000
+      internalID: -4715031793413917375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 15
+        width: 27
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9861f545663e44340800000000000000
+      internalID: 4847249127599183497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2
+        width: 104
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c64e920ce1e0bbbb0800000000000000
+      internalID: -4919322642736356244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_19
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 15
+        width: 22
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 753708d9e60048770800000000000000
+      internalID: 8612008862528074583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_20
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 16
+        width: 27
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5e3c25b8cefbf630800000000000000
+      internalID: 3962040435188973148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_21
+      rect:
+        serializedVersion: 2
+        x: 271
+        y: 1
+        width: 102
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfa585e0e18dcff10800000000000000
+      internalID: 2304954732908141307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_22
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 17
+        width: 97
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85dc8348511510c20800000000000000
+      internalID: 3170904765500018008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ollie_Mask_23
+      rect:
+        serializedVersion: 2
+        x: 781
+        y: 2
+        width: 102
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89cd5bbd3e57ab590800000000000000
+      internalID: -7657678594885952360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Ollie_Mask_0: 8959645938003643861
+      Ollie_Mask_1: -3054634585297878360
+      Ollie_Mask_10: -1965159755510791587
+      Ollie_Mask_11: 7669481317958337053
+      Ollie_Mask_12: -3792288497867484493
+      Ollie_Mask_13: 1934969010716822895
+      Ollie_Mask_14: -925793764833425538
+      Ollie_Mask_15: -297335165566916256
+      Ollie_Mask_16: -4715031793413917375
+      Ollie_Mask_17: 4847249127599183497
+      Ollie_Mask_18: -4919322642736356244
+      Ollie_Mask_19: 8612008862528074583
+      Ollie_Mask_2: 6587191205032746851
+      Ollie_Mask_20: 3962040435188973148
+      Ollie_Mask_21: 2304954732908141307
+      Ollie_Mask_22: 3170904765500018008
+      Ollie_Mask_23: -7657678594885952360
+      Ollie_Mask_3: 973241028042073052
+      Ollie_Mask_4: 3896028676361755414
+      Ollie_Mask_5: -5368513680171728937
+      Ollie_Mask_6: 1936920916888988280
+      Ollie_Mask_7: -845957281783707600
+      Ollie_Mask_8: 5225880101105993251
+      Ollie_Mask_9: -4292035082799777252
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

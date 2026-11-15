@@ -1,0 +1,702 @@
+fileFormatVersion: 2
+guid: 020917fe847634d16bb3b0b243163528
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7255784692916476174
+    second: Shove_Mask_0
+  - first:
+      213: -2170671066013887874
+    second: Shove_Mask_1
+  - first:
+      213: 5563452362429653611
+    second: Shove_Mask_2
+  - first:
+      213: 6965887401083508606
+    second: Shove_Mask_3
+  - first:
+      213: -5269551490944531294
+    second: Shove_Mask_4
+  - first:
+      213: 1382256865054590122
+    second: Shove_Mask_5
+  - first:
+      213: 5113721869910355595
+    second: Shove_Mask_6
+  - first:
+      213: 2707673772239638143
+    second: Shove_Mask_7
+  - first:
+      213: 4871866979758171194
+    second: Shove_Mask_8
+  - first:
+      213: 1108433299647690667
+    second: Shove_Mask_9
+  - first:
+      213: 755937730190999835
+    second: Shove_Mask_10
+  - first:
+      213: -5036141529484731826
+    second: Shove_Mask_11
+  - first:
+      213: -271028289362067533
+    second: Shove_Mask_12
+  - first:
+      213: -6138592816747649152
+    second: Shove_Mask_13
+  - first:
+      213: -4632637876612943246
+    second: Shove_Mask_14
+  - first:
+      213: 2435035881271916712
+    second: Shove_Mask_15
+  - first:
+      213: -3840494394934019655
+    second: Shove_Mask_16
+  - first:
+      213: -1121803459914047929
+    second: Shove_Mask_17
+  - first:
+      213: 4740661973918649366
+    second: Shove_Mask_18
+  - first:
+      213: 7219361587319958766
+    second: Shove_Mask_19
+  - first:
+      213: 4527776030451983362
+    second: Shove_Mask_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Shove_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 24
+        width: 66
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e09d0044cb9b1b460800000000000000
+      internalID: 7255784692916476174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 26
+        width: 70
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e72160a8a2a30e1e0800000000000000
+      internalID: -2170671066013887874
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 273
+        y: 47
+        width: 97
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b626d6b727a553d40800000000000000
+      internalID: 5563452362429653611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 396
+        y: 87
+        width: 30
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7793f63fadcba060800000000000000
+      internalID: 6965887401083508606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 4
+        width: 66
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a40f9896daced6b0800000000000000
+      internalID: -5269551490944531294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 473
+        y: 84
+        width: 27
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa48ce59b43ce2310800000000000000
+      internalID: 1382256865054590122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 525
+        y: 86
+        width: 29
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8e272072f697f640800000000000000
+      internalID: 5113721869910355595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 529
+        y: 7
+        width: 99
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7e4cf133f6939520800000000000000
+      internalID: 2707673772239638143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 658
+        y: 37
+        width: 96
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a34e071b4395c9340800000000000000
+      internalID: 4871866979758171194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 793
+        y: 30
+        width: 80
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba7f6ba9632f16f00800000000000000
+      internalID: 1108433299647690667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 15
+        width: 60
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1189584c51ad7a00800000000000000
+      internalID: 755937730190999835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 66
+        width: 24
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4a587826f70c1ab0800000000000000
+      internalID: -5036141529484731826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 4
+        width: 81
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bffd70f43d1d3cf0800000000000000
+      internalID: -271028289362067533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 48
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 087edf85b565fcaa0800000000000000
+      internalID: -6138592816747649152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 1
+        width: 102
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 272377f556095bfb0800000000000000
+      internalID: -4632637876612943246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 2
+        width: 98
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a8fa8e8b3cfac120800000000000000
+      internalID: 2435035881271916712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 25
+        width: 28
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b9341412b2d3bac0800000000000000
+      internalID: -3840494394934019655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 8
+        width: 98
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74ed40062bd8e60f0800000000000000
+      internalID: -1121803459914047929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 5
+        width: 102
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61c8f9bb2f63ac140800000000000000
+      internalID: 4740661973918649366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_19
+      rect:
+        serializedVersion: 2
+        x: 841
+        y: 20
+        width: 23
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eec6e452d13503460800000000000000
+      internalID: 7219361587319958766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Shove_Mask_20
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 1
+        width: 102
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2046e9d7f44e5de30800000000000000
+      internalID: 4527776030451983362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Shove_Mask_0: 7255784692916476174
+      Shove_Mask_1: -2170671066013887874
+      Shove_Mask_10: 755937730190999835
+      Shove_Mask_11: -5036141529484731826
+      Shove_Mask_12: -271028289362067533
+      Shove_Mask_13: -6138592816747649152
+      Shove_Mask_14: -4632637876612943246
+      Shove_Mask_15: 2435035881271916712
+      Shove_Mask_16: -3840494394934019655
+      Shove_Mask_17: -1121803459914047929
+      Shove_Mask_18: 4740661973918649366
+      Shove_Mask_19: 7219361587319958766
+      Shove_Mask_2: 5563452362429653611
+      Shove_Mask_20: 4527776030451983362
+      Shove_Mask_3: 6965887401083508606
+      Shove_Mask_4: -5269551490944531294
+      Shove_Mask_5: 1382256865054590122
+      Shove_Mask_6: 5113721869910355595
+      Shove_Mask_7: 2707673772239638143
+      Shove_Mask_8: 4871866979758171194
+      Shove_Mask_9: 1108433299647690667
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

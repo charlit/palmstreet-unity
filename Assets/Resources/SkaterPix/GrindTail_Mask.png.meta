@@ -1,0 +1,598 @@
+fileFormatVersion: 2
+guid: 44c3d6b6a70b64bddbb3b3d6b207edbb
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1173985383003358954
+    second: GrindTail_Mask_0
+  - first:
+      213: -5503289638845692307
+    second: GrindTail_Mask_1
+  - first:
+      213: 6794633940014580076
+    second: GrindTail_Mask_2
+  - first:
+      213: 6038351366073712709
+    second: GrindTail_Mask_3
+  - first:
+      213: 6144001274219865403
+    second: GrindTail_Mask_4
+  - first:
+      213: 677894696631795092
+    second: GrindTail_Mask_5
+  - first:
+      213: 1095524810814018385
+    second: GrindTail_Mask_6
+  - first:
+      213: 4283892281318690183
+    second: GrindTail_Mask_7
+  - first:
+      213: 8594919830032760640
+    second: GrindTail_Mask_8
+  - first:
+      213: -94021607930713395
+    second: GrindTail_Mask_9
+  - first:
+      213: 8614660567386485735
+    second: GrindTail_Mask_10
+  - first:
+      213: -7447422811621049537
+    second: GrindTail_Mask_11
+  - first:
+      213: 5081061330908743888
+    second: GrindTail_Mask_12
+  - first:
+      213: 4839064870772901630
+    second: GrindTail_Mask_13
+  - first:
+      213: -7391525927737688144
+    second: GrindTail_Mask_14
+  - first:
+      213: 5359673757258264981
+    second: GrindTail_Mask_15
+  - first:
+      213: 832013640861664931
+    second: GrindTail_Mask_16
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: GrindTail_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 24
+        width: 68
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae68a6d5c75da4010800000000000000
+      internalID: 1173985383003358954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 26
+        width: 82
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d66c38c2b3360a3b0800000000000000
+      internalID: -5503289638845692307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 2
+        width: 103
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c61c165a1936b4e50800000000000000
+      internalID: 6794633940014580076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 3
+        width: 104
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54081db23988cc350800000000000000
+      internalID: 6038351366073712709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 27
+        width: 57
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b352c694b90e34550800000000000000
+      internalID: 6144001274219865403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 2
+        width: 103
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49dfbdb82ad586900800000000000000
+      internalID: 677894696631795092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 26
+        width: 59
+        height: 99
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1535237d206143f00800000000000000
+      internalID: 1095524810814018385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 1
+        width: 103
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78dc9043551737b30800000000000000
+      internalID: 4283892281318690183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 543
+        y: 24
+        width: 57
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04f301e2c0a474770800000000000000
+      internalID: 8594919830032760640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 0
+        width: 103
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dca241288d7f1bef0800000000000000
+      internalID: -94021607930713395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 674
+        y: 23
+        width: 56
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e3f2a3c42c6d8770800000000000000
+      internalID: 8614660567386485735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 711
+        y: 14
+        width: 28
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3bbf25396075a890800000000000000
+      internalID: -7447422811621049537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 2
+        width: 103
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d80ace1c5e838640800000000000000
+      internalID: 5081061330908743888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 806
+        y: 25
+        width: 57
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef68d7b8cdfc72340800000000000000
+      internalID: 4839064870772901630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 2
+        width: 103
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0bffa19a4560c6990800000000000000
+      internalID: -7391525927737688144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 933
+        y: 25
+        width: 71
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 591bc5da2e2616a40800000000000000
+      internalID: 5359673757258264981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindTail_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 0
+        width: 103
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a6c6d78ff7eb8b00800000000000000
+      internalID: 832013640861664931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      GrindTail_Mask_0: 1173985383003358954
+      GrindTail_Mask_1: -5503289638845692307
+      GrindTail_Mask_10: 8614660567386485735
+      GrindTail_Mask_11: -7447422811621049537
+      GrindTail_Mask_12: 5081061330908743888
+      GrindTail_Mask_13: 4839064870772901630
+      GrindTail_Mask_14: -7391525927737688144
+      GrindTail_Mask_15: 5359673757258264981
+      GrindTail_Mask_16: 832013640861664931
+      GrindTail_Mask_2: 6794633940014580076
+      GrindTail_Mask_3: 6038351366073712709
+      GrindTail_Mask_4: 6144001274219865403
+      GrindTail_Mask_5: 677894696631795092
+      GrindTail_Mask_6: 1095524810814018385
+      GrindTail_Mask_7: 4283892281318690183
+      GrindTail_Mask_8: 8594919830032760640
+      GrindTail_Mask_9: -94021607930713395
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

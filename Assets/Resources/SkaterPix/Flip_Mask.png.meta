@@ -1,0 +1,988 @@
+fileFormatVersion: 2
+guid: a614b558c83844f3494c7af3507609fe
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2181561455088809987
+    second: Flip_Mask_0
+  - first:
+      213: 8288819211209214369
+    second: Flip_Mask_1
+  - first:
+      213: -7817629886959108196
+    second: Flip_Mask_2
+  - first:
+      213: 2906522450925614968
+    second: Flip_Mask_3
+  - first:
+      213: -3355233688269483409
+    second: Flip_Mask_4
+  - first:
+      213: 8009968723967581748
+    second: Flip_Mask_5
+  - first:
+      213: 6454815637633179421
+    second: Flip_Mask_6
+  - first:
+      213: 5220015040133348703
+    second: Flip_Mask_7
+  - first:
+      213: 5980322402212698428
+    second: Flip_Mask_8
+  - first:
+      213: 7016258377491271483
+    second: Flip_Mask_9
+  - first:
+      213: -8326420161864531787
+    second: Flip_Mask_10
+  - first:
+      213: 5791057483067017540
+    second: Flip_Mask_11
+  - first:
+      213: 221238696576579371
+    second: Flip_Mask_12
+  - first:
+      213: 4495515432057902942
+    second: Flip_Mask_13
+  - first:
+      213: 7453798587539474656
+    second: Flip_Mask_14
+  - first:
+      213: -6979903366599562018
+    second: Flip_Mask_15
+  - first:
+      213: -117837507800059070
+    second: Flip_Mask_16
+  - first:
+      213: 8283966984321789915
+    second: Flip_Mask_17
+  - first:
+      213: 3628231741791631741
+    second: Flip_Mask_18
+  - first:
+      213: -1482105266939127200
+    second: Flip_Mask_19
+  - first:
+      213: -3684152660308824919
+    second: Flip_Mask_20
+  - first:
+      213: -1990283756640838740
+    second: Flip_Mask_21
+  - first:
+      213: 2692714145090869401
+    second: Flip_Mask_22
+  - first:
+      213: -5091714497582137816
+    second: Flip_Mask_23
+  - first:
+      213: -7213086590582901873
+    second: Flip_Mask_24
+  - first:
+      213: -3420793228677939994
+    second: Flip_Mask_25
+  - first:
+      213: -7934523794593203196
+    second: Flip_Mask_26
+  - first:
+      213: 3066033482039885985
+    second: Flip_Mask_27
+  - first:
+      213: 8119854128959417516
+    second: Flip_Mask_28
+  - first:
+      213: -7949458615997245558
+    second: Flip_Mask_29
+  - first:
+      213: 3196544440866653110
+    second: Flip_Mask_30
+  - first:
+      213: -2890211802360341955
+    second: Flip_Mask_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Flip_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 23
+        width: 62
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 308b042c596764e10800000000000000
+      internalID: 2181561455088809987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 154
+        y: 30
+        width: 77
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a90f83182dc70370800000000000000
+      internalID: 8288819211209214369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 43
+        width: 70
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9f33529903328390800000000000000
+      internalID: -7817629886959108196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 111
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8777e1b05ca065820800000000000000
+      internalID: 2906522450925614968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 341
+        y: 96
+        width: 20
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f621640ccb0df61d0800000000000000
+      internalID: -3355233688269483409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 94
+        width: 28
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43e9316ad10292f60800000000000000
+      internalID: 8009968723967581748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 56
+        width: 65
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1f13c39f9c149950800000000000000
+      internalID: 6454815637633179421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 433
+        y: 115
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5d385da508317840800000000000000
+      internalID: 5220015040133348703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 549
+        y: 43
+        width: 55
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c39d23a2a8f5ef250800000000000000
+      internalID: 5980322402212698428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 109
+        width: 12
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3fc9b212d1ce5160800000000000000
+      internalID: 7016258377491271483
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 34
+        width: 75
+        height: 90
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b00a616afc927c80800000000000000
+      internalID: -8326420161864531787
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 789
+        y: 26
+        width: 91
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 449c3183918fd5050800000000000000
+      internalID: 5791057483067017540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 107
+        width: 15
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2774002c6ff11300800000000000000
+      internalID: 221238696576579371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 24
+        width: 56
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e57191a9777436e30800000000000000
+      internalID: 4495515432057902942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 527
+        y: 87
+        width: 29
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e8499dc256317760800000000000000
+      internalID: 7453798587539474656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 91
+        width: 29
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: edca7438ed6622f90800000000000000
+      internalID: -6979903366599562018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 722
+        y: 91
+        width: 29
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2433c56396b5d5ef0800000000000000
+      internalID: -117837507800059070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 399
+        y: 12
+        width: 90
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdf6097f41096f270800000000000000
+      internalID: 8283966984321789915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 418
+        y: 55
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d797944cb811a5230800000000000000
+      internalID: 3628231741791631741
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_19
+      rect:
+        serializedVersion: 2
+        x: 543
+        y: 52
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06a9b5cbc118e6be0800000000000000
+      internalID: -1482105266939127200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_20
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 11
+        width: 93
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ac6bf7cca24fdcc0800000000000000
+      internalID: -3684152660308824919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_21
+      rect:
+        serializedVersion: 2
+        x: 971
+        y: 63
+        width: 31
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cab5133e7771164e0800000000000000
+      internalID: -1990283756640838740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_22
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 0
+        width: 104
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9989fc39f317e5520800000000000000
+      internalID: 2692714145090869401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_23
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 2
+        width: 101
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82ef8e934a89659b0800000000000000
+      internalID: -5091714497582137816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_24
+      rect:
+        serializedVersion: 2
+        x: 277
+        y: 9
+        width: 87
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f833c2266f7f5eb90800000000000000
+      internalID: -7213086590582901873
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_25
+      rect:
+        serializedVersion: 2
+        x: 527
+        y: 16
+        width: 90
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ecf692cea6e680d0800000000000000
+      internalID: -3420793228677939994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_26
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 2
+        width: 104
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40c3361d5a8e2e190800000000000000
+      internalID: -7934523794593203196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_27
+      rect:
+        serializedVersion: 2
+        x: 804
+        y: 17
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a00176153dbc8a20800000000000000
+      internalID: 3066033482039885985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_28
+      rect:
+        serializedVersion: 2
+        x: 839
+        y: 16
+        width: 26
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cac6d983f448fa070800000000000000
+      internalID: 8119854128959417516
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_29
+      rect:
+        serializedVersion: 2
+        x: 907
+        y: 1
+        width: 104
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a87d0dcb189dda190800000000000000
+      internalID: -7949458615997245558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_30
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 15
+        width: 20
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b34b92ab386c5c20800000000000000
+      internalID: 3196544440866653110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Flip_Mask_31
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 16
+        width: 26
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3a9ba2cda7e3e7d0800000000000000
+      internalID: -2890211802360341955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Flip_Mask_0: 2181561455088809987
+      Flip_Mask_1: 8288819211209214369
+      Flip_Mask_10: -8326420161864531787
+      Flip_Mask_11: 5791057483067017540
+      Flip_Mask_12: 221238696576579371
+      Flip_Mask_13: 4495515432057902942
+      Flip_Mask_14: 7453798587539474656
+      Flip_Mask_15: -6979903366599562018
+      Flip_Mask_16: -117837507800059070
+      Flip_Mask_17: 8283966984321789915
+      Flip_Mask_18: 3628231741791631741
+      Flip_Mask_19: -1482105266939127200
+      Flip_Mask_2: -7817629886959108196
+      Flip_Mask_20: -3684152660308824919
+      Flip_Mask_21: -1990283756640838740
+      Flip_Mask_22: 2692714145090869401
+      Flip_Mask_23: -5091714497582137816
+      Flip_Mask_24: -7213086590582901873
+      Flip_Mask_25: -3420793228677939994
+      Flip_Mask_26: -7934523794593203196
+      Flip_Mask_27: 3066033482039885985
+      Flip_Mask_28: 8119854128959417516
+      Flip_Mask_29: -7949458615997245558
+      Flip_Mask_3: 2906522450925614968
+      Flip_Mask_30: 3196544440866653110
+      Flip_Mask_31: -2890211802360341955
+      Flip_Mask_4: -3355233688269483409
+      Flip_Mask_5: 8009968723967581748
+      Flip_Mask_6: 6454815637633179421
+      Flip_Mask_7: 5220015040133348703
+      Flip_Mask_8: 5980322402212698428
+      Flip_Mask_9: 7016258377491271483
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

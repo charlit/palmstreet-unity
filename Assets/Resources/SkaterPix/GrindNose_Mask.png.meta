@@ -1,0 +1,858 @@
+fileFormatVersion: 2
+guid: 72ab2ea7bc3f94e258f7af3dd4129c52
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3783044714975216396
+    second: GrindNose_Mask_0
+  - first:
+      213: -2410733581328866445
+    second: GrindNose_Mask_1
+  - first:
+      213: -433610227877378296
+    second: GrindNose_Mask_2
+  - first:
+      213: -7831257235217949725
+    second: GrindNose_Mask_3
+  - first:
+      213: 526646376836667459
+    second: GrindNose_Mask_4
+  - first:
+      213: 4789216467901867306
+    second: GrindNose_Mask_5
+  - first:
+      213: 4832943386551043927
+    second: GrindNose_Mask_6
+  - first:
+      213: -556468872239562885
+    second: GrindNose_Mask_7
+  - first:
+      213: 8551627059533732880
+    second: GrindNose_Mask_8
+  - first:
+      213: 2966429406249504270
+    second: GrindNose_Mask_9
+  - first:
+      213: -1701652451762184752
+    second: GrindNose_Mask_10
+  - first:
+      213: -2239290569167365155
+    second: GrindNose_Mask_11
+  - first:
+      213: -3987743721664064564
+    second: GrindNose_Mask_12
+  - first:
+      213: 6997685233257441357
+    second: GrindNose_Mask_13
+  - first:
+      213: 5173444784975018309
+    second: GrindNose_Mask_14
+  - first:
+      213: -5548952500571275277
+    second: GrindNose_Mask_15
+  - first:
+      213: -7193228132232157209
+    second: GrindNose_Mask_16
+  - first:
+      213: -507418237734450477
+    second: GrindNose_Mask_17
+  - first:
+      213: -4564086548102072610
+    second: GrindNose_Mask_18
+  - first:
+      213: 2670618210438203411
+    second: GrindNose_Mask_19
+  - first:
+      213: -3602822602714326336
+    second: GrindNose_Mask_20
+  - first:
+      213: 2818201988692420312
+    second: GrindNose_Mask_21
+  - first:
+      213: -3739877818285113437
+    second: GrindNose_Mask_22
+  - first:
+      213: -6229871941543164238
+    second: GrindNose_Mask_23
+  - first:
+      213: -2142218792742316192
+    second: GrindNose_Mask_24
+  - first:
+      213: -4922421690974858689
+    second: GrindNose_Mask_25
+  - first:
+      213: 8476730635218585312
+    second: GrindNose_Mask_26
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: GrindNose_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 26
+        width: 62
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fcbb7a00ecef7bc0800000000000000
+      internalID: -3783044714975216396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 26
+        width: 76
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 373a9c4949a5b8ed0800000000000000
+      internalID: -2410733581328866445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 3
+        width: 103
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 807846c8bc18bf9f0800000000000000
+      internalID: -433610227877378296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 407
+        y: 27
+        width: 88
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3eb502e4909c15390800000000000000
+      internalID: -7831257235217949725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 490
+        y: 75
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3489895e6160f4700800000000000000
+      internalID: 526646376836667459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 533
+        y: 28
+        width: 93
+        height: 93
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a25edb1d007b67240800000000000000
+      internalID: 4789216467901867306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 662
+        y: 30
+        width: 91
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 757c2fe6760121340800000000000000
+      internalID: 4832943386551043927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 30
+        width: 80
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7f399d42860748f0800000000000000
+      internalID: -556468872239562885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 934
+        y: 28
+        width: 57
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01c502f808b7da670800000000000000
+      internalID: 8551627059533732880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 971
+        y: 55
+        width: 33
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0e46c204dfda2920800000000000000
+      internalID: 2966429406249504270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 2
+        width: 103
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ddda816c148268e0800000000000000
+      internalID: -1701652451762184752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 16
+        width: 21
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddb95e377117ce0e0800000000000000
+      internalID: -2239290569167365155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 3
+        width: 104
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc35bee8630b8a8c0800000000000000
+      internalID: -3987743721664064564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 17
+        width: 27
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d486e42f4a5cc1160800000000000000
+      internalID: 6997685233257441357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 396
+        y: 4
+        width: 103
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54978813f94cbc740800000000000000
+      internalID: 5173444784975018309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 454
+        y: 21
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fffeefa9192ef2b0800000000000000
+      internalID: -5548952500571275277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 5
+        width: 103
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e7a4f500258c2c90800000000000000
+      internalID: -7193228132232157209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 582
+        y: 22
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3da884b1dc945f8f0800000000000000
+      internalID: -507418237734450477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 652
+        y: 7
+        width: 103
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed6bc30577b19a0c0800000000000000
+      internalID: -4564086548102072610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_19
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 20
+        width: 21
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 318cbd3ec11ff0520800000000000000
+      internalID: 2670618210438203411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_20
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 22
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cad6707ee3300ec0800000000000000
+      internalID: -3602822602714326336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_21
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 7
+        width: 103
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d6af49f6c34c1720800000000000000
+      internalID: 2818201988692420312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_22
+      rect:
+        serializedVersion: 2
+        x: 808
+        y: 20
+        width: 21
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3afb0c160f8491cc0800000000000000
+      internalID: -3739877818285113437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_23
+      rect:
+        serializedVersion: 2
+        x: 838
+        y: 21
+        width: 27
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b68528f97c0b89a0800000000000000
+      internalID: -6229871941543164238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_24
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 5
+        width: 103
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0679d63ab5f4542e0800000000000000
+      internalID: -2142218792742316192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_25
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 19
+        width: 21
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3214ca5d8b00bbb0800000000000000
+      internalID: -4922421690974858689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindNose_Mask_26
+      rect:
+        serializedVersion: 2
+        x: 966
+        y: 19
+        width: 28
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e600e0e99563a570800000000000000
+      internalID: 8476730635218585312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      GrindNose_Mask_0: -3783044714975216396
+      GrindNose_Mask_1: -2410733581328866445
+      GrindNose_Mask_10: -1701652451762184752
+      GrindNose_Mask_11: -2239290569167365155
+      GrindNose_Mask_12: -3987743721664064564
+      GrindNose_Mask_13: 6997685233257441357
+      GrindNose_Mask_14: 5173444784975018309
+      GrindNose_Mask_15: -5548952500571275277
+      GrindNose_Mask_16: -7193228132232157209
+      GrindNose_Mask_17: -507418237734450477
+      GrindNose_Mask_18: -4564086548102072610
+      GrindNose_Mask_19: 2670618210438203411
+      GrindNose_Mask_2: -433610227877378296
+      GrindNose_Mask_20: -3602822602714326336
+      GrindNose_Mask_21: 2818201988692420312
+      GrindNose_Mask_22: -3739877818285113437
+      GrindNose_Mask_23: -6229871941543164238
+      GrindNose_Mask_24: -2142218792742316192
+      GrindNose_Mask_25: -4922421690974858689
+      GrindNose_Mask_26: 8476730635218585312
+      GrindNose_Mask_3: -7831257235217949725
+      GrindNose_Mask_4: 526646376836667459
+      GrindNose_Mask_5: 4789216467901867306
+      GrindNose_Mask_6: 4832943386551043927
+      GrindNose_Mask_7: -556468872239562885
+      GrindNose_Mask_8: 8551627059533732880
+      GrindNose_Mask_9: 2966429406249504270
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

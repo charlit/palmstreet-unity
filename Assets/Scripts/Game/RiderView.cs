@@ -25,17 +25,47 @@ namespace PalmStreet.Game
         RiderLook look;
 
         // essai : skateur dessiné par PixelLab (Resources/SkaterPix, 8 images de 128 px) à la place du pantin
-        // shortcut: les tenues ne changent pas ce dessin, et les manuals réutilisent l'image de roule penchée ; à reprendre si l'essai est gardé
+        // les tenues repeignent le dessin (Tint) ; shortcut: casquette, bonnet et casque ne sont pas dessinés, seule la couleur du bandeau change ; manuals = image de roule penchée
         public static bool Pixel = PlayerPrefs.GetInt("riderpix", 1) == 1;
         SpriteRenderer pix;
-        static Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove, pixG5050, pixGNose, pixGTail, pixGBoard, pixCrash;
+        Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove, pixG5050, pixGNose, pixGTail, pixGBoard, pixCrash;
         float railT, crashT;
-        static Sprite[] Strip(string name)
+        static readonly System.Collections.Generic.Dictionary<string, Sprite[]> tinted = new System.Collections.Generic.Dictionary<string, Sprite[]>();
+
+        /// <summary>
+        /// Repeint une planche aux couleurs de la tenue. Le masque (Tools/skatermask.py) donne la partie de chaque pixel :
+        /// 1 haut, 2 rayures, 3 bas, 4 chaussures, 5 planche, 6 peau, 7 cheveux, 8 bandeau, 9 chaussettes. Chaque pixel garde
+        /// sa lumière : couleur de la tenue × (luminosité du pixel / luminosité de la teinte d'origine de la partie).
+        /// </summary>
+        public static Texture2D Tint(Texture2D src, Texture2D mask, RiderLook l)
         {
-            var t = Resources.Load<Texture2D>("SkaterPix/" + name); t.filterMode = FilterMode.Point;
+            var px = src.GetPixels32(); var m = mask.GetPixels32();
+            Color?[] to = { null, l.Top, l.Accent, l.Pants, l.Shoes, l.Deck, l.Skin, l.Hair, l.Hat == Hat.None ? (Color?)null : l.HatColor, l.Socks };
+            float[] refLum = { 1, Lum(202, 38, 59), Lum(251, 244, 244), Lum(245, 243, 235), Lum(70, 58, 76), Lum(202, 38, 59), Lum(245, 209, 178), Lum(230, 193, 122), Lum(202, 38, 59), Lum(202, 38, 59) };
+            for (int i = 0; i < px.Length; i++)
+            {
+                int part = m[i].a > 0 ? m[i].r : 0;
+                if (part <= 0 || part >= to.Length || to[part] == null || px[i].a == 0) continue;
+                float k = Mathf.Clamp(Lum(px[i].r, px[i].g, px[i].b) / refLum[part], 0.25f, 1.6f);
+                var c = to[part].Value * Mathf.Min(k, 1);
+                if (k > 1) c = Color.Lerp(c, Color.white, (k - 1) * 0.6f);   // reflets
+                c.a = px[i].a / 255f;
+                px[i] = c;
+            }
+            var t = new Texture2D(src.width, src.height, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            t.SetPixels32(px); t.Apply(false);
+            return t;
+        }
+        static float Lum(float r, float g, float b) => (0.2126f * r + 0.7152f * g + 0.0722f * b) / 255f + 0.02f;
+
+        Sprite[] Strip(string name)
+        {
+            string key = name + "|" + string.Join(",", look.Top, look.Accent, look.Pants, look.Shoes, look.Deck, look.Skin, look.Hair, look.Hat, look.HatColor, look.Socks);
+            if (tinted.TryGetValue(key, out var cached)) return cached;
+            var t = Tint(Resources.Load<Texture2D>("SkaterPix/" + name), Resources.Load<Texture2D>("SkaterPix/" + name + "_Mask"), look);
             var f = new Sprite[8];
             for (int i = 0; i < 8; i++) f[i] = Sprite.Create(t, new Rect(i * 128, 0, 128, 128), new Vector2(0.5f, 2 / 128f), 200);   // 2 px sous les roues ; 200 px/unité : planche ≈ celle du pantin
-            return f;
+            return tinted[key] = f;
         }
         /// <summary>Montre le dessin (frame) ou le pantin (null).</summary>
         void Pix(Sprite frame, float tilt = 0)
@@ -81,8 +111,8 @@ namespace PalmStreet.Game
             body.SetParent(spin, false);
             if (Pixel)
             {
-                pixRide ??= Strip("Ride"); pixPush ??= Strip("Push"); pixOllie ??= Strip("Ollie"); pixFlip ??= Strip("Flip"); pixShove ??= Strip("Shove");
-                pixG5050 ??= Strip("Grind5050"); pixGNose ??= Strip("GrindNose"); pixGTail ??= Strip("GrindTail"); pixGBoard ??= Strip("GrindBoard"); pixCrash ??= Strip("Crash");
+                pixRide = Strip("Ride"); pixPush = Strip("Push"); pixOllie = Strip("Ollie"); pixFlip = Strip("Flip"); pixShove = Strip("Shove");
+                pixG5050 = Strip("Grind5050"); pixGNose = Strip("GrindNose"); pixGTail = Strip("GrindTail"); pixGBoard = Strip("GrindBoard"); pixCrash = Strip("Crash");
                 pix = new GameObject("Dessin").AddComponent<SpriteRenderer>();
                 pix.transform.SetParent(spin, false); pix.transform.localPosition = W(0, -Center);
                 pix.sortingOrder = order + 10; pix.gameObject.layer = LayerMask.NameToLayer(layer);

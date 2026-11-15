@@ -1,0 +1,884 @@
+fileFormatVersion: 2
+guid: cb7b287f76f0a492784d486cf627d681
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1478712716594694363
+    second: Crash_Mask_0
+  - first:
+      213: -5683646445071553100
+    second: Crash_Mask_1
+  - first:
+      213: -1805246158954982281
+    second: Crash_Mask_2
+  - first:
+      213: -256232430706986267
+    second: Crash_Mask_3
+  - first:
+      213: -8070645655914777785
+    second: Crash_Mask_4
+  - first:
+      213: 4252031342694697823
+    second: Crash_Mask_5
+  - first:
+      213: 3821443880335520513
+    second: Crash_Mask_6
+  - first:
+      213: 8940673473158765089
+    second: Crash_Mask_7
+  - first:
+      213: 6926312673379682699
+    second: Crash_Mask_8
+  - first:
+      213: 2407140877437742005
+    second: Crash_Mask_9
+  - first:
+      213: -498911967069337205
+    second: Crash_Mask_10
+  - first:
+      213: -5199734851464245082
+    second: Crash_Mask_11
+  - first:
+      213: -663586775306342989
+    second: Crash_Mask_12
+  - first:
+      213: -5402029923628919437
+    second: Crash_Mask_13
+  - first:
+      213: -8173897219561248602
+    second: Crash_Mask_14
+  - first:
+      213: 8937796758856017580
+    second: Crash_Mask_15
+  - first:
+      213: -2116087780477510923
+    second: Crash_Mask_16
+  - first:
+      213: -5797974975023633295
+    second: Crash_Mask_17
+  - first:
+      213: 5213581922808452085
+    second: Crash_Mask_18
+  - first:
+      213: -7801350551747459253
+    second: Crash_Mask_19
+  - first:
+      213: 5236154527472148008
+    second: Crash_Mask_20
+  - first:
+      213: 5656737489745275096
+    second: Crash_Mask_21
+  - first:
+      213: -3195211926476860955
+    second: Crash_Mask_22
+  - first:
+      213: 2903633497433616252
+    second: Crash_Mask_23
+  - first:
+      213: -3884439378263816397
+    second: Crash_Mask_24
+  - first:
+      213: -3037183683134384098
+    second: Crash_Mask_25
+  - first:
+      213: -3150475050269024933
+    second: Crash_Mask_26
+  - first:
+      213: -2515788257445880259
+    second: Crash_Mask_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Crash_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 24
+        width: 57
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 527358a6e9e8a7be0800000000000000
+      internalID: -1478712716594694363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 25
+        width: 54
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bd2994eba1af11b0800000000000000
+      internalID: -5683646445071553100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 27
+        width: 63
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 774995bde2a72f6e0800000000000000
+      internalID: -1805246158954982281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 25
+        width: 24
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e276cb36fda17cf0800000000000000
+      internalID: -256232430706986267
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 406
+        y: 32
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 743762b398e4fff80800000000000000
+      internalID: -8070645655914777785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 412
+        y: 21
+        width: 81
+        height: 99
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5b052b5aff320b30800000000000000
+      internalID: 4252031342694697823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 517
+        y: 19
+        width: 62
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1033d7856fe780530800000000000000
+      internalID: 3821443880335520513
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 529
+        y: 14
+        width: 90
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12ad2647727a31c70800000000000000
+      internalID: 8940673473158765089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 606
+        y: 26
+        width: 24
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b890514eda43f1060800000000000000
+      internalID: 6926312673379682699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 648
+        y: 34
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bbaffbdfd1e76120800000000000000
+      internalID: 2407140877437742005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 38
+        width: 29
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8904a495328319f0800000000000000
+      internalID: -498911967069337205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 694
+        y: 4
+        width: 68
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a05144b3b4d6d7b0800000000000000
+      internalID: -5199734851464245082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 34
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bde73cf7577ac6f0800000000000000
+      internalID: -663586775306342989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 769
+        y: 14
+        width: 43
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3755118d7622805b0800000000000000
+      internalID: -5402029923628919437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 777
+        y: 3
+        width: 112
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a8af7539cb709e80800000000000000
+      internalID: -8173897219561248602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 3
+        width: 106
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca620463cce690c70800000000000000
+      internalID: 8937796758856017580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 3
+        width: 103
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fad71b006522a2e0800000000000000
+      internalID: -2116087780477510923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 2
+        width: 103
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17cac1daa74798fa0800000000000000
+      internalID: -5797974975023633295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 16
+        width: 21
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f35564d22d5a5840800000000000000
+      internalID: 5213581922808452085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_19
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 15
+        width: 25
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b478bcaa1090cb390800000000000000
+      internalID: -7801350551747459253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_20
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 5
+        width: 97
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82ed707ecce8aa840800000000000000
+      internalID: 5236154527472148008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_21
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 24
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d8e6e7b6c4c08e40800000000000000
+      internalID: 5656737489745275096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_22
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 16
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e1514c8ea358a3d0800000000000000
+      internalID: -3195211926476860955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_23
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 18
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7fa4742847cb4820800000000000000
+      internalID: 2903633497433616252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_24
+      rect:
+        serializedVersion: 2
+        x: 646
+        y: 13
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 337cb0357f2b71ac0800000000000000
+      internalID: -3884439378263816397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_25
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 23
+        width: 16
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1899292881c9d5d0800000000000000
+      internalID: -3037183683134384098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_26
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 7
+        width: 46
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5ddbfa32a34744d0800000000000000
+      internalID: -3150475050269024933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Crash_Mask_27
+      rect:
+        serializedVersion: 2
+        x: 899
+        y: 7
+        width: 18
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3ed6d8b8ef161dd0800000000000000
+      internalID: -2515788257445880259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Crash_Mask_0: -1478712716594694363
+      Crash_Mask_1: -5683646445071553100
+      Crash_Mask_10: -498911967069337205
+      Crash_Mask_11: -5199734851464245082
+      Crash_Mask_12: -663586775306342989
+      Crash_Mask_13: -5402029923628919437
+      Crash_Mask_14: -8173897219561248602
+      Crash_Mask_15: 8937796758856017580
+      Crash_Mask_16: -2116087780477510923
+      Crash_Mask_17: -5797974975023633295
+      Crash_Mask_18: 5213581922808452085
+      Crash_Mask_19: -7801350551747459253
+      Crash_Mask_2: -1805246158954982281
+      Crash_Mask_20: 5236154527472148008
+      Crash_Mask_21: 5656737489745275096
+      Crash_Mask_22: -3195211926476860955
+      Crash_Mask_23: 2903633497433616252
+      Crash_Mask_24: -3884439378263816397
+      Crash_Mask_25: -3037183683134384098
+      Crash_Mask_26: -3150475050269024933
+      Crash_Mask_27: -2515788257445880259
+      Crash_Mask_3: -256232430706986267
+      Crash_Mask_4: -8070645655914777785
+      Crash_Mask_5: 4252031342694697823
+      Crash_Mask_6: 3821443880335520513
+      Crash_Mask_7: 8940673473158765089
+      Crash_Mask_8: 6926312673379682699
+      Crash_Mask_9: 2407140877437742005
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

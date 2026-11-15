@@ -1,0 +1,650 @@
+fileFormatVersion: 2
+guid: 3c1c9a2596ad84a3cacecdc7412633a1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6142046073548903997
+    second: GrindBoard_Mask_0
+  - first:
+      213: -1586228610802671687
+    second: GrindBoard_Mask_1
+  - first:
+      213: 8219708015641728764
+    second: GrindBoard_Mask_2
+  - first:
+      213: 4200917628986405508
+    second: GrindBoard_Mask_3
+  - first:
+      213: 3633780939428029737
+    second: GrindBoard_Mask_4
+  - first:
+      213: 1136393205693700955
+    second: GrindBoard_Mask_5
+  - first:
+      213: 285828221542865403
+    second: GrindBoard_Mask_6
+  - first:
+      213: 2982959296921209820
+    second: GrindBoard_Mask_7
+  - first:
+      213: 5788979534005905019
+    second: GrindBoard_Mask_8
+  - first:
+      213: -4049201433447067539
+    second: GrindBoard_Mask_9
+  - first:
+      213: -4438957320343705001
+    second: GrindBoard_Mask_10
+  - first:
+      213: 3710490882545930575
+    second: GrindBoard_Mask_11
+  - first:
+      213: 3285578670099881095
+    second: GrindBoard_Mask_12
+  - first:
+      213: -2701354961799980973
+    second: GrindBoard_Mask_13
+  - first:
+      213: -2279188825407760090
+    second: GrindBoard_Mask_14
+  - first:
+      213: -5997235846348533537
+    second: GrindBoard_Mask_15
+  - first:
+      213: -3515349098868011302
+    second: GrindBoard_Mask_16
+  - first:
+      213: 696780683344800534
+    second: GrindBoard_Mask_17
+  - first:
+      213: 6116563536127690570
+    second: GrindBoard_Mask_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 0
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: GrindBoard_Mask_0
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 24
+        width: 55
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c9e80853a113caa0800000000000000
+      internalID: -6142046073548903997
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_1
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 19
+        width: 59
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bf9b809b759cf9e0800000000000000
+      internalID: -1586228610802671687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_2
+      rect:
+        serializedVersion: 2
+        x: 273
+        y: 4
+        width: 97
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf691cde3e4421270800000000000000
+      internalID: 8219708015641728764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_3
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 29
+        width: 77
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 482396e7358ac4a30800000000000000
+      internalID: 4200917628986405508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_4
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 4
+        width: 92
+        height: 120
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92561360388cd6230800000000000000
+      internalID: 3633780939428029737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_5
+      rect:
+        serializedVersion: 2
+        x: 528
+        y: 37
+        width: 93
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5b5a86899745cf00800000000000000
+      internalID: 1136393205693700955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_6
+      rect:
+        serializedVersion: 2
+        x: 529
+        y: 14
+        width: 97
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf918dbc04777f300800000000000000
+      internalID: 285828221542865403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_7
+      rect:
+        serializedVersion: 2
+        x: 589
+        y: 34
+        width: 19
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdb00781da9956920800000000000000
+      internalID: 2982959296921209820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_8
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 20
+        width: 93
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b76ad600736965050800000000000000
+      internalID: 5788979534005905019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_9
+      rect:
+        serializedVersion: 2
+        x: 788
+        y: 28
+        width: 85
+        height: 89
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d609267ffb85ec7c0800000000000000
+      internalID: -4049201433447067539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_10
+      rect:
+        serializedVersion: 2
+        x: 923
+        y: 17
+        width: 70
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75a2bc3f5d7a562c0800000000000000
+      internalID: -4438957320343705001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_11
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 1
+        width: 103
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f41d9747ccf4e7330800000000000000
+      internalID: 3710490882545930575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_12
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 18
+        width: 22
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78c57e88468b89d20800000000000000
+      internalID: 3285578670099881095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_13
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 4
+        width: 101
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3585ca189fbd28ad0800000000000000
+      internalID: -2701354961799980973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_14
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 3
+        width: 97
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 629d785c6d1be50e0800000000000000
+      internalID: -2279188825407760090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_15
+      rect:
+        serializedVersion: 2
+        x: 783
+        y: 4
+        width: 96
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd01820c5c985cca0800000000000000
+      internalID: -5997235846348533537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_16
+      rect:
+        serializedVersion: 2
+        x: 806
+        y: 19
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ade8b74ae98f63fc0800000000000000
+      internalID: -3515349098868011302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_17
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 17
+        width: 18
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61bee1df6567ba900800000000000000
+      internalID: 696780683344800534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrindBoard_Mask_18
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 3
+        width: 94
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a478ff0112662e450800000000000000
+      internalID: 6116563536127690570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      GrindBoard_Mask_0: -6142046073548903997
+      GrindBoard_Mask_1: -1586228610802671687
+      GrindBoard_Mask_10: -4438957320343705001
+      GrindBoard_Mask_11: 3710490882545930575
+      GrindBoard_Mask_12: 3285578670099881095
+      GrindBoard_Mask_13: -2701354961799980973
+      GrindBoard_Mask_14: -2279188825407760090
+      GrindBoard_Mask_15: -5997235846348533537
+      GrindBoard_Mask_16: -3515349098868011302
+      GrindBoard_Mask_17: 696780683344800534
+      GrindBoard_Mask_18: 6116563536127690570
+      GrindBoard_Mask_2: 8219708015641728764
+      GrindBoard_Mask_3: 4200917628986405508
+      GrindBoard_Mask_4: 3633780939428029737
+      GrindBoard_Mask_5: 1136393205693700955
+      GrindBoard_Mask_6: 285828221542865403
+      GrindBoard_Mask_7: 2982959296921209820
+      GrindBoard_Mask_8: 5788979534005905019
+      GrindBoard_Mask_9: -4049201433447067539
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
