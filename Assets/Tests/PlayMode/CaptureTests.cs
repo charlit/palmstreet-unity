@@ -250,14 +250,14 @@ namespace PalmStreet.Tests
             yield return Shot("0-profil-neuf");
             var six = new Progress();
             for (int n = 1; n <= 6; n++) six.Clear(n, 1000);
-            six.Wear("cap-red"); six.Wear("hoodie-gull"); six.Wear("shorts-surf"); six.Wear("deck-crab");
+            six.Wear("band-red"); six.Wear("hoodie-gull"); six.Wear("shorts-surf"); six.Wear("deck-crab");
             game.Progress = six;
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("0-profil-six");
             var all = new Progress();
             for (int n = 1; n <= 12; n++) { all.Clear(n, 1); all.Stars[n - 1] = all.ScoreStars[n - 1] = true; }
-            foreach (var id in new[] { "cap-gold", "hoodie-basque", "pants-white", "shoes-pink", "deck-gold" }) all.Wear(id);
+            foreach (var id in new[] { "band-red", "hoodie-basque", "pants-white", "shoes-pink", "deck-gold" }) all.Wear(id);
             game.Progress = all;
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
@@ -268,7 +268,7 @@ namespace PalmStreet.Tests
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("0-profil-tenue2");
             // spec 003 : le reste de la garde-robe, peaux et cheveux sur le nouveau skateur
-            foreach (var id in new[] { "beanie-stripes", "hoodie-purple", "pants-green", "start-shoes" }) all.Wear(id);
+            foreach (var id in new[] { "start-head", "hoodie-purple", "pants-green", "start-shoes" }) all.Wear(id);
             all.Skin = 3; all.HairStyle = 0; all.HairColor = 4;
             game.Progress = all;
             game.OpenProfile();
@@ -280,9 +280,6 @@ namespace PalmStreet.Tests
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("003-garde-robe-2");
-            all.Wear("cap-red"); game.Progress = all; game.OpenProfile();
-            for (int i = 0; i < 3; i++) yield return null;
-            yield return Shot("008-casquette");
             game.Progress = six;
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
             yield return null;

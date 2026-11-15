@@ -25,16 +25,12 @@ namespace PalmStreet.Game
         RiderLook look;
 
         // essai : skateur dessiné par PixelLab (Resources/SkaterPix, 8 images de 128 px) à la place du pantin
-        // les tenues repeignent le dessin (Tint), casquette et bonnet posés sur les cheveux (hat) ; shortcut: le casque de mêlée n'est pas dessiné (bandeau à sa couleur), manuals = image de roule penchée
+        // les tenues repeignent le dessin (Tint) ; shortcut: le casque de mêlée n'est pas dessiné (bandeau à sa couleur), manuals = image de roule penchée
         public static bool Pixel = PlayerPrefs.GetInt("riderpix", 1) == 1;
         SpriteRenderer pix;
         Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove, pixG5050, pixGNose, pixGTail, pixGBoard, pixCrash;
         float railT, crashT;
         static readonly System.Collections.Generic.Dictionary<string, Sprite[]> tinted = new System.Collections.Generic.Dictionary<string, Sprite[]>();
-        /// <summary>Cheveux de chaque image (x0, y0, x1, y1 en pixels, depuis le bas) : où poser le chapeau (pas le bandeau, dont les rubans flottent loin).</summary>
-        static readonly System.Collections.Generic.Dictionary<Sprite, Vector4> heads = new System.Collections.Generic.Dictionary<Sprite, Vector4>();
-        SpriteRenderer hat;
-        float hatCrown;   // largeur du haut du chapeau dans son image (la visière de la casquette dépasse)
 
         /// <summary>
         /// Repeint une planche aux couleurs de la tenue. Le masque (Tools/skatermask.py) donne la partie de chaque pixel :
@@ -65,23 +61,9 @@ namespace PalmStreet.Game
         {
             string key = name + "|" + string.Join(",", look.Top, look.Accent, look.Pants, look.Shoes, look.Deck, look.Skin, look.Hair, look.Hat, look.HatColor, look.Socks);
             if (tinted.TryGetValue(key, out var cached)) return cached;
-            var mask = Resources.Load<Texture2D>("SkaterPix/" + name + "_Mask");
-            var t = Tint(Resources.Load<Texture2D>("SkaterPix/" + name), mask, look);
-            var mp = mask.GetPixels32();
+            var t = Tint(Resources.Load<Texture2D>("SkaterPix/" + name), Resources.Load<Texture2D>("SkaterPix/" + name + "_Mask"), look);
             var f = new Sprite[8];
-            for (int i = 0; i < 8; i++)
-            {
-                f[i] = Sprite.Create(t, new Rect(i * 128, 0, 128, 128), new Vector2(0.5f, 2 / 128f), 200);   // 2 px sous les roues ; 200 px/unité : planche ≈ celle du pantin
-                // cheveux ; seulement près du plus haut (une tête fait ~26 px), pour ignorer les pixels isolés plus bas
-                bool Head(int x, int y) { var m = mp[y * mask.width + i * 128 + x]; return m.a > 0 && m.r == 7; }
-                int top = -1;
-                for (int y = 127; y >= 0 && top < 0; y--) for (int x = 0; x < 128; x++) if (Head(x, y)) { top = y; break; }
-                var b = new Vector4(999, 999, -1, -1);
-                for (int y = Mathf.Max(0, top - 26); y <= top; y++)
-                    for (int x = 0; x < 128; x++)
-                        if (Head(x, y)) b = new Vector4(Mathf.Min(b.x, x), Mathf.Min(b.y, y), Mathf.Max(b.z, x), Mathf.Max(b.w, y));
-                heads[f[i]] = b;
-            }
+            for (int i = 0; i < 8; i++) f[i] = Sprite.Create(t, new Rect(i * 128, 0, 128, 128), new Vector2(0.5f, 2 / 128f), 200);   // 2 px sous les roues ; 200 px/unité : planche ≈ celle du pantin
             return tinted[key] = f;
         }
         /// <summary>Montre le dessin (frame) ou le pantin (null).</summary>
@@ -93,18 +75,6 @@ namespace PalmStreet.Game
             body.gameObject.SetActive(frame == null);
             board.gameObject.SetActive(frame == null);
             if (frame != null) pix.sprite = frame;
-            if (hat == null) return;
-            // chapeau : sur le haut des cheveux, à la largeur de la tête ; couché (fin de chute) : tourné, au bout de la tête
-            bool on = frame != null && heads.TryGetValue(frame, out var h) && h.z >= h.x;
-            hat.enabled = on;
-            if (!on) return;
-            h = heads[frame];
-            float w = h.z - h.x + 1, tall = h.w - h.y + 1, k = w * (look.Hat == Hat.Beanie ? 1.3f : 1.12f) / hatCrown;
-            bool lying = System.Array.IndexOf(pixCrash, frame) >= 5;   // fin de la chute : allongé
-            hat.transform.localScale = Vector3.one * (lying ? tall * 1.12f / hatCrown : k);
-            hat.transform.localRotation = Quaternion.Euler(0, 0, lying ? -90 : 0);
-            var at = lying ? new Vector2(h.z - 0.35f * w, (h.y + h.w) / 2f) : new Vector2((h.x + h.z) / 2f + (look.Hat == Hat.Cap ? 0.12f * w : 0), h.w - 0.42f * tall);
-            hat.transform.localPosition = new Vector3((at.x - 64) / 200f, (at.y - 2) / 200f, 0);
         }
 
         bool wasAirborne;
@@ -145,16 +115,6 @@ namespace PalmStreet.Game
                 pix = new GameObject("Dessin").AddComponent<SpriteRenderer>();
                 pix.transform.SetParent(spin, false); pix.transform.localPosition = W(0, -Center);
                 pix.sortingOrder = order + 10; pix.gameObject.layer = LayerMask.NameToLayer(layer);
-                if (l.Hat == Hat.Cap || l.Hat == Hat.Beanie)
-                {
-                    var ht = Resources.Load<Texture2D>(l.Hat == Hat.Cap ? "SkaterPix/Hat_Cap" : "SkaterPix/Hat_Beanie");
-                    hatCrown = l.Hat == Hat.Cap ? ht.width * 0.66f : ht.width;
-                    hat = new GameObject("Chapeau").AddComponent<SpriteRenderer>();
-                    hat.sprite = Sprite.Create(ht, new Rect(0, 0, ht.width, ht.height), new Vector2(l.Hat == Hat.Cap ? 0.33f : 0.5f, 0.15f), 200);
-                    hat.color = l.HatColor;
-                    hat.transform.SetParent(pix.transform, false);
-                    hat.sortingOrder = order + 11; hat.gameObject.layer = pix.gameObject.layer;
-                }
             }
 
             // ordres de tri : planche 0-2, bras arrière 3-4, jambe arrière 5-8, buste 9-11, jambe avant 12-15, tête 16-17, bras avant 18-19

@@ -119,7 +119,6 @@ namespace PalmStreet.Game
     {
         public static readonly Color[] Skins = { Hex("#F6D2B3"), Hex("#E8B48A"), Hex("#C68B59"), Hex("#8D5524"), Hex("#5C3317") };
         public static readonly Color[] Hairs = { Hex("#E8C26A"), Hex("#B5502A"), Hex("#7A4B2A"), Hex("#3B2412"), Hex("#141414") };
-        public static readonly string[] HairStyles = { "COURTS", "BOUCLES" };
 
         /// <summary>Couleur du motif d'un objet (petite pastille dans celle du profil), ou transparent s'il est uni.</summary>
         public static Color ItemDetail(string id) => id switch
@@ -182,9 +181,7 @@ namespace PalmStreet.Game
             string head = p.WornIn(Slot.Head), top = p.WornIn(Slot.Top), legs = p.WornIn(Slot.Legs), shoes = p.WornIn(Slot.Shoes), deck = p.WornIn(Slot.Deck);
             var l = new RiderLook
             {
-                Skin = Skins[Mathf.Clamp(p.Skin, 0, Skins.Length - 1)],
-                Hair = Hairs[Mathf.Clamp(p.HairColor, 0, Hairs.Length - 1)],
-                Curly = p.HairStyle == 1,
+                Skin = Skins[0], Hair = Hairs[0], Curly = false,   // plus de section CORPS : peau et cheveux du dessin
                 Hat = head == "cap-red" || head == "cap-gold" ? Hat.Cap : head == "beanie-stripes" ? Hat.Beanie : head == "band-red" || head == "band-pilier" ? Hat.Band : head == "scrum-cap" ? Hat.Scrum : Hat.None,
                 HatColor = ItemColor(head),
                 Stripes = head == "beanie-stripes",

@@ -67,7 +67,7 @@ namespace PalmStreet.Tests
                 {
                     var v = RiderView.Create(look, null, 20);
                     act(v, new Skater());
-                    var shown = v.GetComponentsInChildren<Renderer>(false).Where(r => r.enabled && r.gameObject.name != "Dessin" && r.gameObject.name != "Chapeau").ToList();
+                    var shown = v.GetComponentsInChildren<Renderer>(false).Where(r => r.enabled && r.gameObject.name != "Dessin").ToList();
                     var drawing = v.GetComponentsInChildren<SpriteRenderer>(true).FirstOrDefault(r => r.gameObject.name == "Dessin");
                     if (shown.Count > 0) problems.Add($"{item.Id} / {name} : pantin visible ({string.Join(", ", shown.Select(r => r.gameObject.name).Distinct().Take(4))})");
                     else if (drawing == null || !drawing.enabled || drawing.sprite == null) problems.Add($"{item.Id} / {name} : pas de dessin");

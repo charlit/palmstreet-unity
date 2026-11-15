@@ -249,20 +249,17 @@ namespace PalmStreet.Game
             Panel(tenue, -262);
 
             // spec 002 (FR-023 à FR-027) : des objets gagnés en finissant les niveaux, plus de couleurs libres
-            string[] names = { "TÊTE", "HAUT", "BAS", "PIEDS", "PLANCHE", "CORPS" };
+            string[] names = { "TÊTE", "HAUT", "BAS", "PIEDS", "PLANCHE" };
             for (int i = 0; i < names.Length; i++)
             {
                 int index = i;
-                var tb = Button(tenue, names[i], new Vector2(0.5f, 1), new Vector2(-150 + i * 60, -276), new Vector2(56, 28), Night, () => ShowTab(index));
+                var tb = Button(tenue, names[i], new Vector2(0.5f, 1), new Vector2(-120 + i * 60, -276), new Vector2(56, 28), Night, () => ShowTab(index));
                 Label(tb.transform, names[i], 12, Cream, Vector2.zero);
                 tabs.Add((tb.GetComponent<Image>(), Page(tenue, "Page " + names[i], -298)));
             }
             foreach (Slot slot in System.Enum.GetValues(typeof(Slot))) ItemCards(tabs[(int)slot].page.transform, slot);
             float y = 0;
-            var p = tabs[5].page.transform;
-            Swatches(p, ref y, "PEAU", Wardrobe.Skins, null, () => progress().Skin, v => progress().Skin = v);
-            Selector(p, ref y, "COIFFURE", Wardrobe.HairStyles, new int[Wardrobe.HairStyles.Length], () => progress().HairStyle, v => progress().HairStyle = v);
-            Swatches(p, ref y, "CHEVEUX", Wardrobe.Hairs, null, () => progress().HairColor, v => progress().HairColor = v);
+            Transform p;
 
             // RÉGLAGES : son et vibrations
             BuildTricksPage(sections[1].page.transform);

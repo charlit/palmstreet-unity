@@ -75,20 +75,5 @@ def main(src, dst):
 
 
 
-def hats(src, dst):
-    """Casquette et bonnet (PixelLab) en gris clair : le jeu leur donne la couleur de l'objet (SpriteRenderer.color)."""
-    for name, out in (('casquette', 'Hat_Cap'), ('bonnet', 'Hat_Beanie')):
-        im = Image.open(f'{src}/{name}.png').convert('RGBA'); im = im.crop(im.getbbox()); px = im.load()
-        ref = 0.2126 * 200 + 0.7152 * 35 + 0.0722 * 55   # rouge principal du dessin
-        for y in range(im.height):
-            for x in range(im.width):
-                r, g, b, a = px[x, y]
-                if a:
-                    v = min(255, int(255 * (0.2126 * r + 0.7152 * g + 0.0722 * b) / ref * 0.92))
-                    px[x, y] = (v, v, v, a)
-        im.save(f'{dst}/{out}.png')
-
-
 if __name__ == '__main__':
     main(*sys.argv[1:])
-    hats(*sys.argv[1:])

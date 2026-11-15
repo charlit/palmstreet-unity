@@ -407,13 +407,11 @@ namespace PalmStreet.Tests
         {
             var p = new Progress();
             Assert.AreEqual(0, p.TotalStars);
-            Assert.IsFalse(p.Owns("cap-gold"));
             for (int n = 1; n <= 3; n++) { p.Clear(n, 1); p.Stars[n - 1] = true; }
             Assert.AreEqual(2, p.StarCount(1));
             Assert.AreEqual(6, p.TotalStars);
-            Assert.IsTrue(p.Owns("cap-gold"), "6 étoiles : casquette dorée");
             Assert.IsFalse(p.Owns("hoodie-basque"));
-            CollectionAssert.AreEqual(new[] { "cap-gold" }, Items.ForStars(5, 6).Select(i => i.Id));
+            CollectionAssert.IsEmpty(Items.ForStars(5, 6), "plus de casquette dorée à 6 étoiles");
             for (int n = 1; n <= 12; n++)
             {
                 Assert.That(Levels.Get(n).ScoreGoal, Is.GreaterThan(1000), $"score visé du niveau {n}");
@@ -566,9 +564,9 @@ namespace PalmStreet.Tests
         [Test] public void Objets_TenueDeDepartEtUnParNiveau()
         {
             Assert.AreEqual(5, Items.All.Count(i => i.Level == 0), "tenue de départ : un objet par emplacement");
-            for (int n = 1; n <= 12; n++) Assert.AreEqual(1, Items.All.Count(i => i.Level == n && i.Boss == BossKind.None), $"un objet au niveau {n} (hors tenues de rugby)");
+            for (int n = 1; n <= 12; n++) Assert.AreEqual(n == 1 || n == 5 ? 0 : 1, Items.All.Count(i => i.Level == n && i.Boss == BossKind.None), $"objet du niveau {n} (hors tenues de rugby ; casquette et bonnet retirés)");
             Assert.AreEqual(Items.All.Length, Items.All.Select(i => i.Id).Distinct().Count());
-            Assert.AreEqual("cap-red", Items.ForLevel(1).Id);
+            Assert.IsNull(Items.ForLevel(1), "la casquette rouge est retirée");
             Assert.AreEqual("deck-neon", Items.ForLevel(12).Id);
         }
 
@@ -576,14 +574,16 @@ namespace PalmStreet.Tests
         {
             var p = new Progress();
             Assert.IsTrue(Items.All.Where(i => i.Level == 0).All(i => p.Owns(i.Id)));
-            Assert.IsFalse(p.Owns("cap-red"));
-            Assert.AreEqual("start-head", p.WornIn(Slot.Head));
-            Assert.IsFalse(p.Wear("cap-red"), "pas encore gagnée");
-            Assert.AreEqual("cap-red", p.Clear(1, 100).item.Id);
-            Assert.IsNull(p.Clear(1, 200).item, "donnée une seule fois");
-            Assert.IsTrue(p.Wear("cap-red"));
-            Assert.AreEqual("cap-red", p.WornIn(Slot.Head));
-            Assert.IsTrue(p.Wear("start-head"), "on peut revenir à la tenue de départ");
+            Assert.IsFalse(p.Owns("hoodie-ocean"));
+            Assert.AreEqual("start-top", p.WornIn(Slot.Top));
+            Assert.IsFalse(p.Wear("hoodie-ocean"), "pas encore gagné");
+            Assert.IsNull(p.Clear(1, 100).item, "niveau 1 : plus d'objet");
+            Assert.AreEqual("hoodie-ocean", p.Clear(2, 100).item.Id);
+            Assert.IsNull(p.Clear(2, 200).item, "donné une seule fois");
+            Assert.IsTrue(p.Wear("hoodie-ocean"));
+            Assert.AreEqual("hoodie-ocean", p.WornIn(Slot.Top));
+            Assert.IsTrue(p.Wear("start-top"), "on peut revenir à la tenue de départ");
+            Assert.IsFalse(p.Wear("cap-red"), "la casquette n'existe plus");
         }
 
         [Test] public void Progression_RepareLesDonneesLues()
