@@ -95,5 +95,35 @@ namespace PalmStreet.Tests
             var deck = Mean(5); Assert.Greater(deck.r + deck.b, 2 * deck.g + 0.3f, "planche magenta");
             var skin = Mean(6); Assert.Less(skin.r, 0.5f, "peau foncée");
         }
+
+        [Test]
+        public void UneSeuleTenueSurToutesLesImages()
+        {
+            // tenue toute grise : il ne doit rester rien de vif ; une couleur repère restée sur une image (partie mal reconnue)
+            // se verrait comme une autre tenue qui clignote
+            var look = Wardrobe.Build(new Progress());
+            look.Top = look.Accent = look.Socks = new Color(0.9f, 0.9f, 0.9f); look.Pants = look.Shoes = look.Deck = new Color(0.5f, 0.5f, 0.5f); look.Hat = Hat.None;
+            var bad = new List<string>();
+            foreach (var name in new[] { "Ride", "Push", "Ollie", "Flip", "Shove", "Grind5050", "GrindNose", "GrindTail", "GrindBoard", "Crash" })
+            {
+                var t = RiderView.Tint(Resources.Load<Texture2D>("SkaterPix/" + name), Resources.Load<Texture2D>("SkaterPix/" + name + "_Mask"), look);
+                var px = t.GetPixels32();
+                for (int f = 0; f < t.width / 128; f++)
+                {
+                    int vivid = 0;
+                    for (int y = 0; y < 128; y++)
+                        for (int x = f * 128; x < f * 128 + 128; x++)
+                        {
+                            var c = px[y * t.width + x];
+                            if (c.a < 128) continue;
+                            Color.RGBToHSV(c, out float h, out float sat, out float v);
+                            bool skinOrHair = h * 360 > 5 && h * 360 < 55;
+                            if (sat > 0.5f && v > 0.4f && !skinOrHair) vivid++;
+                        }
+                    if (vivid > 30) bad.Add($"{name} image {f} : {vivid} pixels vifs");
+                }
+            }
+            Assert.IsEmpty(bad, string.Join("\n", bad));
+        }
     }
 }

@@ -31,27 +31,27 @@ namespace PalmStreet.Game
         Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove, pixG5050, pixGNose, pixGTail, pixGBoard, pixCrash;
         float railT, crashT;
         static readonly System.Collections.Generic.Dictionary<string, Sprite[]> tinted = new System.Collections.Generic.Dictionary<string, Sprite[]>();
-        /// <summary>Cheveux et bandeau de chaque image (x0, y0, x1, y1 en pixels, depuis le bas) : où poser le chapeau.</summary>
+        /// <summary>Cheveux de chaque image (x0, y0, x1, y1 en pixels, depuis le bas) : où poser le chapeau (pas le bandeau, dont les rubans flottent loin).</summary>
         static readonly System.Collections.Generic.Dictionary<Sprite, Vector4> heads = new System.Collections.Generic.Dictionary<Sprite, Vector4>();
         SpriteRenderer hat;
         float hatCrown;   // largeur du haut du chapeau dans son image (la visière de la casquette dépasse)
 
         /// <summary>
         /// Repeint une planche aux couleurs de la tenue. Le masque (Tools/skatermask.py) donne la partie de chaque pixel :
-        /// 1 haut, 2 rayures, 3 bas, 4 chaussures, 5 planche, 6 peau, 7 cheveux, 8 bandeau, 9 chaussettes. Chaque pixel garde
-        /// sa lumière : couleur de la tenue × (luminosité du pixel / luminosité de la teinte d'origine de la partie).
+        /// 1 haut, 2 rayures, 3 bas, 4 chaussures, 5 planche, 6 peau, 7 cheveux, 8 bandeau, 9 chaussettes (le dessin a une couleur
+        /// repère par partie). Chaque pixel garde sa lumière : couleur de la tenue × (valeur du pixel / valeur de référence de la partie).
         /// </summary>
         public static Texture2D Tint(Texture2D src, Texture2D mask, RiderLook l)
         {
             var px = src.GetPixels32(); var m = mask.GetPixels32();
-            Color?[] to = { null, l.Top, l.Accent, l.Pants, l.Shoes, l.Deck, l.Skin, l.Hair, l.Hat == Hat.None ? (Color?)null : l.HatColor, l.Socks };
-            float[] refLum = { 1, Lum(202, 38, 59), Lum(251, 244, 244), Lum(245, 243, 235), Lum(70, 58, 76), Lum(202, 38, 59), Lum(245, 209, 178), Lum(230, 193, 122), Lum(202, 38, 59), Lum(202, 38, 59) };
+            Color[] to = { default, l.Top, l.Accent, l.Pants, l.Shoes, l.Deck, l.Skin, l.Hair, l.Hat == Hat.None ? new Color(0.96f, 0.95f, 0.93f) : l.HatColor, l.Socks };
+            float[] refV = { 1, 0.79f, 0.98f, 0.96f, 0.32f, 0.79f, 0.96f, 0.9f, 0.9f, 0.85f };   // valeur (HSV) de la teinte principale de chaque partie
             for (int i = 0; i < px.Length; i++)
             {
                 int part = m[i].a > 0 ? m[i].r : 0;
-                if (part <= 0 || part >= to.Length || to[part] == null || px[i].a == 0) continue;
-                float k = Mathf.Clamp(Lum(px[i].r, px[i].g, px[i].b) / refLum[part], 0.25f, 1.6f);
-                var c = to[part].Value * Mathf.Min(k, 1);
+                if (part <= 0 || part >= to.Length || px[i].a == 0) continue;
+                float k = Mathf.Clamp(Mathf.Max(px[i].r, Mathf.Max(px[i].g, px[i].b)) / 255f / refV[part], 0.25f, 1.6f);
+                var c = to[part] * Mathf.Min(k, 1);
                 if (k > 1) c = Color.Lerp(c, Color.white, (k - 1) * 0.6f);   // reflets
                 c.a = px[i].a / 255f;
                 px[i] = c;
@@ -60,7 +60,6 @@ namespace PalmStreet.Game
             t.SetPixels32(px); t.Apply(false);
             return t;
         }
-        static float Lum(float r, float g, float b) => (0.2126f * r + 0.7152f * g + 0.0722f * b) / 255f + 0.02f;
 
         Sprite[] Strip(string name)
         {
@@ -73,8 +72,8 @@ namespace PalmStreet.Game
             for (int i = 0; i < 8; i++)
             {
                 f[i] = Sprite.Create(t, new Rect(i * 128, 0, 128, 128), new Vector2(0.5f, 2 / 128f), 200);   // 2 px sous les roues ; 200 px/unité : planche ≈ celle du pantin
-                // cheveux et bandeau ; seulement près du plus haut (une tête fait ~26 px), pour ignorer les pixels isolés plus bas
-                bool Head(int x, int y) { var m = mp[y * mask.width + i * 128 + x]; return m.a > 0 && (m.r == 7 || m.r == 8); }
+                // cheveux ; seulement près du plus haut (une tête fait ~26 px), pour ignorer les pixels isolés plus bas
+                bool Head(int x, int y) { var m = mp[y * mask.width + i * 128 + x]; return m.a > 0 && m.r == 7; }
                 int top = -1;
                 for (int y = 127; y >= 0 && top < 0; y--) for (int x = 0; x < 128; x++) if (Head(x, y)) { top = y; break; }
                 var b = new Vector4(999, 999, -1, -1);
@@ -100,8 +99,8 @@ namespace PalmStreet.Game
             hat.enabled = on;
             if (!on) return;
             h = heads[frame];
-            float w = h.z - h.x + 1, tall = h.w - h.y + 1, k = w * 1.12f / hatCrown;
-            bool lying = w > tall * 1.4f;
+            float w = h.z - h.x + 1, tall = h.w - h.y + 1, k = w * (look.Hat == Hat.Beanie ? 1.3f : 1.12f) / hatCrown;
+            bool lying = System.Array.IndexOf(pixCrash, frame) >= 5;   // fin de la chute : allongé
             hat.transform.localScale = Vector3.one * (lying ? tall * 1.12f / hatCrown : k);
             hat.transform.localRotation = Quaternion.Euler(0, 0, lying ? -90 : 0);
             var at = lying ? new Vector2(h.z - 0.35f * w, (h.y + h.w) / 2f) : new Vector2((h.x + h.z) / 2f + (look.Hat == Hat.Cap ? 0.12f * w : 0), h.w - 0.42f * tall);
