@@ -25,10 +25,11 @@ namespace PalmStreet.Game
         RiderLook look;
 
         // essai : skateur dessiné par PixelLab (Resources/SkaterPix, 8 images de 128 px) à la place du pantin
-        // shortcut: les tenues ne changent pas ce dessin ; grinds, manuals et chute réutilisent les images de roule et d'ollie, à dessiner si l'essai plaît
+        // shortcut: les tenues ne changent pas ce dessin, et les manuals réutilisent l'image de roule penchée ; à reprendre si l'essai est gardé
         public static bool Pixel = PlayerPrefs.GetInt("riderpix", 1) == 1;
         SpriteRenderer pix;
-        static Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove;
+        static Sprite[] pixRide, pixPush, pixOllie, pixFlip, pixShove, pixG5050, pixGNose, pixGTail, pixGBoard, pixCrash;
+        float railT, crashT;
         static Sprite[] Strip(string name)
         {
             var t = Resources.Load<Texture2D>("SkaterPix/" + name); t.filterMode = FilterMode.Point;
@@ -81,6 +82,7 @@ namespace PalmStreet.Game
             if (Pixel)
             {
                 pixRide ??= Strip("Ride"); pixPush ??= Strip("Push"); pixOllie ??= Strip("Ollie"); pixFlip ??= Strip("Flip"); pixShove ??= Strip("Shove");
+                pixG5050 ??= Strip("Grind5050"); pixGNose ??= Strip("GrindNose"); pixGTail ??= Strip("GrindTail"); pixGBoard ??= Strip("GrindBoard"); pixCrash ??= Strip("Crash");
                 pix = new GameObject("Dessin").AddComponent<SpriteRenderer>();
                 pix.transform.SetParent(spin, false); pix.transform.localPosition = W(0, -Center);
                 pix.sortingOrder = order + 10; pix.gameObject.layer = LayerMask.NameToLayer(layer);
@@ -806,11 +808,21 @@ namespace PalmStreet.Game
                 float cyc = Mathf.Repeat(time, 2.6f);
                 bool pushing = cyc < 0.7f && speedFactor < 1.05f && !s.Ducking;
                 int k = Mathf.Min(7, (int)(p * 8));
+                if (s.Rail == null) railT = 0;
                 float r = Mathf.Clamp(s.Vy / Tuning.OllieSpeed, -1, 1);
                 if (s.Trick == 0 || s.Trick == 4 || s.Trick == 6 || s.Trick == 7) Pix(pixFlip[k]);
                 else if (s.Trick == 1 || s.Trick == 5) Pix(pixShove[k]);
                 else if (s.Trick >= 0) Pix(pixOllie[4]);
-                else if (s.Rail != null) Pix(pixRide[(int)(time * 10) % 8], s.GrindStyle == 4 || s.GrindStyle == 6 ? 12 : s.GrindStyle == 0 || s.GrindStyle == 3 ? -12 : 0);
+                else if (s.Rail != null)
+                {
+                    // grind : il se met en place (images 0 à 3), puis se balance en boucle sur les 4 dernières
+                    // nose, crooked, smith : nose grind ; 5-0, tailslide : 5-0 ; boardslide, lipslide : boardslide ; 50-50, feeble : 50-50
+                    railT += dt;
+                    int g = s.GrindStyle;
+                    var anim = g == 2 || g == 5 ? pixGBoard : g == 4 || g == 6 ? pixGTail : g == 1 || g == 7 ? pixG5050 : pixGNose;
+                    int step = (int)(railT * 10);
+                    Pix(anim[step < 4 ? step : 4 + (step - 4) % 4], g == 4 || g == 6 ? 8 : g == 0 || g == 3 || g == 8 ? -8 : 0);
+                }
                 else if (s.Manual) Pix(pixRide[0], s.Nose ? -12 : 13);
                 else if (!s.Grounded) Pix(pixOllie[Mathf.Clamp(Mathf.RoundToInt(2 + (1 - r) * 2.5f), 2, 7)]);
                 else if (pushing && duck <= 0 && s.Wobble <= 0) Pix(pixPush[Mathf.Min(7, (int)(cyc / 0.7f * 8))]);
@@ -910,7 +922,7 @@ namespace PalmStreet.Game
 
         public void Crash(Skater s, float speed)
         {
-            crashed = true;
+            crashed = true; crashT = 0;
             bodyPos = new Vector2(s.X, s.Y);
             bodyVel = new Vector2(speed * 0.7f, 4.5f);
             bodyRot = 0;
@@ -934,7 +946,13 @@ namespace PalmStreet.Game
             spin.rotation = Quaternion.Euler(0, 0, bodyRot);
             Pose(0.3f, 20, 150, 120);
             body.localPosition = W(0, -8 - Thigh - Shin);
-            if (pix != null) { Pix(pixOllie[3]); pix.transform.localPosition = W(0, -8); return; }   // le dessin tombe d'un bloc, planche comprise
+            if (pix != null)   // chute PixelLab, jouée une fois : il accroche, part en avant et finit allongé ; glisse sur sa lancée
+            {
+                crashT += dt;
+                spin.position = W(bodyPos.x, bodyPos.y + Center); spin.rotation = Quaternion.identity;
+                Pix(pixCrash[Mathf.Min(7, (int)(crashT * 12))]);
+                return;
+            }
 
             boardVel.y -= 0.5f * k;
             boardPos += boardVel * k;
@@ -961,7 +979,6 @@ namespace PalmStreet.Game
         void Reset()
         {
             crashed = false;
-            if (pix != null) pix.transform.localPosition = W(0, -Center);
             board.SetParent(spin, false);
             board.localRotation = Quaternion.identity;
             transform.localScale = Vector3.one;

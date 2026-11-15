@@ -33,7 +33,8 @@ def keep_main(im, small=None):
 
 
 def main(src, dst):
-    for name, out, small in (('sk_roule', 'Ride', None), ('sk_pousse', 'Push', None), ('sk_ollie', 'Ollie', None), ('sk_flip', 'Flip', 250), ('sk_shove', 'Shove', 250)):
+    for name, out, small in (('sk_roule', 'Ride', None), ('sk_pousse', 'Push', None), ('sk_ollie', 'Ollie', None), ('sk_flip', 'Flip', 250), ('sk_shove', 'Shove', 250),
+                              ('sk_g5050', 'Grind5050', None), ('sk_gnose', 'GrindNose', None), ('sk_gtail', 'GrindTail', None), ('sk_gboard', 'GrindBoard', None), ('sk_chute', 'Crash', 150)):
         sheet = Image.new('RGBA', (128 * 8, 128))
         for i, k in enumerate(range(1, 9)):
             sheet.paste(keep_main(Image.open(f'{src}/{name}_{k}.png').convert('RGBA'), small), (i * 128, 0))
