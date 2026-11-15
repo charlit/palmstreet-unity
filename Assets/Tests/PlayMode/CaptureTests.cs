@@ -280,6 +280,9 @@ namespace PalmStreet.Tests
             game.OpenProfile();
             for (int i = 0; i < 3; i++) yield return null;
             yield return Shot("003-garde-robe-2");
+            all.Wear("cap-red"); game.Progress = all; game.OpenProfile();
+            for (int i = 0; i < 3; i++) yield return null;
+            yield return Shot("008-casquette");
             game.Progress = six;
             Object.FindAnyObjectByType<PalmStreet.Game.Hud>().ShowTab(4);
             yield return null;
