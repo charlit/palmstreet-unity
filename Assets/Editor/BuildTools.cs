@@ -13,7 +13,7 @@ namespace PalmStreet.EditorTools
     public static class BuildTools
     {
         static readonly string[] Scenes = { "Assets/Scenes/Game.unity" };
-        const string Version = "1.2";
+        const string Version = "1.3";
         static bool release;   // build App Store en cours (signature manuelle après le build)
 
         public static void IOS() => Build(BuildTarget.iOS, "Builds/iOS", BuildOptions.Development);
