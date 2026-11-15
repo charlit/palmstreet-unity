@@ -24,6 +24,28 @@ namespace PalmStreet.Game
         Transform[] wheels;
         RiderLook look;
 
+        // essai : skateur dessiné par PixelLab (Resources/SkaterPix, 8 images de 128 px) à la place du pantin
+        // shortcut: les tenues ne changent pas ce dessin, et grinds, figures et chute gardent le pantin ; à refaire si l'essai plaît
+        public static bool Pixel = PlayerPrefs.GetInt("riderpix", 1) == 1;
+        SpriteRenderer pix;
+        static Sprite[] pixRide, pixPush, pixOllie;
+        static Sprite[] Strip(string name)
+        {
+            var t = Resources.Load<Texture2D>("SkaterPix/" + name); t.filterMode = FilterMode.Point;
+            var f = new Sprite[8];
+            for (int i = 0; i < 8; i++) f[i] = Sprite.Create(t, new Rect(i * 128, 0, 128, 128), new Vector2(0.5f, 2 / 128f), 200);   // 2 px sous les roues ; 200 px/unité : planche ≈ celle du pantin
+            return f;
+        }
+        /// <summary>Montre le dessin (frame) ou le pantin (null).</summary>
+        void Pix(Sprite frame)
+        {
+            if (pix == null) return;
+            pix.enabled = frame != null;
+            body.gameObject.SetActive(frame == null);
+            board.gameObject.SetActive(frame == null);
+            if (frame != null) pix.sprite = frame;
+        }
+
         bool wasAirborne;
         float landedAt = -9;
 
@@ -55,6 +77,13 @@ namespace PalmStreet.Game
 
             body = new GameObject("Corps").transform;
             body.SetParent(spin, false);
+            if (Pixel)
+            {
+                pixRide ??= Strip("Ride"); pixPush ??= Strip("Push"); pixOllie ??= Strip("Ollie");
+                pix = new GameObject("Dessin").AddComponent<SpriteRenderer>();
+                pix.transform.SetParent(spin, false); pix.transform.localPosition = W(0, -Center);
+                pix.sortingOrder = order + 10; pix.gameObject.layer = LayerMask.NameToLayer(layer);
+            }
 
             // ordres de tri : planche 0-2, bras arrière 3-4, jambe arrière 5-8, buste 9-11, jambe avant 12-15, tête 16-17, bras avant 18-19
             // (chaque membre : contour d'encre puis couleurs, spec 003)
@@ -629,7 +658,7 @@ namespace PalmStreet.Game
             if (current > 180) current -= 360;
             float spinAngle = Mathf.Lerp(current, tilt, 0.35f);
             Wheels(s.X);
-            if (s.OnFoot) { spin.localRotation = Quaternion.identity; OnFoot(s, time); return; }
+            if (s.OnFoot) { Pix(null); spin.localRotation = Quaternion.identity; OnFoot(s, time); return; }
             bool airborne = !s.Grounded && s.Rail == null;
             if (wasAirborne && !airborne) landedAt = time;
             wasAirborne = airborne;
@@ -769,6 +798,19 @@ namespace PalmStreet.Game
             if (s.Fakie && (s.Trick == 2 || s.Trick == 3)) spinAngle = -spinAngle;   // les saltos restent arrière / avant pour lui
             spin.localScale = new Vector3(face, 1, 1);
             spin.rotation = Quaternion.Euler(0, 0, spinAngle);
+            if (pix != null)
+            {
+                // roule (en boucle), pousse (au rythme de la poussée du pantin), ollie (image selon la montée) ; le reste : pantin
+                float cyc = Mathf.Repeat(time, 2.6f);
+                bool pushing = cyc < 0.7f && speedFactor < 1.05f && !s.Ducking;
+                Sprite f = null;
+                if (s.Rail == null && s.Trick < 0 && !s.Manual && s.Wobble <= 0 && duck <= 0)
+                {
+                    if (s.Grounded) f = pushing ? pixPush[Mathf.Min(7, (int)(cyc / 0.7f * 8))] : pixRide[(int)(time * 10) % 8];
+                    else { float r = Mathf.Clamp(s.Vy / Tuning.OllieSpeed, -1, 1); f = pixOllie[Mathf.Clamp(Mathf.RoundToInt(2 + (1 - r) * 2.5f), 2, 7)]; }
+                }
+                Pix(f);
+            }
         }
 
         /// <summary>
@@ -825,6 +867,7 @@ namespace PalmStreet.Game
         public void Showcase(Vector3 center, float time, float scale)
         {
             if (crashed) Reset();
+            Pix(null);
             body.gameObject.SetActive(false);
             transform.localScale = Vector3.one * scale;
             spin.localPosition = (center - transform.position) / scale - W(0, DeckY - Center);
@@ -855,12 +898,14 @@ namespace PalmStreet.Game
             spin.localScale = Vector3.one;
             Pose(0.15f + hop * 0.4f, 8, -10 + Mathf.Sin(time * 1.7f) * 5 + hop * 60, 18 - hop * 70, nose, up);
             Board(nose, 0, 0, -up);
+            if (pix != null) Pix(air ? pixOllie[Mathf.Clamp(2 + (int)(a / Mathf.PI * 6), 2, 7)] : pixRide[(int)(time * 8) % 8]);
         }
 
         // ---------- chute (FR-009) ----------
 
         public void Crash(Skater s, float speed)
         {
+            Pix(null);   // la chute reste celle du pantin
             crashed = true;
             bodyPos = new Vector2(s.X, s.Y);
             bodyVel = new Vector2(speed * 0.7f, 4.5f);
