@@ -660,5 +660,24 @@ namespace PalmStreet.Tests
             foreach (Theme t in System.Enum.GetValues(typeof(Theme)))
                 Assert.AreEqual(day.Contains(t), Levels.IsDay(t), t.ToString());
         }
+
+        [Test] public void BossViolet_OnPeutSauterUnPlotSansRetomberSurLeSuivant()
+        {
+            float air = 2 * Tuning.OllieSpeed / Tuning.Gravity;   // pas en l'air pendant un ollie
+            Assert.Greater(Boss.DropEvery, air + 15, "le plot suivant tombe après la retombée, avec de quoi ressauter");
+            // en jeu : le boss vole et lâche ses plots ; on note le pas de chaque plot
+            var r = new Run(7) { StartRamp = false };
+            r.Start(bossNow: true);
+            var times = new System.Collections.Generic.List<int>();
+            for (int t = 0; t < Boss.ArriveSteps + 900; t++)
+            {
+                r.Obstacles.RemoveAll(o => o.Kind == ObstacleKind.DroppedCone);
+                r.Step(); r.Phase = Phase.Playing;
+                if (r.Events.Any(e => e.Cue == Cue.ConeDrop)) times.Add(t);
+                r.Events.Clear();
+            }
+            Assert.GreaterOrEqual(times.Count, Tuning.BossDrops, "les plots d'un envol");
+            for (int k = 1; k < Tuning.BossDrops; k++) Assert.Greater(times[k] - times[k - 1], air + 15, "écart entre deux plots du même envol");
+        }
     }
 }

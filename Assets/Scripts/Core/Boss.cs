@@ -23,7 +23,9 @@ namespace PalmStreet.Core
     public sealed class Boss
     {
         public const float Distance = 230, Size = 90, FlyHeight = 150;   // choix
-        public const int ArriveSteps = 120, MoveSteps = 25, DropEvery = 30;   // s'envole vite
+        public const int ArriveSteps = 120, MoveSteps = 25;   // s'envole vite
+        /// <summary>Pas entre deux plots lâchés : plus long qu'un ollie (2 × OllieSpeed / Gravity ≈ 38 pas), sinon on retombe sur le plot suivant.</summary>
+        public const int DropEvery = 60;
 
         public readonly BossKind Kind;
         public readonly int MaxHp;

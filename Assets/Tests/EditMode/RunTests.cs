@@ -370,7 +370,7 @@ namespace PalmStreet.Tests
             var r = new Run(7) { StartRamp = false };
             r.Start(bossNow: true);
             int drops = 0, flights = 0;
-            for (int i = 0; i < Boss.ArriveSteps + 600; i++)
+            for (int i = 0; i < Boss.ArriveSteps + 900; i++)
             {
                 r.Obstacles.RemoveAll(o => o.Kind == ObstacleKind.DroppedCone);
                 r.Step();
@@ -380,7 +380,7 @@ namespace PalmStreet.Tests
                 flights += r.Events.Count(e => e.Cue == Cue.BossFly);
                 r.Events.Clear();
             }
-            Assert.That(flights, Is.GreaterThanOrEqualTo(2), "s'envole toutes les 6 s environ");
+            Assert.That(flights, Is.GreaterThanOrEqualTo(2), "s'envole souvent (toutes les 8 s environ, plots espacés d'1 s)");
             Assert.That(drops, Is.GreaterThanOrEqualTo(4));
 
             // au sol, une figure envoie une dent droit devant qui touche le boss posé

@@ -878,7 +878,7 @@ namespace PalmStreet.Core
                 case BossState.Air:
                     b.Lift = Boss.FlyHeight;
                     if (b.Drops < Tuning.BossDrops && b.Timer >= (b.Drops + 1) * Boss.DropEvery) DropCone(b);
-                    else if (b.Drops == Tuning.BossDrops && b.Timer >= (b.Drops + 1) * Boss.DropEvery) b.Next(BossState.Falling);
+                    else if (b.Drops == Tuning.BossDrops && b.Timer >= b.Drops * Boss.DropEvery + 20) b.Next(BossState.Falling);   // redescend peu après le dernier plot
                     break;
                 case BossState.Falling:
                     b.Lift = Boss.FlyHeight * (1 - (float)b.Timer / Boss.MoveSteps);
