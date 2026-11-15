@@ -443,20 +443,21 @@ namespace PalmStreet.Tests
             Assert.That(r.CurrentSpeed / r.Speed, Is.GreaterThan(1.6f), "l'élan dure");
         }
 
-        [Test] public void Figures_QuatreEquipeesAuPlus()
+        [Test] public void Figures_ToutesPeuventEtreEquipees()
         {
             var p = new Progress();
             Assert.IsEmpty(p.ActiveTricks);
             foreach (int n in new[] { 1, 2, 3, 5, 6 }) p.Clear(n, 1);   // FLIP, HEELFLIP, SHOVE-IT, SHOVE-IT INVERSÉ, 360°
-            CollectionAssert.AreEqual(new[] { 0, 1, 2, 4 }, p.ActiveTricks, "sans choix : les 4 premières connues");
-            Assert.IsFalse(p.ToggleEquip(5), "déjà 4 équipées");
+            CollectionAssert.AreEquivalent(p.Tricks, p.ActiveTricks, "sans choix : toutes les figures connues");
+            Assert.AreEqual(5, p.ActiveTricks.Count, "plus de limite à 4");
             Assert.IsTrue(p.ToggleEquip(1), "retirer SHOVE-IT");
-            Assert.IsTrue(p.ToggleEquip(5));
-            CollectionAssert.AreEquivalent(new[] { 0, 2, 4, 5 }, p.ActiveTricks);
+            Assert.IsTrue(p.ToggleEquip(0), "retirer FLIP");
             Assert.IsFalse(p.ToggleEquip(7), "360 FLIP pas encore débloqué");
-            p.ToggleEquip(0);
-            p.Clear(8, 1);   // VARIAL FLIP débloqué : une place est libre, il s'y met
+            p.Clear(8, 1);   // VARIAL FLIP débloqué : il s'ajoute aux figures équipées
             CollectionAssert.AreEquivalent(new[] { 2, 4, 5, 6 }, p.ActiveTricks);
+            Assert.IsTrue(p.ToggleEquip(1)); Assert.IsTrue(p.ToggleEquip(0));
+            Assert.AreEqual(6, p.ActiveTricks.Count, "6 équipées à la fois");
+            p.ToggleEquip(0);
 
             var r = Story(9, p.ActiveTricks.ToArray());
             Clean(r, 2);

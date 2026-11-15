@@ -15,8 +15,8 @@ namespace PalmStreet.Core
         public int[] Best = new int[12];
         public bool[] Stars = new bool[12];        // 2e étoile : défi de la ville réussi
         public bool[] ScoreStars = new bool[12];   // 3e étoile : score de la ville atteint
-        public List<int> Equipped = new List<int>();   // figures en l'air équipées (4 au plus), choisies dans le profil
-        public const int MaxEquipped = 4;
+        public List<int> Equipped = new List<int>();   // figures en l'air équipées, choisies dans le profil
+        public static readonly int MaxEquipped = Tuning.TrickNames.Length;   // toutes : chaque figure a son propre geste
         public int EndlessBest;
         // skatepark de la Barre (spec 006) : meilleur score, meilleur combo, 3 étoiles (session finie, combo x8, score)
         public int ParkBest, ParkCombo;
