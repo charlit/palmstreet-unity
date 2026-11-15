@@ -23,7 +23,7 @@ BOSS
 Le Crabe géant, le Goéland géant, le Sanglier, LE PILIER et LE TALONNEUR au rugby, LE PELOTARI devant le fronton d'Arcangues : chacun a ses attaques. Contre le Pelotari, descends de ta planche et sers-t'en de bouclier ou de boomerang !
 
 PROGRESSION
-Gagne jusqu'à 3 étoiles par ville, débloque les figures, les sorts et les tenues (dont celles du Pilier et du Talonneur), et équipe tes 4 figures préférées.
+Gagne jusqu'à 3 étoiles par ville, débloque les figures, les sorts et les tenues (dont celles du Pilier et du Talonneur), et équipe toutes les figures que tu veux.
 
 MODE INFINI
 La vitesse monte sans fin : bats ton record et grimpe dans les classements Game Center.
